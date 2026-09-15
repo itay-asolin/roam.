@@ -32,7 +32,7 @@
     <div class="stats"><div class="stat"><b>14</b><span>saved places</span></div><div class="stat"><b>4</b><span>days planned</span></div><div class="stat"><b>¥48,000</b><span>estimated spend</span></div><div class="stat"><b>8.4 km</b><span>walking today</span></div></div>
     <div class="section-head"><div><h2>Your Kyoto map</h2><p>Tap a pin to see details and nearby ideas.</p></div><div class="filters"><button class="filter active" data-filter="all">All places</button><button class="filter" data-filter="sight">Sights</button><button class="filter" data-filter="food">Food</button><button class="filter" data-filter="activity">Activities</button></div></div>
     <section class="mapwrap"><div class="map" id="map"><div class="map-toolbar"><button id="smartRouteBtn">✦ Smart route</button><button id="nearbyBtn">⌕ Nearby ideas</button><button id="addPlaceBtn">+ Add place</button></div><div class="route"></div><button class="pin" data-id="fushimi" data-category="sight"><span>1</span></button><button class="pin" data-id="kiyomizu" data-category="sight"><span>2</span></button><button class="pin" data-id="gion" data-category="activity"><span>3</span></button><button class="pin" data-id="nishiki" data-category="food"><span>4</span></button><div class="map-label">Kyoto, Japan · 4 places shown</div><div class="map-controls"><button aria-label="Zoom in">+</button><button aria-label="Zoom out">−</button></div><div class="place-pop" id="popup"></div></div></section>
-    <div class="layout"><section><div class="section-head"><div><h2>Day by day</h2><p>Drag stops to rearrange your route.</p></div><button class="btn light" id="printBtn">Print itinerary</button></div><div class="days" id="days"></div></section>
+    <div class="layout"><section><div class="section-head"><div><h2>Day by day</h2><p>Drag stops to rearrange your route. Changes save automatically on this device.</p></div><div style="display:flex;gap:8px"><button class="btn light" id="addDayBtn">+ Add day</button><button class="btn light" id="printBtn">Print itinerary</button></div></div><div class="days" id="days"></div></section>
       <aside class="sidebar"><section class="card"><h3>Kyoto weather</h3><div class="weather"><div class="sun">☀️</div><div><b>18° / 9°</b><small>Tuesday, Apr 06 · Clear skies</small></div></div></section><section class="card"><h3>Trip budget</h3><div class="budget"><div><small class="pill">Estimated</small><br><b>¥29,800</b></div><small>of ¥48,000</small></div><div class="progress"><i></i></div><small style="color:var(--muted);font-size:11px">¥18,200 remaining</small></section><section class="card"><h3>Pack for Kyoto</h3><div class="check"><label><input type="checkbox" checked> Walking shoes</label><label><input type="checkbox"> Light rain layer</label><label><input type="checkbox"> Portable charger</label><label><input type="checkbox"> Temple-friendly outfit</label></div><button class="add">+ Add item</button></section><section class="card"><h3>Today’s note</h3><p style="font-size:13px;line-height:1.5;margin:0;color:var(--muted)">Ask the tea master about the seasonal wagashi. Leave room for an unplanned wander through Gion.</p></section></aside>
     </div>
   </main><button class="fab" id="importBtn" aria-label="Import destination places">+</button>
@@ -66,6 +66,11 @@ Gion | 35.0037,135.7750 | activity | Evening walk; reservation recommended |</te
   <script>
     /* Free personal-use map layer: OpenStreetMap + OSRM + Nominatim. No AI or API key. */
     let freeMap, routeLine, liveMarkers=[];
+    const STORAGE_KEY='roam-personal-trip-v1';
+    try { const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null'); if(saved?.places&&saved?.schedule){Object.assign(places,saved.places);schedule=saved.schedule} } catch(e) { console.info('No saved trip yet') }
+    function saveTrip(){ try { localStorage.setItem(STORAGE_KEY,JSON.stringify({places,schedule})) } catch(e) { console.info('Could not save trip',e) } }
+    const originalRender=render;
+    render=function(){ originalRender(); saveTrip(); if(freeMap) setTimeout(redrawMap,0) };
     const host=document.getElementById('map');
     function coords(id){const p=places[id];return p&&Number.isFinite(+p.lat)?[+p.lat,+p.lng]:null}
     function escapeHtml(value){return String(value||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
@@ -74,7 +79,10 @@ Gion | 35.0037,135.7750 | activity | Evening walk; reservation recommended |</te
       host.classList.add('is-live'); host.innerHTML='';
       freeMap=L.map('map',{zoomControl:false}).setView([34.99,135.775],13);
       // CARTO's public light basemap avoids the tile-server block that can occur from local previews.
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap contributors © CARTO'}).addTo(freeMap);
+      let failedTiles=0;
+      const carto=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}{r}.png',{subdomains:'abcd',maxZoom:20,attribution:'© OpenStreetMap contributors © CARTO'});
+      carto.on('tileerror',()=>{if(++failedTiles===1){carto.remove();L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Tiles © Esri'}).addTo(freeMap)}});
+      carto.addTo(freeMap);
       L.control.zoom({position:'bottomright'}).addTo(freeMap);
       const tools=L.control({position:'topleft'});tools.onAdd=()=>{const d=L.DomUtil.create('div','map-toolbar');d.innerHTML='<button id="liveSmart">✦ Smart route</button><button id="liveNear">⌕ Nearby ideas</button><button id="liveAdd">+ Add place</button>';L.DomEvent.disableClickPropagation(d);return d};tools.addTo(freeMap);
       document.getElementById('liveSmart').onclick=smartRoute; document.getElementById('liveNear').onclick=()=>nearbyAt(freeMap.getCenter().lat,freeMap.getCenter().lng); document.getElementById('liveAdd').onclick=openImporter;
@@ -91,7 +99,9 @@ Gion | 35.0037,135.7750 | activity | Evening walk; reservation recommended |</te
     async function importRoute(){const raw=document.getElementById('routeLink').value.trim();if(!raw)return;let url;try{url=new URL(raw)}catch{alert('Please paste a valid route link.');return}const names=[url.searchParams.get('origin'),...(url.searchParams.get('waypoints')||'').split('|'),url.searchParams.get('destination')].filter(Boolean);if(names.length<2){alert('This route link needs an origin and destination.');return}const newDay={day:'Imported route',date:'Choose a date',stops:[]};for(const name of names){const x=await geocode(name);const id='route'+Date.now()+newDay.stops.length;places[id]={name,lat:x?+x.lat:null,lng:x?+x.lon:null,category:'route stop',hours:'Check hours',notes:'Imported from route link'};newDay.stops.push([id,'Flexible'])}schedule.push(newDay);render();redrawMap();modal.classList.remove('open')}
     function openImporter(){modal.classList.add('open')}
     document.getElementById('importBtn').onclick=openImporter;document.getElementById('addPlaceBtn').onclick=openImporter;document.getElementById('smartRouteBtn').onclick=smartRoute;document.getElementById('nearbyBtn').onclick=()=>nearbyAt(freeMap.getCenter().lat,freeMap.getCenter().lng);document.getElementById('searchBtn').onclick=searchPlaces;document.getElementById('routeBtn').onclick=importRoute;
+    document.getElementById('addDayBtn').onclick=()=>{schedule.push({day:'Day '+(schedule.length+1),date:'Choose a date',stops:[]});render()};
     document.getElementById('parseBtn').onclick=async()=>{const rows=document.getElementById('importText').value.trim().split('\n');for(let i=0;i<rows.length;i++){const [name,rawCoords,category,notes]=rows[i].split('|').map(x=>x.trim());if(!name)continue;const pair=(rawCoords||'').split(',').map(Number);const id='paste'+Date.now()+i;places[id]={name,lat:pair.length===2&&pair.every(Number.isFinite)?pair[0]:null,lng:pair.length===2&&pair.every(Number.isFinite)?pair[1]:null,category:category||'place',hours:'Check hours',notes:notes||'Imported from your list'};schedule[0].stops.push([id,'Flexible'])}render();redrawMap();modal.classList.remove('open')};
+    render();
     // When a Google key is configured above, the Google Maps widget takes priority.
     // Otherwise this free OpenStreetMap mode remains the working default.
     if(window.L && !GOOGLE_MAPS_API_KEY)makeMap();
