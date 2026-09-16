@@ -754,13 +754,22 @@
       const seen=new Set(), candidates=[];
       const api='https://commons.wikimedia.org/w/api.php';
 
+      const svgFile=u=>/\.svg(\?|$)/i.test(u||'');
+
       // Each sub-request gets its own try/catch: one flaky query (rate limit,
       // network blip, odd response) must not take down the whole search or
       // skip the Wikipedia fallback below it — previously a single failure
       // anywhere in this function aborted everything with no fallback at all.
       async function addSearch(q){
         try{
-          const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:q,gsrnamespace:6,gsrlimit:12,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
+          // filetype:bitmap keeps this to actual photographs (jpg/png/tiff) and
+          // excludes vector files — flags, coats of arms and locator maps are
+          // almost always SVG on Commons, and for a bare place/city name they
+          // frequently rank #1-#12 (exact title match), crowding out real
+          // photos entirely within a 12-result page. This filters them out at
+          // the search level so we don't need a keyword like "skyline" to
+          // out-rank them.
+          const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:`${q} filetype:bitmap`,gsrnamespace:6,gsrlimit:12,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
           const data=await wikiFetch(api+'?'+new URLSearchParams(base).toString()).then(r=>r.json());
           for(const page of Object.values(data.query?.pages||{})){
             if(seen.has(page.pageid)) continue;
@@ -770,7 +779,7 @@
             const text=[title,clean(meta.ImageDescription),clean(meta.ObjectName),clean(meta.Categories)].join(' ');
             if(!info.thumburl && !info.url) continue;
             let score=0;
-            if(badWords.test(text)) score-=1000;
+            if(badWords.test(text) || svgFile(info.url)) score-=1000;
             if(cityMode && skylineWords.test(text)) score+=45;
             if(!cityMode && placeWords.test(text)) score+=18;
             if(/\bphoto(graph)?|photograph|view\b/i.test(text)) score+=4;
@@ -824,7 +833,7 @@
               const title=String(page.title||'').replace(/^File:/,'');
               const text=[title,clean(meta.ImageDescription),clean(meta.ObjectName),clean(meta.Categories)].join(' ');
               let score=-3;
-              if(badWords.test(text)) score-=1000;
+              if(badWords.test(text) || svgFile(info.url)) score-=1000;
               if(cityMode && skylineWords.test(text)) score+=35;
               if(!cityMode && placeWords.test(text)) score+=18;
               if(info.width && info.height && info.width/info.height>=1.35) score+=4;
