@@ -747,112 +747,31 @@
       const cityMode=!!options.city;
       const exclude=options.exclude||null;
       const imgWidth = cityMode ? 1800 : 1000;
-      const badWords=/\b(flag|flags|drapeau|fahne|bandiera|coat of arms|arms of|heraldry|heraldic|logo|logos|map|maps|locator map|symbol|emblem|seal)\b/i;
-      const skylineWords=/\b(skyline|cityscape|panorama|panoramic|aerial view|city view|night view)\b/i;
-      const placeWords=/\b(exterior|facade|building|landmark|monument|entrance|front)\b/i;
       const clean=v=>{ const x=v?.value; return typeof x==='string' ? x.replace(/<[^>]*>/g,' ').replace(/&[^;]+;/g,' ').replace(/\s+/g,' ').trim() : ''; };
-      const seen=new Set(), candidates=[];
       const api='https://commons.wikimedia.org/w/api.php';
 
-      const svgFile=u=>/\.svg(\?|$)/i.test(u||'');
-
-      // Each sub-request gets its own try/catch: one flaky query (rate limit,
-      // network blip, odd response) must not take down the whole search or
-      // skip the Wikipedia fallback below it — previously a single failure
-      // anywhere in this function aborted everything with no fallback at all.
-      async function addSearch(q){
-        try{
-          // filetype:bitmap keeps this to actual photographs (jpg/png/tiff) and
-          // excludes vector files — flags, coats of arms and locator maps are
-          // almost always SVG on Commons, and for a bare place/city name they
-          // frequently rank #1-#12 (exact title match), crowding out real
-          // photos entirely within a 12-result page. This filters them out at
-          // the search level so we don't need a keyword like "skyline" to
-          // out-rank them.
-          const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:`${q} filetype:bitmap`,gsrnamespace:6,gsrlimit:12,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
-          const data=await wikiFetch(api+'?'+new URLSearchParams(base).toString()).then(r=>r.json());
-          for(const page of Object.values(data.query?.pages||{})){
-            if(seen.has(page.pageid)) continue;
-            seen.add(page.pageid); const info=page.imageinfo?.[0]; if(!info) continue;
-            const meta=info.extmetadata||{};
-            const title=String(page.title||'').replace(/^File:/,'');
-            const text=[title,clean(meta.ImageDescription),clean(meta.ObjectName),clean(meta.Categories)].join(' ');
-            if(!info.thumburl && !info.url) continue;
-            let score=0;
-            if(badWords.test(text) || svgFile(info.url)) score-=1000;
-            if(cityMode && skylineWords.test(text)) score+=45;
-            if(!cityMode && placeWords.test(text)) score+=18;
-            if(/\bphoto(graph)?|photograph|view\b/i.test(text)) score+=4;
-            if(info.width && info.height){
-              const ratio=info.width/info.height;
-              if(ratio>=1.35) score+=5;
-              if(ratio<0.8) score-=8;
-            }
-            candidates.push({page,info,meta,text,score});
-          }
-        }catch(e){ /* this query failed — the others may still find something */ }
-      }
-
+      // Deliberately no scoring, no keyword requirements (skyline/landmark/
+      // etc.), no filetype filtering: just ask Commons for this name and take
+      // the first result that (a) hasn't already been shown for this place/
+      // trip (via `exclude`, tracked across 🔄 clicks) and (b) actually loads.
+      // Picking "the best" photo automatically was unreliable and, combined
+      // with required keywords, often returned nothing at all. The manual
+      // swap button is the mechanism for getting a different photo now — this
+      // just needs to reliably return *a* photo.
       try{
-        // One targeted query up front — a city wants a skyline/cityscape shot,
-        // a place wants its own name. Extra query variations (a second city
-        // phrasing, a "landmark" suffix) used to always run too, doubling or
-        // tripling the request count for little gain; now they only run if
-        // this first query didn't turn up anything usable, and a manual
-        // "try another photo" click covers the rest far more cheaply than an
-        // exhaustive automatic search ever could.
-        // NOTE: "skyline"/"landmark"/"cityscape" are intentionally NOT sent as
-        // required search terms here — Commons' search treats an unquoted word
-        // in the query as something every result MUST contain, so a city with
-        // no file literally tagged "skyline" would get zero results even if it
-        // has plenty of good photos. Those words already boost the ranking via
-        // the regex scoring below; that's enough. Likewise, for place search,
-        // wrapping the whole "name + city" string in quotes turns it into an
-        // exact-phrase match (name and city adjacent, verbatim) which almost
-        // never occurs in real file metadata — so we search the words without
-        // quotes (still all required, but not required to be adjacent).
-        await addSearch(cityMode ? `"${query}"` : query);
-        let haveViable = candidates.some(c=>c.score>-500 && !(exclude&&exclude.has(c.info.descriptionurl)));
-
-        if(!haveViable){
-          await addSearch(cityMode ? `"${query}" cityscape` : `${query} landmark`);
-          haveViable = candidates.some(c=>c.score>-500 && !(exclude&&exclude.has(c.info.descriptionurl)));
-        }
-
-        // Geosearch (nearby-photos-by-coordinate) is a heavier, noisier
-        // fallback — only worth the extra request if the name search above
-        // came up empty.
-        if(!haveViable && Number.isFinite(+lat) && Number.isFinite(+lng)){
-          try{
-            const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:7000,ggslimit:15,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
-            const data=await wikiFetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
-            for(const page of Object.values(data.query?.pages||{})){
-              if(seen.has(page.pageid)) continue;
-              seen.add(page.pageid); const info=page.imageinfo?.[0]; if(!info) continue;
-              const meta=info.extmetadata||{};
-              const title=String(page.title||'').replace(/^File:/,'');
-              const text=[title,clean(meta.ImageDescription),clean(meta.ObjectName),clean(meta.Categories)].join(' ');
-              let score=-3;
-              if(badWords.test(text) || svgFile(info.url)) score-=1000;
-              if(cityMode && skylineWords.test(text)) score+=35;
-              if(!cityMode && placeWords.test(text)) score+=18;
-              if(info.width && info.height && info.width/info.height>=1.35) score+=4;
-              candidates.push({page,info,meta,text,score});
-            }
-          }catch(e){ /* geosearch failing is fine if we already have candidates */ }
-        }
-
-        candidates.sort((a,b)=>b.score-a.score);
-        const viable=candidates.filter(x=>x.score>-500 && !(exclude&&exclude.has(x.info.descriptionurl)));
-        for(const cand of viable.slice(0,6)){
-          const info=cand.info, meta=cand.meta;
-          const rawUrl = info.thumburl||info.url||'';
-          if(!rawUrl) continue;
+        const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:query,gsrnamespace:6,gsrlimit:20,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
+        const data=await wikiFetch(api+'?'+new URLSearchParams(base).toString()).then(r=>r.json());
+        for(const page of Object.values(data.query?.pages||{})){
+          const info=page.imageinfo?.[0]; if(!info) continue;
+          const rawUrl=info.thumburl||info.url||''; if(!rawUrl) continue;
+          const pageUrl=info.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(page.title||''));
+          if(exclude && exclude.has(pageUrl)) continue;
           const url = rawUrl + (rawUrl.includes('?')?'&':'?')+'roam='+Date.now();
           if(!(await imageLoads(url))) continue;
+          const meta=info.extmetadata||{};
           return {
             url,
-            pageUrl:info.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(cand.page.title||'')),
+            pageUrl,
             author:clean(meta.Artist)||clean(meta.Credit)||'',
             license:clean(meta.LicenseShortName)||'',
             licenseUrl:meta.LicenseUrl?.value||''
