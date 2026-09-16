@@ -687,17 +687,21 @@
       return null;
     }
     async function wikimediaImage(query, lat, lng, options={}){
-      try{
-        const api='https://commons.wikimedia.org/w/api.php';
-        const cityMode=!!options.city;
-        const imgWidth = cityMode ? 1800 : 1000;
-        const badWords=/\b(flag|flags|drapeau|fahne|bandiera|coat of arms|arms of|heraldry|heraldic|logo|logos|map|maps|locator map|symbol|emblem|seal)\b/i;
-        const skylineWords=/\b(skyline|cityscape|panorama|panoramic|aerial view|city view|night view)\b/i;
-        const placeWords=/\b(exterior|facade|building|landmark|monument|entrance|front)\b/i;
-        const clean=v=>{ const x=v?.value; return typeof x==='string' ? x.replace(/<[^>]*>/g,' ').replace(/&[^;]+;/g,' ').replace(/\s+/g,' ').trim() : ''; };
-        const seen=new Set(), candidates=[];
+      const cityMode=!!options.city;
+      const imgWidth = cityMode ? 1800 : 1000;
+      const badWords=/\b(flag|flags|drapeau|fahne|bandiera|coat of arms|arms of|heraldry|heraldic|logo|logos|map|maps|locator map|symbol|emblem|seal)\b/i;
+      const skylineWords=/\b(skyline|cityscape|panorama|panoramic|aerial view|city view|night view)\b/i;
+      const placeWords=/\b(exterior|facade|building|landmark|monument|entrance|front)\b/i;
+      const clean=v=>{ const x=v?.value; return typeof x==='string' ? x.replace(/<[^>]*>/g,' ').replace(/&[^;]+;/g,' ').replace(/\s+/g,' ').trim() : ''; };
+      const seen=new Set(), candidates=[];
+      const api='https://commons.wikimedia.org/w/api.php';
 
-        async function addSearch(q){
+      // Each sub-request gets its own try/catch: one flaky query (rate limit,
+      // network blip, odd response) must not take down the whole search or
+      // skip the Wikipedia fallback below it — previously a single failure
+      // anywhere in this function aborted everything with no fallback at all.
+      async function addSearch(q){
+        try{
           const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:q,gsrnamespace:6,gsrlimit:12,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
           const data=await fetch(api+'?'+new URLSearchParams(base).toString()).then(r=>r.json());
           for(const page of Object.values(data.query?.pages||{})){
@@ -719,8 +723,10 @@
             }
             candidates.push({page,info,meta,text,score});
           }
-        }
+        }catch(e){ /* this query failed — the others may still find something */ }
+      }
 
+      try{
         // Prefer real city views/skyline for cities. For individual places,
         // prefer exterior/building/landmark photos rather than generic city shots.
         if(cityMode){
@@ -732,21 +738,23 @@
 
         // Geosearch is the fallback for places whose name is hard to search.
         if(Number.isFinite(+lat) && Number.isFinite(+lng)){
-          const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:7000,ggslimit:15,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
-          const data=await fetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
-          for(const page of Object.values(data.query?.pages||{})){
-            if(seen.has(page.pageid)) continue;
-            seen.add(page.pageid); const info=page.imageinfo?.[0]; if(!info) continue;
-            const meta=info.extmetadata||{};
-            const title=String(page.title||'').replace(/^File:/,'');
-            const text=[title,clean(meta.ImageDescription),clean(meta.ObjectName),clean(meta.Categories)].join(' ');
-            let score=-3;
-            if(badWords.test(text)) score-=1000;
-            if(cityMode && skylineWords.test(text)) score+=35;
-            if(!cityMode && placeWords.test(text)) score+=18;
-            if(info.width && info.height && info.width/info.height>=1.35) score+=4;
-            candidates.push({page,info,meta,text,score});
-          }
+          try{
+            const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:7000,ggslimit:15,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
+            const data=await fetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
+            for(const page of Object.values(data.query?.pages||{})){
+              if(seen.has(page.pageid)) continue;
+              seen.add(page.pageid); const info=page.imageinfo?.[0]; if(!info) continue;
+              const meta=info.extmetadata||{};
+              const title=String(page.title||'').replace(/^File:/,'');
+              const text=[title,clean(meta.ImageDescription),clean(meta.ObjectName),clean(meta.Categories)].join(' ');
+              let score=-3;
+              if(badWords.test(text)) score-=1000;
+              if(cityMode && skylineWords.test(text)) score+=35;
+              if(!cityMode && placeWords.test(text)) score+=18;
+              if(info.width && info.height && info.width/info.height>=1.35) score+=4;
+              candidates.push({page,info,meta,text,score});
+            }
+          }catch(e){ /* geosearch failing is fine if we already have candidates */ }
         }
 
         candidates.sort((a,b)=>b.score-a.score);
@@ -765,11 +773,12 @@
             licenseUrl:meta.LicenseUrl?.value||''
           };
         }
-        // Commons category search sometimes turns up nothing for smaller,
-        // less-categorized places even though a perfectly good photo exists —
-        // the Wikipedia article's own lead image is a reliable last resort.
-        return await wikipediaFallbackImage(query);
-      }catch(e){ return null; }
+      }catch(e){ /* fall through to the Wikipedia fallback below regardless */ }
+
+      // Commons search found nothing usable (or failed outright) — Wikipedia's
+      // own lead image is a solid, almost-always-available last resort, and it
+      // now always gets a chance to run instead of being skipped on any error.
+      return await wikipediaFallbackImage(query);
     }
 
     function stopThumbHtml(id, p){
