@@ -50,6 +50,8 @@
     .dest-card-body{padding:16px;display:flex;flex-direction:column;gap:7px;min-height:155px}
     .dest-card h3{margin:0;font-size:20px}.dest-card small{color:var(--muted)}
     .en-name{display:block;color:var(--muted);font-size:12px}
+    .city-alt-name{margin-top:6px;font-size:12.5px;color:var(--muted)}
+    .hero .en-name{color:rgba(255,255,255,.78);font-size:14px;margin:0 0 4px}
     .dest-meta{display:flex;gap:14px;color:var(--muted);font-size:12px}.dest-actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
     .days-slider-wrap{width:100%;position:relative}
     .days-slider-row{display:flex;align-items:center;gap:16px;width:100%}
@@ -184,6 +186,7 @@
       <section class="hero trip-hero" id="tripHero">
         <div class="eyebrow" data-i18n="trip.eyebrow"></div>
         <h1 id="tripName"></h1>
+        <span class="en-name" id="tripNameAlt" style="display:none"></span>
         <p data-i18n="trip.heroSub"></p>
         <a id="tripHeroCredit" class="hero-image-credit" href="#" target="_blank" rel="noopener" style="display:none"></a>
         <div class="hero-side">
@@ -278,6 +281,7 @@
       <label for="newTripName" data-i18n="new.dest"></label>
       <input id="newTripName" autocomplete="off" data-i18n-ph="new.destPh">
       <div class="suggest" id="citySuggest" style="display:none"></div>
+      <div class="city-alt-name" id="cityAltName" style="display:none"></div>
     </div>
     <div class="field"><label data-i18n="new.length"></label>
       <div class="days-slider-wrap">
@@ -645,6 +649,18 @@
     // with the place so it can be shown again inside the itinerary.
     function photoUrl(){ return ''; }
 
+    function imageLoads(url){
+      return new Promise(resolve=>{
+        if(!url){ resolve(false); return; }
+        const img = new Image();
+        let done=false;
+        const finish = ok => { if(done) return; done=true; resolve(ok); };
+        img.onload = ()=>finish(true);
+        img.onerror = ()=>finish(false);
+        img.src = url;
+        setTimeout(()=>finish(false), 6000);
+      });
+    }
     async function wikimediaImage(query, lat, lng, options={}){
       try{
         const api='https://commons.wikimedia.org/w/api.php';
@@ -708,20 +724,41 @@
         }
 
         candidates.sort((a,b)=>b.score-a.score);
-        const best=candidates.find(x=>x.score>-500);
-        if(!best) return null;
-        const info=best.info, meta=best.meta;
-        return {
-          url:(info.thumburl||info.url||'') + ((info.thumburl||info.url) ? ((info.thumburl||info.url).includes('?')?'&':'?')+'roam='+Date.now() : ''),
-          pageUrl:info.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(best.page.title||'')),
-          author:clean(meta.Artist)||clean(meta.Credit)||'',
-          license:clean(meta.LicenseShortName)||'',
-          licenseUrl:meta.LicenseUrl?.value||''
-        };
+        const viable=candidates.filter(x=>x.score>-500);
+        for(const cand of viable.slice(0,6)){
+          const info=cand.info, meta=cand.meta;
+          const rawUrl = info.thumburl||info.url||'';
+          if(!rawUrl) continue;
+          const url = rawUrl + (rawUrl.includes('?')?'&':'?')+'roam='+Date.now();
+          if(!(await imageLoads(url))) continue;
+          return {
+            url,
+            pageUrl:info.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(cand.page.title||'')),
+            author:clean(meta.Artist)||clean(meta.Credit)||'',
+            license:clean(meta.LicenseShortName)||'',
+            licenseUrl:meta.LicenseUrl?.value||''
+          };
+        }
+        return null;
       }catch(e){ return null; }
     }
 
-    async function enrichPlaceImage(place, force=false){
+    function stopThumbHtml(id, p){
+      return p.image
+        ? `<div><img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}" onerror="this.onerror=null; this.style.display='none'; retryPlaceImage('${esc(id)}')">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`
+        : `<div class="stop-thumb stop-thumb-empty">⌖</div>`;
+    }
+    // Updates a single stop's thumbnail in place, without rebuilding the whole
+    // itinerary or the map markers/routes — avoids the flicker that a full
+    // render()/redrawMap() would cause every time one place's image arrives.
+    function updateStopThumb(id){
+      const p = places[id]; if(!p) return;
+      document.querySelectorAll(`.stop[data-place="${id}"] .stop-main`).forEach(el=>{
+        el.querySelector(':scope > div:first-child, :scope > .stop-thumb-empty')?.remove();
+        el.insertAdjacentHTML('afterbegin', stopThumbHtml(id, p));
+      });
+    }
+    async function enrichPlaceImage(id, place, force=false){
       if(!place || place.imageLoading || (!force && place.image)) return;
       place.imageLoading=true;
       const tr=currentTrip();
@@ -736,7 +773,7 @@
         place.imageLicense=image.license||'';
         place.imageLicenseUrl=image.licenseUrl||'';
         persist();
-        if(currentTrip()) render();
+        if(currentTrip()) updateStopThumb(id);
       }
     }
 
@@ -885,9 +922,8 @@
       document.getElementById('tripNote').value = trip.note || '';
       renderTripHeader(); render(); renderPacking(); loadWeather();
       enrichMissingPlaceNames();
-       enrichCityImage(trip); enrichMissingPlaceImages(); refreshAllImages();
-      enrichTripCity(trip);
-      enrichCityImage(trip);
+      enrichMissingPlaceImages();
+      enrichTripCity(trip).then(()=> refreshAllImages());
       window.googleMapsReady.then(()=>{ if(mapsOk){ if(!freeMap) makeMap(); else { redrawMap(); centerOnCity() } } });
       if(!trip.center) locateTripCity(id, trip.name);
       window.scrollTo(0,0);
@@ -902,6 +938,12 @@
     function renderTripHeader(){
       const trip = currentTrip(); if(!trip) return;
       document.getElementById('tripName').textContent = lang==='he' ? (trip.cityNameHe||trip.name) : (trip.cityNameEn||trip.name);
+      const altEl=document.getElementById('tripNameAlt');
+      if(altEl){
+        const alt = lang==='he' ? trip.cityNameEn : trip.cityNameHe;
+        altEl.textContent = alt||'';
+        altEl.style.display = alt ? 'block' : 'none';
+      }
       const hero=document.getElementById('tripHero');
       if(hero){
         hero.style.backgroundImage = trip.cityImage
@@ -1087,7 +1129,7 @@
           const daySel = schedule.length > 1 ? `<select class="move-day" data-place="${s[0]}">${schedule.map((_,j)=>`<option value="${j}" ${j===di?'selected':''}>${esc(t('day.moveTo',{n:j+1}))}</option>`).join('')}</select>` : '';
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
-            <div class="stop-main">${p.image?`<div><img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}" onerror="this.onerror=null; this.style.display='none'; retryPlaceImage('${esc(s[0])}')">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`:`<div class="stop-thumb stop-thumb-empty">⌖</div>`}<div class="stop-copy"><b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(lang==='he' ? p.nameEn : p.nameHe)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div></div>
+            <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy"><b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(lang==='he' ? p.nameEn : p.nameHe)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
@@ -1103,7 +1145,7 @@
         </article>`;
       }).join('');
 
-      Object.values(places).forEach(p=>{ if(!p.image && !p.imageLoading) enrichPlaceImage(p); });
+      Object.entries(places).forEach(([id,p])=>{ if(!p.image && !p.imageLoading) enrichPlaceImage(id,p); });
       document.getElementById('statPlaces').textContent = Object.keys(places).length;
       document.getElementById('statDays').textContent = schedule.length;
 
@@ -1323,15 +1365,28 @@
       document.getElementById('newTripName').value = '';
       document.getElementById('newTripDate').value = '';
       document.getElementById('citySuggest').style.display = 'none';
+      document.getElementById('cityAltName').style.display = 'none';
       chosenCity = null;
       newTripModal.classList.add('open');
       setDays(3, false);
       document.getElementById('newTripName').focus();
     };
 
-    const cityInput = document.getElementById('newTripName'), citySuggest = document.getElementById('citySuggest');
+    const cityInput = document.getElementById('newTripName'), citySuggest = document.getElementById('citySuggest'), cityAltName = document.getElementById('cityAltName');
+    async function showCityAltName(city){
+      if(!city){ cityAltName.style.display='none'; return }
+      cityAltName.style.display='none'; cityAltName.textContent='';
+      if(!googleAvailable()) return;
+      try{
+        const names = await bilingualNames(city.name, [city.lat, city.lng]);
+        city.cityNames = names;
+        const alt = lang==='he' ? names.en : names.he;
+        if(alt && chosenCity===city){ cityAltName.textContent = alt; cityAltName.style.display='block'; }
+      }catch(e){}
+    }
     cityInput.addEventListener('input', ()=>{
       chosenCity = null;
+      cityAltName.style.display = 'none';
       const q = cityInput.value.trim();
       clearTimeout(suggestTimer);
       if(q.length < 2){ citySuggest.style.display = 'none'; return }
@@ -1345,6 +1400,7 @@
           chosenCity = hits[+b.dataset.i];
           cityInput.value = chosenCity.name;
           citySuggest.style.display = 'none';
+          showCityAltName(chosenCity);
         });
       }, 420);
     });
@@ -1356,7 +1412,8 @@
       if(!typed){ alert(t('new.needName')); return }
       const city = chosenCity || (await findCities(typed))[0] || null;
       let cityNames = {he:'',en:''};
-      if(city && googleAvailable()) cityNames = await bilingualNames(city.name,[city.lat,city.lng]);
+      if(city && city.cityNames) cityNames = city.cityNames;
+      else if(city && googleAvailable()) cityNames = await bilingualNames(city.name,[city.lat,city.lng]);
       const id = 'trip' + Date.now();
       trips.push(normaliseTrip({
         id, name: city ? city.name : typed,
@@ -1420,20 +1477,20 @@
     async function retryPlaceImage(id){
       const p=places[id]; if(!p || p.imageLoading) return;
       p.image=''; p.imagePage=''; p.imageAuthor=''; p.imageLicense=''; p.imageLicenseUrl='';
-      await enrichPlaceImage(p);
+      await enrichPlaceImage(id,p);
     }
 
     async function enrichMissingPlaceImages(){
       const list=Object.entries(places).filter(([id,p])=>p && !p.image && !p.imageLoading).slice(0,8);
-      for(const [,p] of list) await enrichPlaceImage(p);
+      for(const [id,p] of list) await enrichPlaceImage(id,p);
     }
     async function refreshAllImages(){
       const tr=currentTrip(); if(!tr) return;
       // Existing images in older versions may be wrong. Refresh them once, then keep the selected Commons image.
-      const placesList=Object.values(places).filter(p=>p && !p.imageRefreshDone && !p.imageLoading);
-      for(const p of placesList.slice(0,8)){
+      const placesList=Object.entries(places).filter(([,p])=>p && !p.imageRefreshDone && !p.imageLoading);
+      for(const [id,p] of placesList.slice(0,8)){
         p.imageRefreshDone=true;
-        await enrichPlaceImage(p,true);
+        await enrichPlaceImage(id,p,true);
       }
       if(!tr.cityImageRefreshDone){
         tr.cityImageRefreshDone=true;
@@ -1468,7 +1525,7 @@
       render();
       if(freeMap) freeMap.panTo({lat:x.lat,lng:x.lng});
       enrichPlaceNames(places[id]);
-      enrichPlaceImage(places[id]);
+      enrichPlaceImage(id, places[id]);
     }
 
     async function nearbyAt(lat,lng){
