@@ -27,7 +27,7 @@
     .brand{font-size:27px;direction:ltr}.brand span{color:var(--orange)}
     .head-tools{display:flex;gap:8px;flex-wrap:wrap}
     .trip-hero{background-size:cover;background-position:center;background-repeat:no-repeat}
-    .hero{min-height:200px;background:linear-gradient(90deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover;border-radius:var(--radius);padding:36px 40px;color:#fff;position:relative;overflow:hidden}
+    .hero{min-height:260px;background:linear-gradient(90deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover;border-radius:var(--radius);padding:36px 40px;color:#fff;position:relative;overflow:hidden}
     html[dir="rtl"] .hero{background:linear-gradient(270deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover}
     .eyebrow{font-size:12px;opacity:.85;letter-spacing:.04em}
     .hero h1{font-size:44px;line-height:1.08;margin:14px 0 10px}
@@ -73,7 +73,7 @@
     .stops{padding:10px;min-height:52px}
     .stop{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
     .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px}
-    .stop-thumb{width:46px;height:46px;object-fit:cover;border-radius:9px;float:inline-start;margin-inline-end:9px}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
+    .stop-main{display:flex;align-items:center;gap:12px;min-width:0}.stop-thumb{width:72px;height:72px;object-fit:cover;border-radius:11px;flex:0 0 72px}.stop-thumb-empty{display:grid;place-items:center;background:#f1efe8;color:#8a938b;font-size:24px}.stop-copy{min-width:0}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
     .stop-tools{display:flex;gap:6px;align-items:center}
     .stop-tools select{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 7px;font-size:11.5px;color:var(--muted)}
     .tag{font-size:10.5px;padding:5px 8px;border-radius:99px;background:#f1efe8;color:#626b64}
@@ -184,6 +184,7 @@
         <div class="eyebrow" data-i18n="trip.eyebrow"></div>
         <h1 id="tripName"></h1>
         <p data-i18n="trip.heroSub"></p>
+        <a id="tripHeroCredit" class="hero-image-credit" href="#" target="_blank" rel="noopener" style="display:none"></a>
         <div class="hero-side">
           <label class="datefield"><span data-i18n="trip.start"></span><input type="date" id="tripStart"></label>
           <button class="btn light" id="shareBtn" data-i18n="trip.share"></button>
@@ -572,6 +573,7 @@
     }
 
     /* ---------- Places API (direct or via proxy) ---------- */
+    // Cost-safe mode: Google Places is used for text/location search only; photo fields are not requested.
     function placesUrl(path){ return CONFIG.proxyBase ? CONFIG.proxyBase.replace(/\/$/,'') + '/places/' + path : 'https://places.googleapis.com/v1/places' + (path.startsWith(':') ? path : '/' + path) }
     function placesHeaders(mask){
       const h = { 'Content-Type':'application/json', 'X-Goog-FieldMask':mask };
@@ -585,7 +587,7 @@
       if(!googleAvailable()) throw new Error('no key');
       const body = { textQuery:query, languageCode:langCode() };
       if(bias) body.locationBias = { circle:{ center:{ latitude:bias[0], longitude:bias[1] }, radius:30000 } };
-      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.formattedAddress,places.primaryType,places.viewport,places.photos'), body:JSON.stringify(body) });
+      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.formattedAddress,places.primaryType,places.viewport'), body:JSON.stringify(body) });
       if(!res.ok) throw new Error('searchText ' + res.status);
       return (await res.json()).places || [];
     }
@@ -593,13 +595,73 @@
       if(!googleAvailable()) throw new Error('no key');
       const body = { textQuery:query, languageCode:language };
       if(bias) body.locationBias = { circle:{ center:{ latitude:bias[0], longitude:bias[1] }, radius:30000 } };
-      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.formattedAddress,places.primaryType,places.viewport,places.photos'), body:JSON.stringify(body) });
+      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.formattedAddress,places.primaryType,places.viewport'), body:JSON.stringify(body) });
       if(!res.ok) throw new Error('searchText ' + res.status);
       return (await res.json()).places || [];
     }
-    function photoUrl(photo){
-      if(!photo?.name || !CONFIG.googleKey || CONFIG.proxyBase) return '';
-      return 'https://places.googleapis.com/v1/' + photo.name + '/media?maxWidthPx=900&key=' + encodeURIComponent(CONFIG.googleKey);
+    // Google Place Photos are intentionally disabled.
+    // Images come from Wikimedia Commons instead, so adding a place does not
+    // trigger a Google photo request. We keep the image URL + attribution
+    // with the place so it can be shown again inside the itinerary.
+    function photoUrl(){ return ''; }
+
+    async function wikimediaImage(query, lat, lng){
+      try{
+        const api='https://commons.wikimedia.org/w/api.php';
+        const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:query,gsrnamespace:6,gsrlimit:6,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:900};
+        let url=api+'?'+new URLSearchParams(base).toString();
+        let data=await fetch(url).then(r=>r.json());
+        let pages=Object.values(data.query?.pages||{});
+        if(!pages.length && Number.isFinite(+lat) && Number.isFinite(+lng)){
+          const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:5000,ggslimit:8,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:900};
+          data=await fetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
+          pages=Object.values(data.query?.pages||{});
+        }
+        const page=pages.find(x=>x.imageinfo?.[0]?.thumburl || x.imageinfo?.[0]?.url);
+        if(!page) return null;
+        const info=page.imageinfo[0], meta=info.extmetadata||{};
+        const clean=v=>{ const x=v?.value; return typeof x==='string' ? x.replace(/<[^>]*>/g,'').trim() : ''; };
+        return {
+          url:info.thumburl||info.url||'',
+          pageUrl:info.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(page.title||'')),
+          author:clean(meta.Artist)||clean(meta.Credit)||'',
+          license:clean(meta.LicenseShortName)||'',
+          licenseUrl:meta.LicenseUrl?.value||''
+        };
+      }catch(e){ return null; }
+    }
+
+    async function enrichPlaceImage(place){
+      if(!place || place.image || place.imageLoading) return;
+      place.imageLoading=true;
+      const image=await wikimediaImage(place.nameEn||place.name, place.lat, place.lng);
+      place.imageLoading=false;
+      if(image?.url){
+        place.image=image.url;
+        place.imagePage=image.pageUrl||'';
+        place.imageAuthor=image.author||'';
+        place.imageLicense=image.license||'';
+        place.imageLicenseUrl=image.licenseUrl||'';
+        persist();
+        if(currentTrip()) render();
+      }
+    }
+
+    async function enrichCityImage(trip){
+      if(!trip || trip.cityImage || trip.cityImageLoading) return;
+      trip.cityImageLoading=true;
+      const image=await wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1]);
+      trip.cityImageLoading=false;
+      if(image?.url){
+        trip.cityImage=image.url;
+        trip.cityImagePage=image.pageUrl||'';
+        trip.cityImageAuthor=image.author||'';
+        trip.cityImageLicense=image.license||'';
+        trip.cityImageLicenseUrl=image.licenseUrl||'';
+        saveTrips();
+        if(currentTripId===trip.id) renderTripHeader();
+        renderHome();
+      }
     }
     async function bilingualNames(name, bias){
       const result={he:'',en:''};
@@ -609,13 +671,13 @@
     }
     async function googleCitySearch(query){
       if(!googleAvailable()) throw new Error('no key');
-      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.formattedAddress,places.location,places.viewport,places.photos'), body:JSON.stringify({ textQuery:query, languageCode:langCode(), includedType:'locality', maxResultCount:5 }) });
+      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.formattedAddress,places.location,places.viewport'), body:JSON.stringify({ textQuery:query, languageCode:langCode(), includedType:'locality', maxResultCount:5 }) });
       if(!res.ok) throw new Error('city ' + res.status);
       return (await res.json()).places || [];
     }
     async function googleNearby(lat,lng){
       if(!googleAvailable()) throw new Error('no key');
-      const res = await fetch(placesUrl(':searchNearby'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.primaryType,places.photos'), body:JSON.stringify({ includedTypes:['tourist_attraction','restaurant','cafe','bar','park','museum'], maxResultCount:12, languageCode:langCode(), locationRestriction:{ circle:{ center:{ latitude:lat, longitude:lng }, radius:1500 } } }) });
+      const res = await fetch(placesUrl(':searchNearby'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.primaryType'), body:JSON.stringify({ includedTypes:['tourist_attraction','restaurant','cafe','bar','park','museum'], maxResultCount:12, languageCode:langCode(), locationRestriction:{ circle:{ center:{ latitude:lat, longitude:lng }, radius:1500 } } }) });
       if(!res.ok) throw new Error('nearby ' + res.status);
       return (await res.json()).places || [];
     }
@@ -645,18 +707,19 @@
     }
 
     async function enrichTripCity(trip){
-      if(!trip || !googleAvailable() || trip.cityEnriched) return;
+      if(!trip || trip.cityEnriched) return;
       try{
         const q = trip.cityLabel || trip.name;
-        const [he,en] = await Promise.all([googleTextSearchLang(q,'he',trip.center), googleTextSearchLang(q,'en',trip.center)]);
-        trip.cityNameHe = he[0]?.displayName?.text || trip.cityNameHe || (lang==='he'?trip.name:'');
-        trip.cityNameEn = en[0]?.displayName?.text || trip.cityNameEn || (lang==='en'?trip.name:'');
-        trip.cityImage = photoUrl(en[0]?.photos?.[0]) || photoUrl(he[0]?.photos?.[0]) || trip.cityImage || '';
+        if(googleAvailable()){
+          const [he,en] = await Promise.all([googleTextSearchLang(q,'he',trip.center), googleTextSearchLang(q,'en',trip.center)]);
+          trip.cityNameHe = he[0]?.displayName?.text || trip.cityNameHe || (lang==='he'?trip.name:'');
+          trip.cityNameEn = en[0]?.displayName?.text || trip.cityNameEn || (lang==='en'?trip.name:'');
+        }
       }catch(e){}
       trip.cityEnriched = true;
       saveTrips();
+      enrichCityImage(trip);
     }
-
 
     /* ---------- Home ---------- */
     function renderHome(){
@@ -698,6 +761,8 @@
       document.getElementById('tripStart').value = trip.startDate || '';
       document.getElementById('tripNote').value = trip.note || '';
       renderTripHeader(); render(); renderPacking(); loadWeather();
+      enrichTripCity(trip);
+      enrichCityImage(trip);
       window.googleMapsReady.then(()=>{ if(mapsOk){ if(!freeMap) makeMap(); else { redrawMap(); centerOnCity() } } });
       if(!trip.center) locateTripCity(id, trip.name);
       window.scrollTo(0,0);
@@ -722,6 +787,14 @@
           : '';
         hero.style.backgroundSize='cover';
         hero.style.backgroundPosition='center';
+        const credit=document.getElementById('tripHeroCredit');
+        if(credit){
+          if(trip.cityImagePage){
+            credit.href=trip.cityImagePage;
+            credit.textContent='Wikimedia Commons' + (trip.cityImageAuthor ? ' · '+trip.cityImageAuthor : '');
+            credit.style.display='inline-block';
+          }else{ credit.style.display='none'; }
+        }
       }
       document.getElementById('modeBtn').textContent = t(trip.travelMode === 'foot' ? 'mode.walk' : 'mode.drive');
     }
@@ -886,7 +959,7 @@
           const daySel = schedule.length > 1 ? `<select class="move-day" data-place="${s[0]}">${schedule.map((_,j)=>`<option value="${j}" ${j===di?'selected':''}>${esc(t('day.moveTo',{n:j+1}))}</option>`).join('')}</select>` : '';
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
-            <div>${p.image?`<img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy">`:''}<b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(p.nameHe&&p.nameEn)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div>
+            <div class="stop-main">${p.image?`<div><img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`:`<div class="stop-thumb stop-thumb-empty">⌖</div>`}<div class="stop-copy"><b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(p.nameHe&&p.nameEn)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
@@ -902,6 +975,7 @@
         </article>`;
       }).join('');
 
+      Object.values(places).forEach(p=>{ if(!p.image && !p.imageLoading) enrichPlaceImage(p); });
       document.getElementById('statPlaces').textContent = Object.keys(places).length;
       document.getElementById('statDays').textContent = schedule.length;
 
@@ -1221,6 +1295,9 @@
       schedule[dayIndex].stops.push([id,'']);
       render();
       if(freeMap) freeMap.panTo({lat:x.lat,lng:x.lng});
+      // Fetch a free, reusable image after the place is added so the itinerary
+      // gets a real visual even when Google Places photos are disabled.
+      enrichPlaceImage(places[id]);
     }
 
     async function nearbyAt(lat,lng){
