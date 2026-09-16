@@ -425,6 +425,21 @@
     }
     /* ---------- Account-wide sync (all trips, across devices on the same login) ---------- */
     let userSaveTimer=null, userTripsUnsub=null;
+    // Deletions need a tombstone. Without one, device B can re-upload its old
+    // copy after device A deletes a trip, effectively bringing the trip back.
+    let deletedTripIds = {};
+    function loadDeletedTripIds(){
+      try{ deletedTripIds = JSON.parse(localStorage.getItem('roam-deleted-trips-v1')||'{}') || {}; }catch(e){ deletedTripIds={}; }
+    }
+    function saveDeletedTripIds(){
+      try{ localStorage.setItem('roam-deleted-trips-v1', JSON.stringify(deletedTripIds)); }catch(e){}
+    }
+    function markTripDeleted(id){ deletedTripIds[id]=Date.now(); saveDeletedTripIds(); }
+    function clearTripDeleted(id){ if(deletedTripIds[id]){ delete deletedTripIds[id]; saveDeletedTripIds(); } }
+    function filterDeletedTrips(list, cloudDeleted={}){
+      const mergedDeleted={...cloudDeleted,...deletedTripIds};
+      return list.filter(tr=>!mergedDeleted[tr.id]);
+    }
     function queueUserTripsSave(){
       if(!firebaseReady || !firebaseUser || !firestore || suppressCloudSave) return;
       clearTimeout(userSaveTimer);
@@ -434,18 +449,24 @@
       if(!firebaseReady || !firebaseUser || !firestore || suppressCloudSave) return;
       try{
         const ref=firestore.doc(firestore.db,'users',firebaseUser.uid);
-        // Read the latest cloud copy first, then merge by trip id so one device
-        // does not accidentally overwrite a newer change made by another device.
         const snap=await firestore.getDoc(ref);
-        const cloudTrips=snap.exists() ? (snap.data().trips||[]).map(normaliseTrip) : [];
-        const merged=mergeTripLists(trips.map(normaliseTrip), cloudTrips);
+        const data=snap.exists() ? snap.data() : {};
+        const cloudTrips=(data.trips||[]).map(normaliseTrip);
+        const cloudDeleted=data.deletedTripIds||{};
+        const mergedDeleted={...cloudDeleted,...deletedTripIds};
+        const localActive=filterDeletedTrips(trips.map(normaliseTrip), mergedDeleted);
+        const cloudActive=filterDeletedTrips(cloudTrips, mergedDeleted);
+        const merged=mergeTripLists(localActive, cloudActive);
         trips=merged;
         const safeTrips=merged.map(t=>({ ...t, schedule:prepareScheduleForCloud(t.schedule) }));
-        await firestore.setDoc(ref,{trips:safeTrips,updatedAt:firestore.serverTimestamp()},{merge:true});
+        await firestore.setDoc(ref,{trips:safeTrips,deletedTripIds:mergedDeleted,updatedAt:firestore.serverTimestamp()},{merge:true});
+        deletedTripIds=mergedDeleted;
+        saveDeletedTripIds();
         suppressCloudSave=true;
         try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(merged)) }catch(e){}
         suppressCloudSave=false;
         setSyncState('synced');
+        refreshOpenTripUI();
       }catch(e){
         console.info('account sync save failed', e);
         setSyncState(navigator.onLine?'pending':'offline');
@@ -476,8 +497,15 @@
         const ref=firestore.doc(firestore.db,'users',firebaseUser.uid);
         const snap=await firestore.getDoc(ref);
         if(snap.exists()){
-          const cloudTrips=(snap.data().trips||[]).map(normaliseTrip);
-          trips=mergeTripLists(trips.map(normaliseTrip), cloudTrips);
+          const data=snap.data();
+          const cloudDeleted=data.deletedTripIds||{};
+          deletedTripIds={...cloudDeleted,...deletedTripIds};
+          saveDeletedTripIds();
+          const cloudTrips=(data.trips||[]).map(normaliseTrip);
+          trips=mergeTripLists(
+            filterDeletedTrips(trips.map(normaliseTrip), deletedTripIds),
+            filterDeletedTrips(cloudTrips, deletedTripIds)
+          );
         }
         suppressCloudSave=true;
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(trips)) }catch(e){}
@@ -496,9 +524,16 @@
         const active=document.activeElement;
         const typing=active && (active.id==='tripNote' || active.tagName==='INPUT' || active.tagName==='TEXTAREA');
         if(typing) return; // don't clobber what the user is mid-typing; the next debounced save reconciles it
-        const cloudTrips=(snap.data().trips||[]).map(normaliseTrip);
+        const data=snap.data();
+        const cloudDeleted=data.deletedTripIds||{};
+        deletedTripIds={...deletedTripIds,...cloudDeleted};
+        saveDeletedTripIds();
+        const cloudTrips=(data.trips||[]).map(normaliseTrip);
         suppressCloudSave=true;
-        trips=mergeTripLists(trips, cloudTrips);
+        trips=mergeTripLists(
+          filterDeletedTrips(trips, deletedTripIds),
+          filterDeletedTrips(cloudTrips, deletedTripIds)
+        );
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(trips)) }catch(e){}
         suppressCloudSave=false;
         refreshOpenTripUI();
@@ -795,7 +830,18 @@
 
     function deleteTrip(id){
       if(!confirm(t('confirm.deleteTrip'))) return;
-      trips = trips.filter(x=>x.id!==id); saveTrips(); renderHome();
+      const trip=trips.find(x=>x.id===id);
+      markTripDeleted(id);
+      trips = trips.filter(x=>x.id!==id);
+      if(currentTripId===id){
+        currentTripId=null;
+        document.getElementById('homeView').style.display='block';
+        document.getElementById('tripView').style.display='none';
+        document.getElementById('fabBtn').style.display='none';
+        if(firebaseUnsub){ firebaseUnsub(); firebaseUnsub=null; }
+      }
+      saveTrips();
+      renderHome();
     }
 
     /* ---------- Trip view ---------- */
@@ -1580,7 +1626,9 @@
     window.addEventListener('offline',()=>setSyncState('offline'));
 
     /* ---------- Boot ---------- */
+    loadDeletedTripIds();
     loadTrips();
+    trips = filterDeletedTrips(trips, deletedTripIds);
     applyLang();
     initFirebase().then(loadAuthFns).then(()=>importFromHash());
   </script>
