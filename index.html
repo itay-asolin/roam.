@@ -445,7 +445,7 @@
     // here: enforces a minimum gap between requests, and if the server
     // answers 429 it backs off for several seconds before the next one
     // instead of continuing to hammer it (which just prolongs the 429s).
-    const WIKI_MIN_GAP = 350;
+    const WIKI_MIN_GAP = 1200;
     let wikiLastRequestAt = 0;
     let wikiCooldownUntil = 0;
     async function wikiFetch(url){
@@ -453,7 +453,7 @@
       if(wait>0) await new Promise(r=>setTimeout(r,wait));
       wikiLastRequestAt=Date.now();
       const res = await fetch(url);
-      if(res.status===429) wikiCooldownUntil=Date.now()+8000;
+      if(res.status===429) wikiCooldownUntil=Date.now()+15000;
       return res;
     }
 
