@@ -605,25 +605,75 @@
     // with the place so it can be shown again inside the itinerary.
     function photoUrl(){ return ''; }
 
-    async function wikimediaImage(query, lat, lng){
+    async function wikimediaImage(query, lat, lng, options={}){
       try{
         const api='https://commons.wikimedia.org/w/api.php';
-        const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:query,gsrnamespace:6,gsrlimit:6,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:900};
-        let url=api+'?'+new URLSearchParams(base).toString();
-        let data=await fetch(url).then(r=>r.json());
-        let pages=Object.values(data.query?.pages||{});
-        if(!pages.length && Number.isFinite(+lat) && Number.isFinite(+lng)){
-          const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:5000,ggslimit:8,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:900};
-          data=await fetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
-          pages=Object.values(data.query?.pages||{});
+        const cityMode=!!options.city;
+        const badWords=/\b(flag|flags|drapeau|fahne|bandiera|coat of arms|arms of|heraldry|heraldic|logo|logos|map|maps|locator map|symbol|emblem|seal)\b/i;
+        const skylineWords=/\b(skyline|cityscape|panorama|panoramic|aerial view|city view|night view)\b/i;
+        const placeWords=/\b(exterior|facade|building|landmark|monument|entrance|front)\b/i;
+        const clean=v=>{ const x=v?.value; return typeof x==='string' ? x.replace(/<[^>]*>/g,' ').replace(/&[^;]+;/g,' ').replace(/\\s+/g,' ').trim() : ''; };
+        const seen=new Set(), candidates=[];
+
+        async function addSearch(q){
+          const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:q,gsrnamespace:6,gsrlimit:12,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:1000};
+          const data=await fetch(api+'?'+new URLSearchParams(base).toString()).then(r=>r.json());
+          for(const page of Object.values(data.query?.pages||{})){
+            if(seen.has(page.pageid)) continue;
+            seen.add(page.pageid); const info=page.imageinfo?.[0]; if(!info) continue;
+            const meta=info.extmetadata||{};
+            const title=String(page.title||'').replace(/^File:/,'');
+            const text=[title,clean(meta.ImageDescription),clean(meta.ObjectName),clean(meta.Categories)].join(' ');
+            if(!info.thumburl && !info.url) continue;
+            let score=0;
+            if(badWords.test(text)) score-=1000;
+            if(cityMode && skylineWords.test(text)) score+=45;
+            if(!cityMode && placeWords.test(text)) score+=18;
+            if(/\bphoto(graph)?|photograph|view\b/i.test(text)) score+=4;
+            if(info.width && info.height){
+              const ratio=info.width/info.height;
+              if(ratio>=1.35) score+=5;
+              if(ratio<0.8) score-=8;
+            }
+            candidates.push({page,info,meta,text,score});
+          }
         }
-        const page=pages.find(x=>x.imageinfo?.[0]?.thumburl || x.imageinfo?.[0]?.url);
-        if(!page) return null;
-        const info=page.imageinfo[0], meta=info.extmetadata||{};
-        const clean=v=>{ const x=v?.value; return typeof x==='string' ? x.replace(/<[^>]*>/g,'').trim() : ''; };
+
+        // Prefer real city views/skyline for cities. For individual places,
+        // prefer exterior/building/landmark photos rather than generic city shots.
+        if(cityMode){
+          await addSearch(`"${query}" skyline`);
+          await addSearch(`"${query}" cityscape`);
+        }
+        await addSearch(`"${query}"`);
+        if(!cityMode) await addSearch(`"${query}" landmark`);
+
+        // Geosearch is the fallback for places whose name is hard to search.
+        if(Number.isFinite(+lat) && Number.isFinite(+lng)){
+          const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:7000,ggslimit:15,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:1000};
+          const data=await fetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
+          for(const page of Object.values(data.query?.pages||{})){
+            if(seen.has(page.pageid)) continue;
+            seen.add(page.pageid); const info=page.imageinfo?.[0]; if(!info) continue;
+            const meta=info.extmetadata||{};
+            const title=String(page.title||'').replace(/^File:/,'');
+            const text=[title,clean(meta.ImageDescription),clean(meta.ObjectName),clean(meta.Categories)].join(' ');
+            let score=-3;
+            if(badWords.test(text)) score-=1000;
+            if(cityMode && skylineWords.test(text)) score+=35;
+            if(!cityMode && placeWords.test(text)) score+=18;
+            if(info.width && info.height && info.width/info.height>=1.35) score+=4;
+            candidates.push({page,info,meta,text,score});
+          }
+        }
+
+        candidates.sort((a,b)=>b.score-a.score);
+        const best=candidates.find(x=>x.score>-500);
+        if(!best) return null;
+        const info=best.info, meta=best.meta;
         return {
           url:info.thumburl||info.url||'',
-          pageUrl:info.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(page.title||'')),
+          pageUrl:info.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(best.page.title||'')),
           author:clean(meta.Artist)||clean(meta.Credit)||'',
           license:clean(meta.LicenseShortName)||'',
           licenseUrl:meta.LicenseUrl?.value||''
@@ -634,7 +684,7 @@
     async function enrichPlaceImage(place){
       if(!place || place.image || place.imageLoading) return;
       place.imageLoading=true;
-      const image=await wikimediaImage(place.nameEn||place.name, place.lat, place.lng);
+      const image=await wikimediaImage(place.nameEn||place.name, place.lat, place.lng, {city:false});
       place.imageLoading=false;
       if(image?.url){
         place.image=image.url;
@@ -650,7 +700,7 @@
     async function enrichCityImage(trip){
       if(!trip || trip.cityImage || trip.cityImageLoading) return;
       trip.cityImageLoading=true;
-      const image=await wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1]);
+      const image=await wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1], {city:true});
       trip.cityImageLoading=false;
       if(image?.url){
         trip.cityImage=image.url;
@@ -761,6 +811,7 @@
       document.getElementById('tripStart').value = trip.startDate || '';
       document.getElementById('tripNote').value = trip.note || '';
       renderTripHeader(); render(); renderPacking(); loadWeather();
+       enrichCityImage(trip); enrichMissingPlaceImages();
       enrichTripCity(trip);
       enrichCityImage(trip);
       window.googleMapsReady.then(()=>{ if(mapsOk){ if(!freeMap) makeMap(); else { redrawMap(); centerOnCity() } } });
@@ -959,7 +1010,7 @@
           const daySel = schedule.length > 1 ? `<select class="move-day" data-place="${s[0]}">${schedule.map((_,j)=>`<option value="${j}" ${j===di?'selected':''}>${esc(t('day.moveTo',{n:j+1}))}</option>`).join('')}</select>` : '';
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
-            <div class="stop-main">${p.image?`<div><img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`:`<div class="stop-thumb stop-thumb-empty">⌖</div>`}<div class="stop-copy"><b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(p.nameHe&&p.nameEn)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div></div>
+            <div class="stop-main">${p.image?`<div><img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}" onerror="this.onerror=null; this.style.display='none'; retryPlaceImage('${esc(s[0])}')">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`:`<div class="stop-thumb stop-thumb-empty">⌖</div>`}<div class="stop-copy"><b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(p.nameHe&&p.nameEn)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
@@ -1287,6 +1338,17 @@
         box.innerHTML = found.map((x,i)=>`<button class="add search-place-result" style="margin-top:6px;text-align:start" data-i="${i}">${x.image?`<img src="${esc(x.image)}" alt="" loading="lazy">`:''}<span>+ ${esc(x.name)} <small>(${esc(x.category)})</small></span></button>`).join('');
         box.querySelectorAll('[data-i]').forEach(b=> b.onclick = ()=>{ addPlace(found[+b.dataset.i], targetDayIndex(), t('place.added')); modal.classList.remove('open') });
       } catch(e){ box.textContent = t('add.error') }
+    }
+
+    async function retryPlaceImage(id){
+      const p=places[id]; if(!p || p.imageLoading) return;
+      p.image=''; p.imagePage=''; p.imageAuthor=''; p.imageLicense=''; p.imageLicenseUrl='';
+      await enrichPlaceImage(p);
+    }
+
+    async function enrichMissingPlaceImages(){
+      const list=Object.entries(places).filter(([id,p])=>p && !p.image && !p.imageLoading).slice(0,8);
+      for(const [,p] of list) await enrichPlaceImage(p);
     }
 
     function addPlace(x, dayIndex, note){
