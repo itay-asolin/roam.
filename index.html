@@ -26,6 +26,7 @@
     header{height:84px;display:flex;align-items:center;justify-content:space-between;gap:12px}
     .brand{font-size:27px;direction:ltr}.brand span{color:var(--orange)}
     .head-tools{display:flex;gap:8px;flex-wrap:wrap}
+    .trip-hero{background-size:cover;background-position:center;background-repeat:no-repeat}
     .hero{min-height:200px;background:linear-gradient(90deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover;border-radius:var(--radius);padding:36px 40px;color:#fff;position:relative;overflow:hidden}
     html[dir="rtl"] .hero{background:linear-gradient(270deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover}
     .eyebrow{font-size:12px;opacity:.85;letter-spacing:.04em}
@@ -43,9 +44,19 @@
     .btn.light{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.light:hover{background:var(--cream)}
     .btn.orange{background:var(--orange);color:#fff}.btn.danger{color:#b23b2f}
     .destinations{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin:0 0 40px}
-    .dest-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:9px;cursor:pointer}
+    .dest-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;min-width:0}
+    .dest-card-media{height:145px;background:linear-gradient(135deg,#d9e0d6,#bfc9c0) center/cover no-repeat;position:relative}
+    .dest-card-media.no-image::after{content:'🌍';position:absolute;inset:0;display:grid;place-items:center;font-size:42px;opacity:.35}
+    .dest-card-body{padding:16px;display:flex;flex-direction:column;gap:7px;min-height:155px}
     .dest-card h3{margin:0;font-size:20px}.dest-card small{color:var(--muted)}
+    .en-name{display:block;color:var(--muted);font-size:12px}
     .dest-meta{display:flex;gap:14px;color:var(--muted);font-size:12px}.dest-actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
+    .days-slider-wrap{width:100%}
+    .days-slider-row{display:flex;align-items:center;gap:16px;width:100%}
+    .days-slider{flex:1;width:100%;height:6px;accent-color:#1677e8;cursor:pointer}
+    .days-value{min-width:72px;text-align:center;font-size:18px;font-weight:600;white-space:nowrap}
+    .days-scale{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:0 2px;color:var(--muted);font-size:11px;direction:ltr}
+    .days-scale span{display:block;min-width:16px;text-align:center}
     .empty-state{border:1px dashed var(--line);border-radius:16px;padding:40px;text-align:center;color:var(--muted)}
     .mapwrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#d9e0d6;height:410px;position:relative;z-index:0;transition:height .2s,position .2s}.mapwrap.expanded{position:fixed;inset:14px;z-index:50;height:auto;border-radius:18px;box-shadow:0 20px 60px #15231f55}.mapwrap.expanded .map{height:100%}
     .map{width:100%;height:100%}
@@ -110,7 +121,8 @@
     .mini-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin:12px 0}.mini-form input{min-width:0}
     .hint{background:#eef3ea;color:#3d5a45;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:11px}
     .warn{background:#fdf0e9;color:#94432a;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.45;margin:12px 0}
-    .nearby-list{max-height:180px;overflow:auto;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
+        .search-place-result{display:flex;align-items:center;gap:10px;width:100%}.search-place-result img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex:0 0 auto}
+.nearby-list{max-height:180px;overflow:auto;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
     .nearby-list button{display:block;width:100%;text-align:start;border:0;background:none;padding:6px 0;color:var(--moss);font-size:12px}
     .day-legend{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
     .day-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:11.5px;color:var(--muted)}
@@ -168,7 +180,7 @@
 
     <section id="tripView" style="display:none">
       <button class="btn light" id="backHomeBtn" style="margin-bottom:18px" data-i18n="trip.back"></button>
-      <section class="hero">
+      <section class="hero trip-hero" id="tripHero">
         <div class="eyebrow" data-i18n="trip.eyebrow"></div>
         <h1 id="tripName"></h1>
         <p data-i18n="trip.heroSub"></p>
@@ -616,7 +628,8 @@
           name:p.displayName?.text || query,
           detail:p.formattedAddress || '',
           lat:p.location.latitude, lng:p.location.longitude,
-          viewport: p.viewport ? { north:p.viewport.high.latitude, south:p.viewport.low.latitude, east:p.viewport.high.longitude, west:p.viewport.low.longitude } : null
+          viewport: p.viewport ? { north:p.viewport.high.latitude, south:p.viewport.low.latitude, east:p.viewport.high.longitude, west:p.viewport.low.longitude } : null,
+          image:photoUrl(p.photos?.[0])
         }));
       } catch(e){ /* fall through */ }
       try {
@@ -625,10 +638,25 @@
           name:(x.display_name||'').split(',')[0],
           detail:(x.display_name||'').split(',').slice(1,3).join(',').trim(),
           lat:+x.lat, lng:+x.lon,
-          viewport: x.boundingbox ? { south:+x.boundingbox[0], north:+x.boundingbox[1], west:+x.boundingbox[2], east:+x.boundingbox[3] } : null
+          viewport: x.boundingbox ? { south:+x.boundingbox[0], north:+x.boundingbox[1], west:+x.boundingbox[2], east:+x.boundingbox[3] } : null,
+          image:''
         }));
       } catch(e){ return [] }
     }
+
+    async function enrichTripCity(trip){
+      if(!trip || !googleAvailable() || trip.cityEnriched) return;
+      try{
+        const q = trip.cityLabel || trip.name;
+        const [he,en] = await Promise.all([googleTextSearchLang(q,'he',trip.center), googleTextSearchLang(q,'en',trip.center)]);
+        trip.cityNameHe = he[0]?.displayName?.text || trip.cityNameHe || (lang==='he'?trip.name:'');
+        trip.cityNameEn = en[0]?.displayName?.text || trip.cityNameEn || (lang==='en'?trip.name:'');
+        trip.cityImage = photoUrl(en[0]?.photos?.[0]) || photoUrl(he[0]?.photos?.[0]) || trip.cityImage || '';
+      }catch(e){}
+      trip.cityEnriched = true;
+      saveTrips();
+    }
+
 
     /* ---------- Home ---------- */
     function renderHome(){
@@ -636,9 +664,11 @@
       if(!trips.length){ box.innerHTML = `<div class="empty-state">${esc(t('home.empty'))}</div>`; return }
       box.innerHTML = trips.map(tr=>{
         const dates = tr.startDate ? new Date(tr.startDate+'T00:00:00').toLocaleDateString(locale(),{day:'numeric',month:'short',year:'numeric'}) : t('card.noDates');
+        const title = lang==='he' ? (tr.cityNameHe||tr.name) : (tr.cityNameEn||tr.name);
+        const other = lang==='he' ? tr.cityNameEn : tr.cityNameHe;
         return `<article class="dest-card" data-id="${tr.id}">
-          <div class="dest-card-media" style="background-image:${tr.cityImage ? `url('${esc(tr.cityImage)}')` : 'none'}"></div>
-          <div class="dest-card-body"><h3>${esc(lang==='he' ? (tr.cityNameHe||tr.name) : (tr.cityNameEn||tr.name))}</h3>${(tr.cityNameHe&&tr.cityNameEn)?`<span class="en-name">${esc(lang==='he'?tr.cityNameEn:tr.cityNameHe)}</span>`:''}<small>${esc(dates)}</small>
+          <div class="dest-card-media ${tr.cityImage?'':'no-image'}" style="${tr.cityImage ? `background-image:url('${esc(tr.cityImage)}')` : ''}"></div>
+          <div class="dest-card-body"><h3>${esc(title)}</h3>${other?`<span class="en-name">${esc(other)}</span>`:''}<small>${esc(dates)}</small>
           <div class="dest-meta"><span>${esc(t('card.places',{n:Object.keys(tr.places).length}))}</span><span>${esc(tr.schedule.length===1?t('card.day'):t('card.days',{n:tr.schedule.length}))}</span></div>
           <div class="dest-actions"><button class="btn light open-trip" data-id="${tr.id}">${esc(t('card.open'))}</button><button class="btn light danger del-trip" data-id="${tr.id}">${esc(t('card.delete'))}</button></div></div>
         </article>`;
@@ -646,7 +676,9 @@
       box.querySelectorAll('.dest-card').forEach(c=>c.addEventListener('click',()=>openTrip(c.dataset.id)));
       box.querySelectorAll('.open-trip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openTrip(b.dataset.id)}));
       box.querySelectorAll('.del-trip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteTrip(b.dataset.id)}));
+      trips.filter(tr=>!tr.cityEnriched).slice(0,5).forEach(enrichTripCity);
     }
+
 
     function deleteTrip(id){
       if(!confirm(t('confirm.deleteTrip'))) return;
@@ -680,8 +712,17 @@
     function renderTripHeader(){
       const trip = currentTrip(); if(!trip) return;
       document.getElementById('tripName').textContent = lang==='he' ? (trip.cityNameHe||trip.name) : (trip.cityNameEn||trip.name);
-       const hero=document.getElementById('tripHero'); if(hero) hero.style.backgroundImage = trip.cityImage ? `linear-gradient(90deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('${trip.cityImage}')` : '';
-       if(hero && lang==='he') hero.style.backgroundImage = trip.cityImage ? `linear-gradient(270deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('${trip.cityImage}')` : '';
+      const hero=document.getElementById('tripHero');
+      if(hero){
+        hero.style.backgroundImage = trip.cityImage
+          ? `linear-gradient(90deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('${esc(trip.cityImage)}')`
+          : '';
+        if(lang==='he') hero.style.backgroundImage = trip.cityImage
+          ? `linear-gradient(270deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('${esc(trip.cityImage)}')`
+          : '';
+        hero.style.backgroundSize='cover';
+        hero.style.backgroundPosition='center';
+      }
       document.getElementById('modeBtn').textContent = t(trip.travelMode === 'foot' ? 'mode.walk' : 'mode.drive');
     }
     function persist(){ const trip = currentTrip(); if(trip){ trip.places = places; trip.schedule = schedule } saveTrips() }
@@ -1112,9 +1153,15 @@
       const typed = cityInput.value.trim();
       if(!typed){ alert(t('new.needName')); return }
       const city = chosenCity || (await findCities(typed))[0] || null;
+      let cityNames = {he:'',en:''};
+      if(city && googleAvailable()) cityNames = await bilingualNames(city.name,[city.lat,city.lng]);
       const id = 'trip' + Date.now();
       trips.push(normaliseTrip({
         id, name: city ? city.name : typed,
+        cityNameHe: cityNames.he || (lang==='he' ? (city?.name||typed) : ''),
+        cityNameEn: cityNames.en || (lang==='en' ? (city?.name||typed) : ''),
+        cityImage: cityNames.enPhoto || cityNames.hePhoto || city?.image || '',
+        cityEnriched:true,
         startDate: document.getElementById('newTripDate').value || '',
         places:{}, schedule: Array.from({length:selectedTripDays}, ()=>({date:'',stops:[]})),
         center: city ? [city.lat, city.lng] : null,
@@ -1163,7 +1210,7 @@
           found = osm.map(x=>({ name:(x.display_name||'').split(',')[0], nameEn:'', nameHe:'', image:'', lat:+x.lat, lng:+x.lon, category:x.type||'place' }));
         }
         if(!found.length){ box.textContent = t('add.none'); return }
-        box.innerHTML = found.map((x,i)=>`<button class="add" style="margin-top:6px;text-align:start" data-i="${i}">+ ${esc(x.name)} <small>(${esc(x.category)})</small></button>`).join('');
+        box.innerHTML = found.map((x,i)=>`<button class="add search-place-result" style="margin-top:6px;text-align:start" data-i="${i}">${x.image?`<img src="${esc(x.image)}" alt="" loading="lazy">`:''}<span>+ ${esc(x.name)} <small>(${esc(x.category)})</small></span></button>`).join('');
         box.querySelectorAll('[data-i]').forEach(b=> b.onclick = ()=>{ addPlace(found[+b.dataset.i], targetDayIndex(), t('place.added')); modal.classList.remove('open') });
       } catch(e){ box.textContent = t('add.error') }
     }
