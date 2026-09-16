@@ -51,12 +51,13 @@
     .dest-card h3{margin:0;font-size:20px}.dest-card small{color:var(--muted)}
     .en-name{display:block;color:var(--muted);font-size:12px}
     .dest-meta{display:flex;gap:14px;color:var(--muted);font-size:12px}.dest-actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
-    .days-slider-wrap{width:100%}
+    .days-slider-wrap{width:100%;position:relative}
     .days-slider-row{display:flex;align-items:center;gap:16px;width:100%}
     .days-slider{flex:1;width:100%;height:6px;accent-color:#1677e8;cursor:pointer}
     .days-value{min-width:72px;text-align:center;font-size:18px;font-weight:600;white-space:nowrap}
-    .days-scale{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding:0 2px;color:var(--muted);font-size:11px;direction:ltr}
-    .days-scale span{display:block;min-width:16px;text-align:center}
+    .days-scale{position:relative;height:24px;margin:9px 0 0;color:var(--muted);font-size:10px;direction:ltr}
+    .days-scale .tick{position:absolute;top:0;width:1px;height:5px;background:#aeb6ae;transform:translateX(-50%)}
+    .days-scale .major{top:7px;width:auto;height:auto;background:none;font-weight:500;white-space:nowrap;transform:translateX(-50%)}
     .empty-state{border:1px dashed var(--line);border-radius:16px;padding:40px;text-align:center;color:var(--muted)}
     .mapwrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#d9e0d6;height:410px;position:relative;z-index:0;transition:height .2s,position .2s}.mapwrap.expanded{position:fixed;inset:14px;z-index:50;height:auto;border-radius:18px;box-shadow:0 20px 60px #15231f55}.mapwrap.expanded .map{height:100%}
     .map{width:100%;height:100%}
@@ -284,7 +285,7 @@
           <input id="daysSlider" class="days-slider" type="range" min="1" max="30" step="1" value="3" aria-label="Trip length">
           <div class="days-value" id="daysValue">3 ימים</div>
         </div>
-        <div class="days-scale"><span>1</span><span>5</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30</span></div>
+        <div class="days-scale" aria-hidden="true"><span class="tick major" style="left:0.000000%">1</span><span class="tick" style="left:3.448276%"></span><span class="tick" style="left:6.896552%"></span><span class="tick" style="left:10.344828%"></span><span class="tick major" style="left:13.793103%">5</span><span class="tick" style="left:17.241379%"></span><span class="tick" style="left:20.689655%"></span><span class="tick" style="left:24.137931%"></span><span class="tick" style="left:27.586207%"></span><span class="tick major" style="left:31.034483%">10</span><span class="tick" style="left:34.482759%"></span><span class="tick" style="left:37.931034%"></span><span class="tick" style="left:41.379310%"></span><span class="tick" style="left:44.827586%"></span><span class="tick major" style="left:48.275862%">15</span><span class="tick" style="left:51.724138%"></span><span class="tick" style="left:55.172414%"></span><span class="tick" style="left:58.620690%"></span><span class="tick" style="left:62.068966%"></span><span class="tick major" style="left:65.517241%">20</span><span class="tick" style="left:68.965517%"></span><span class="tick" style="left:72.413793%"></span><span class="tick" style="left:75.862069%"></span><span class="tick" style="left:79.310345%"></span><span class="tick major" style="left:82.758621%">25</span><span class="tick" style="left:86.206897%"></span><span class="tick" style="left:89.655172%"></span><span class="tick" style="left:93.103448%"></span><span class="tick" style="left:96.551724%"></span><span class="tick major" style="left:100.000000%">30</span></div>
       </div>
     </div>
     <div class="field"><label for="newTripDate" data-i18n="new.dates"></label><input type="date" id="newTripDate"></div>
@@ -711,7 +712,7 @@
         if(!best) return null;
         const info=best.info, meta=best.meta;
         return {
-          url:info.thumburl||info.url||'',
+          url:(info.thumburl||info.url||'') + ((info.thumburl||info.url) ? ((info.thumburl||info.url).includes('?')?'&':'?')+'roam='+Date.now() : ''),
           pageUrl:info.descriptionurl||('https://commons.wikimedia.org/wiki/'+encodeURIComponent(best.page.title||'')),
           author:clean(meta.Artist)||clean(meta.Credit)||'',
           license:clean(meta.LicenseShortName)||'',
@@ -720,10 +721,13 @@
       }catch(e){ return null; }
     }
 
-    async function enrichPlaceImage(place){
-      if(!place || place.image || place.imageLoading) return;
+    async function enrichPlaceImage(place, force=false){
+      if(!place || place.imageLoading || (!force && place.image)) return;
       place.imageLoading=true;
-      const image=await wikimediaImage(place.nameEn||place.name, place.lat, place.lng, {city:false});
+      const tr=currentTrip();
+      const cityHint=tr?.cityNameEn||tr?.cityLabel||tr?.name||'';
+      const imageQuery=[place.nameEn||place.name,cityHint].filter(Boolean).join(' ');
+      const image=await wikimediaImage(imageQuery, place.lat, place.lng, {city:false});
       place.imageLoading=false;
       if(image?.url){
         place.image=image.url;
@@ -736,8 +740,8 @@
       }
     }
 
-    async function enrichCityImage(trip){
-      if(!trip || trip.cityImage || trip.cityImageLoading) return;
+    async function enrichCityImage(trip, force=false){
+      if(!trip || trip.cityImageLoading || (!force && trip.cityImage)) return;
       trip.cityImageLoading=true;
       const image=await wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1], {city:true});
       trip.cityImageLoading=false;
@@ -881,7 +885,7 @@
       document.getElementById('tripNote').value = trip.note || '';
       renderTripHeader(); render(); renderPacking(); loadWeather();
       enrichMissingPlaceNames();
-       enrichCityImage(trip); enrichMissingPlaceImages();
+       enrichCityImage(trip); enrichMissingPlaceImages(); refreshAllImages();
       enrichTripCity(trip);
       enrichCityImage(trip);
       window.googleMapsReady.then(()=>{ if(mapsOk){ if(!freeMap) makeMap(); else { redrawMap(); centerOnCity() } } });
@@ -966,7 +970,7 @@
     function popupHtml(id){
       const p = places[id];
       return `<div style="font-family:Rubik,sans-serif;line-height:1.45;min-width:180px;direction:${lang==='he'?'rtl':'ltr'};text-align:start">
-        <b style="font-size:14px">${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(p.nameHe&&p.nameEn)?`<br><small style="color:#6a746e">${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<br>
+        <b style="font-size:14px">${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(lang==='he' ? p.nameEn : p.nameHe)?`<br><small style="color:#6a746e">${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<br>
         <small style="color:#6a746e">${esc(t('filter.'+bucketOf(p)))}</small><br>
         <span style="font-size:12px">${esc(p.notes || t('place.noNotes'))}</span>
         <div class="nearby-list"><button class="nearby-one" data-id="${id}">${esc(t('nearby.find'))}</button></div></div>`;
@@ -997,6 +1001,9 @@
     function redrawMap(){
       if(!freeMap) return;
       liveMarkers.forEach(m=>m.setMap(null)); liveMarkers = [];
+      const placeNumbers = new Map();
+      let number = 1;
+      schedule.forEach(d=>d.stops.forEach(s=>{ if(places[s[0]]) placeNumbers.set(s[0], number++); }));
       Object.entries(places).forEach(([id,p])=>{
         if(!passesFilter(p)) return;
         const c = coords(id); if(!c) return;
@@ -1004,7 +1011,7 @@
         const color = di>=0 ? DAY_COLORS[di%DAY_COLORS.length] : '#6a746e';
         const m = new google.maps.Marker({
           position:{lat:c[0],lng:c[1]}, map:freeMap, title:p.name,
-          label:{ text:String(di>=0?di+1:'•'), color:'#15231f', fontSize:'11px', fontWeight:'700' },
+          label:{ text:String(placeNumbers.get(id)||'•'), color:'#15231f', fontSize:'11px', fontWeight:'700' },
           icon:{ path:google.maps.SymbolPath.CIRCLE, scale:13, fillColor:color, fillOpacity:.95, strokeColor:'#fff', strokeWeight:2 }
         });
         m.addListener('click', ()=>{ infoWindow.setContent(popupHtml(id)); infoWindow.open({map:freeMap, anchor:m}) });
@@ -1080,7 +1087,7 @@
           const daySel = schedule.length > 1 ? `<select class="move-day" data-place="${s[0]}">${schedule.map((_,j)=>`<option value="${j}" ${j===di?'selected':''}>${esc(t('day.moveTo',{n:j+1}))}</option>`).join('')}</select>` : '';
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
-            <div class="stop-main">${p.image?`<div><img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}" onerror="this.onerror=null; this.style.display='none'; retryPlaceImage('${esc(s[0])}')">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`:`<div class="stop-thumb stop-thumb-empty">⌖</div>`}<div class="stop-copy"><b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(p.nameHe&&p.nameEn)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div></div>
+            <div class="stop-main">${p.image?`<div><img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}" onerror="this.onerror=null; this.style.display='none'; retryPlaceImage('${esc(s[0])}')">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`:`<div class="stop-thumb stop-thumb-empty">⌖</div>`}<div class="stop-copy"><b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(lang==='he' ? p.nameEn : p.nameHe)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
@@ -1420,6 +1427,20 @@
       const list=Object.entries(places).filter(([id,p])=>p && !p.image && !p.imageLoading).slice(0,8);
       for(const [,p] of list) await enrichPlaceImage(p);
     }
+    async function refreshAllImages(){
+      const tr=currentTrip(); if(!tr) return;
+      // Existing images in older versions may be wrong. Refresh them once, then keep the selected Commons image.
+      const placesList=Object.values(places).filter(p=>p && !p.imageRefreshDone && !p.imageLoading);
+      for(const p of placesList.slice(0,8)){
+        p.imageRefreshDone=true;
+        await enrichPlaceImage(p,true);
+      }
+      if(!tr.cityImageRefreshDone){
+        tr.cityImageRefreshDone=true;
+        await enrichCityImage(tr,true);
+      }
+      persist();
+    }
 
     async function enrichPlaceNames(place){
       if(!place || place.namesLoading || (place.nameHe && place.nameEn)) return;
@@ -1428,6 +1449,8 @@
         const n=await bilingualNames(place.name,[place.lat,place.lng]);
         if(n.he) place.nameHe=n.he;
         if(n.en) place.nameEn=n.en;
+        if(!place.nameHe && lang==='he') place.nameHe=place.name;
+        if(!place.nameEn && lang==='en') place.nameEn=place.name;
         persist();
         if(currentTrip()) render();
       }catch(e){}
