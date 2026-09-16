@@ -412,12 +412,23 @@
     async function saveUserTrips(){
       if(!firebaseReady || !firebaseUser || !firestore || suppressCloudSave) return;
       try{
-        const safeTrips = trips.map(t => ({ ...t, schedule: prepareScheduleForCloud(t.schedule) }));
-        await firestore.setDoc(firestore.doc(firestore.db,'users',firebaseUser.uid), {
-          trips: safeTrips, updatedAt:firestore.serverTimestamp()
-        }, {merge:true});
+        const ref=firestore.doc(firestore.db,'users',firebaseUser.uid);
+        // Read the latest cloud copy first, then merge by trip id so one device
+        // does not accidentally overwrite a newer change made by another device.
+        const snap=await firestore.getDoc(ref);
+        const cloudTrips=snap.exists() ? (snap.data().trips||[]).map(normaliseTrip) : [];
+        const merged=mergeTripLists(trips.map(normaliseTrip), cloudTrips);
+        trips=merged;
+        const safeTrips=merged.map(t=>({ ...t, schedule:prepareScheduleForCloud(t.schedule) }));
+        await firestore.setDoc(ref,{trips:safeTrips,updatedAt:firestore.serverTimestamp()},{merge:true});
+        suppressCloudSave=true;
+        try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(merged)) }catch(e){}
+        suppressCloudSave=false;
         setSyncState('synced');
-      }catch(e){ console.info('account sync save failed', e); setSyncState(navigator.onLine?'pending':'offline') }
+      }catch(e){
+        console.info('account sync save failed', e);
+        setSyncState(navigator.onLine?'pending':'offline');
+      }
     }
     function mergeTripLists(localList, cloudList){
       const map=new Map();
@@ -490,6 +501,12 @@
     }
 
     function normaliseTrip(trip){
+      // Firestore returns Timestamp objects for server timestamps. Convert them
+      // to milliseconds so local/cloud version comparison actually works.
+      if(trip && trip.updatedAt && typeof trip.updatedAt.toMillis === 'function') trip.updatedAt = trip.updatedAt.toMillis();
+      else if(trip && typeof trip.updatedAt === 'string'){
+        const n=Date.parse(trip.updatedAt); if(Number.isFinite(n)) trip.updatedAt=n;
+      }
       trip.places = trip.places || {};
       trip.schedule = (trip.schedule||[]).map(d=>({
         date:d.date||'',
