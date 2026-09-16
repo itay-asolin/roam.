@@ -49,7 +49,9 @@
     .destinations{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin:0 0 40px}
     .dest-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;min-width:0}
     .dest-card-media{height:145px;background:linear-gradient(135deg,#d9e0d6,#bfc9c0) center/cover no-repeat;position:relative}
-    .dest-card-media.no-image::after{content:'🌍';position:absolute;inset:0;display:grid;place-items:center;font-size:42px;opacity:.35}
+    .dest-card-media.no-image::after{content:'🌍';position:absolute;inset:0;display:grid;place-items:center;font-size:42px;opacity:.35;pointer-events:none;z-index:1}
+    .dest-swap{position:absolute;top:8px;inset-inline-end:8px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(21,35,31,.55);backdrop-filter:blur(4px);color:#fff;font-size:12px;display:grid;place-items:center;padding:0;line-height:1;cursor:pointer;z-index:2}
+    .dest-swap:hover{background:rgba(21,35,31,.75)}
     .dest-card-body{padding:16px;display:flex;flex-direction:column;gap:7px;min-height:155px}
     .dest-card h3{margin:0;font-size:20px}.dest-card small{color:var(--muted)}
     .en-name{color:var(--muted);font-weight:400;font-size:.62em;white-space:nowrap;font-family:var(--ui);letter-spacing:0}
@@ -82,7 +84,7 @@
     .thumb-wrap{position:relative}
     .thumb-swap{position:absolute;bottom:-6px;inset-inline-end:-6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:11px;display:grid;place-items:center;padding:0;line-height:1;box-shadow:0 2px 6px #17201c2a;z-index:2}
     .thumb-swap:hover{background:var(--cream)}
-    .hero-swap{border:0;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);color:#fff;border-radius:99px;padding:8px 13px;font-size:12.5px;cursor:pointer}
+    .hero-swap{position:absolute;top:18px;inset-inline-end:18px;z-index:3;border:0;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);color:#fff;border-radius:99px;padding:8px 13px;font-size:12.5px;cursor:pointer}
     .hero-swap:hover{background:rgba(255,255,255,.28)}
     .stop-tools{display:flex;gap:6px;align-items:center}
     .stop-tools select{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 7px;font-size:11.5px;color:var(--muted)}
@@ -195,7 +197,7 @@
         <h1 id="tripName"></h1>
         <p data-i18n="trip.heroSub"></p>
         <a id="tripHeroCredit" class="hero-image-credit" href="#" target="_blank" rel="noopener" style="display:none"></a>
-        <button type="button" class="hero-swap" id="tripHeroSwapBtn" style="display:none" data-i18n="image.swap" onclick="swapCityImage()"></button>
+        <button type="button" class="hero-swap" id="tripHeroSwapBtn" data-i18n="image.swap" onclick="swapCityImage()"></button>
         <div class="hero-side">
           <label class="datefield"><span data-i18n="trip.start"></span><input type="date" id="tripStart"></label>
           <button class="btn light" id="shareBtn" data-i18n="trip.share"></button>
@@ -418,10 +420,11 @@
 
     /* ---------- Image lookup throttling ---------- */
     // Commons/Wikipedia respond with 429 (Too Many Requests) once too many
-    // lookups fire at once — easy to trigger since a trip can have many
-    // places without an image, and every render() re-checks all of them.
-    // At most 2 lookups run concurrently; the rest wait in line.
-    const MAX_CONCURRENT_IMAGE_LOOKUPS = 2;
+    // lookups fire close together — easy to trigger since a trip can have
+    // many places without an image. Only one lookup runs at a time, and
+    // wikiFetch below also enforces a minimum gap between the individual
+    // HTTP requests inside a lookup (a single lookup can issue several).
+    const MAX_CONCURRENT_IMAGE_LOOKUPS = 1;
     const IMAGE_RETRY_COOLDOWN = 5*60*1000; // don't hammer the same failed place/city more than once per 5 min
     let activeImageLookups = 0;
     const imageLookupQueue = [];
@@ -437,6 +440,21 @@
         activeImageLookups++;
         job().finally(()=>{ activeImageLookups--; pumpImageLookupQueue(); });
       }
+    }
+    // Every fetch to commons.wikimedia.org / en.wikipedia.org goes through
+    // here: enforces a minimum gap between requests, and if the server
+    // answers 429 it backs off for several seconds before the next one
+    // instead of continuing to hammer it (which just prolongs the 429s).
+    const WIKI_MIN_GAP = 350;
+    let wikiLastRequestAt = 0;
+    let wikiCooldownUntil = 0;
+    async function wikiFetch(url){
+      const wait = Math.max(0, wikiCooldownUntil-Date.now(), wikiLastRequestAt+WIKI_MIN_GAP-Date.now());
+      if(wait>0) await new Promise(r=>setTimeout(r,wait));
+      wikiLastRequestAt=Date.now();
+      const res = await fetch(url);
+      if(res.status===429) wikiCooldownUntil=Date.now()+8000;
+      return res;
     }
 
     function esc(v){ return String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) }
@@ -713,7 +731,7 @@
       try{
         const api='https://en.wikipedia.org/w/api.php';
         const params={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:query,gsrlimit:3,prop:'pageimages|info',piprop:'original',inprop:'url'};
-        const data=await fetch(api+'?'+new URLSearchParams(params).toString()).then(r=>r.json());
+        const data=await wikiFetch(api+'?'+new URLSearchParams(params).toString()).then(r=>r.json());
         for(const page of Object.values(data.query?.pages||{})){
           const src=page.original?.source;
           if(!src) continue;
@@ -743,7 +761,7 @@
       async function addSearch(q){
         try{
           const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:q,gsrnamespace:6,gsrlimit:12,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
-          const data=await fetch(api+'?'+new URLSearchParams(base).toString()).then(r=>r.json());
+          const data=await wikiFetch(api+'?'+new URLSearchParams(base).toString()).then(r=>r.json());
           for(const page of Object.values(data.query?.pages||{})){
             if(seen.has(page.pageid)) continue;
             seen.add(page.pageid); const info=page.imageinfo?.[0]; if(!info) continue;
@@ -788,7 +806,7 @@
         if(!haveViable && Number.isFinite(+lat) && Number.isFinite(+lng)){
           try{
             const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:7000,ggslimit:15,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
-            const data=await fetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
+            const data=await wikiFetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
             for(const page of Object.values(data.query?.pages||{})){
               if(seen.has(page.pageid)) continue;
               seen.add(page.pageid); const info=page.imageinfo?.[0]; if(!info) continue;
@@ -918,13 +936,19 @@
       }
     }
 
-    async function swapCityImage(){
-      const trip=currentTrip(); if(!trip || trip.cityImageLoading) return;
+    async function swapCityImageForTrip(id){
+      const trip=trips.find(x=>x.id===id); if(!trip || trip.cityImageLoading) return;
       trip.cityImageTriedPages=trip.cityImageTriedPages||[];
       if(trip.cityImagePage && !trip.cityImageTriedPages.includes(trip.cityImagePage)) trip.cityImageTriedPages.push(trip.cityImagePage);
-      trip.cityImage=''; trip.cityImagePage=''; trip.cityImageAuthor=''; trip.cityImageLicense=''; trip.cityImageLicenseUrl=''; delete trip.cityImageFailedAt;
-      renderTripHeader();
+      // Don't clear the current image before searching — keep it showing
+      // (avoids a flash to blank/default) and only replace it once a new
+      // one is actually found; enrichCityImage(force=true) already bypasses
+      // the "already have an image" early-return, so this works untouched.
       await enrichCityImage(trip, true, new Set(trip.cityImageTriedPages));
+    }
+    async function swapCityImage(){
+      const trip=currentTrip(); if(!trip) return;
+      await swapCityImageForTrip(trip.id);
     }
     async function bilingualNames(name, bias){
       const result={he:'',en:''};
@@ -1000,7 +1024,9 @@
         const title = lang==='he' ? (tr.cityNameHe||tr.name) : (tr.cityNameEn||tr.name);
         const other = lang==='he' ? tr.cityNameEn : tr.cityNameHe;
         return `<article class="dest-card" data-id="${tr.id}">
-          <div class="dest-card-media ${tr.cityImage?'':'no-image'}" style="${tr.cityImage ? `background-image:url('${esc(tr.cityImage)}')` : ''}"></div>
+          <div class="dest-card-media ${tr.cityImage?'':'no-image'}" style="${tr.cityImage ? `background-image:url('${esc(tr.cityImage)}')` : ''}">
+            <button type="button" class="dest-swap" data-id="${tr.id}" title="${esc(t('image.swap'))}" aria-label="${esc(t('image.swap'))}" onclick="event.stopPropagation(); swapCityImageForTrip('${esc(tr.id)}')">🔄</button>
+          </div>
           <div class="dest-card-body"><h3>${esc(title)}${other?` <span class="en-name">· ${esc(other)}</span>`:''}</h3><small>${esc(dates)}</small>
           <div class="dest-meta"><span>${esc(t('card.places',{n:Object.keys(tr.places).length}))}</span><span>${esc(tr.schedule.length===1?t('card.day'):t('card.days',{n:tr.schedule.length}))}</span></div>
           <div class="dest-actions"><button class="btn light open-trip" data-id="${tr.id}">${esc(t('card.open'))}</button><button class="btn light danger del-trip" data-id="${tr.id}">${esc(t('card.delete'))}</button></div></div>
@@ -1100,7 +1126,7 @@
           }else{ credit.style.display='none'; }
         }
         const swapBtn=document.getElementById('tripHeroSwapBtn');
-        if(swapBtn) swapBtn.style.display = trip.cityImage ? 'inline-block' : 'none';
+        if(swapBtn) swapBtn.style.display = 'inline-block';
       }
       document.getElementById('modeBtn').textContent = t(trip.travelMode === 'foot' ? 'mode.walk' : 'mode.drive');
     }
