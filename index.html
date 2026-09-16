@@ -79,6 +79,11 @@
     .stop{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
     .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px}
     .stop-main{display:flex;align-items:center;gap:12px;min-width:0}.stop-thumb{width:72px;height:72px;object-fit:cover;border-radius:11px;flex:0 0 72px}.stop-thumb-empty{display:grid;place-items:center;background:#f1efe8;color:#8a938b;font-size:24px}.stop-copy{min-width:0}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
+    .thumb-wrap{position:relative}
+    .thumb-swap{position:absolute;top:3px;inset-inline-end:3px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(21,35,31,.65);color:#fff;font-size:11px;display:grid;place-items:center;padding:0;line-height:1;opacity:0;transition:opacity .15s;z-index:2}
+    .stop:hover .thumb-swap,.thumb-swap:focus-visible{opacity:1}
+    .hero-swap{border:0;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);color:#fff;border-radius:99px;padding:8px 13px;font-size:12.5px;cursor:pointer}
+    .hero-swap:hover{background:rgba(255,255,255,.28)}
     .stop-tools{display:flex;gap:6px;align-items:center}
     .stop-tools select{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 7px;font-size:11.5px;color:var(--muted)}
     .tag{font-size:10.5px;padding:5px 8px;border-radius:99px;background:#f1efe8;color:#626b64}
@@ -190,6 +195,7 @@
         <h1 id="tripName"></h1>
         <p data-i18n="trip.heroSub"></p>
         <a id="tripHeroCredit" class="hero-image-credit" href="#" target="_blank" rel="noopener" style="display:none"></a>
+        <button type="button" class="hero-swap" id="tripHeroSwapBtn" style="display:none" data-i18n="image.swap" onclick="swapCityImage()"></button>
         <div class="hero-side">
           <label class="datefield"><span data-i18n="trip.start"></span><input type="date" id="tripStart"></label>
           <button class="btn light" id="shareBtn" data-i18n="trip.share"></button>
@@ -356,7 +362,8 @@
         'nearby.title':'Nearby ideas','nearby.none':'No suggestions here.','nearby.error':'Nearby ideas are unavailable right now.','nearby.find':'✦ What is near here?',
         'place.noNotes':'No notes','place.checkHours':'Check hours','place.added':'Added from search','place.addedNearby':'Added from nearby ideas',
         'confirm.deleteTrip':'Delete this destination? This cannot be undone.','confirm.minDay':'A trip needs at least one day.','confirm.removeDay':'Remove day {n}?','confirm.moveStops':'Day {n} has {c} stop(s). Remove it and move them to day {t}?','confirm.importShared':'Add the shared trip “{name}” to this browser?','confirm.importFile':'Add {n} trip(s) from this file?',
-        'toast.copied':'Share link copied.','toast.copyFail':'Could not copy — the link is in the address bar.','toast.exported':'Backup file downloaded.','toast.imported':'Trips imported.','toast.badFile':'That file is not a Roam backup.'
+        'toast.copied':'Share link copied.','toast.copyFail':'Could not copy — the link is in the address bar.','toast.exported':'Backup file downloaded.','toast.imported':'Trips imported.','toast.badFile':'That file is not a Roam backup.',
+        'image.swap':'Try another photo'
       },
       he:{
         'auth.title':'חשבון','auth.profile':'חשבון','auth.profileLocal':'מצב מקומי — הנתונים נשארים בדפדפן הזה.','auth.profileSynced':'מחובר — הטיולים מסתנכרנים בין המכשירים שלך.','auth.open':'התחברות','auth.close':'סגירה','auth.sub':'התחברו כדי לסנכרן טיולים בין מכשירים ולעבוד יחד בזמן אמת.','auth.email':'אימייל','auth.password':'סיסמה','auth.login':'התחברות','auth.register':'יצירת חשבון','auth.google':'המשך עם Google','auth.logout':'התנתקות','auth.logged':'מחובר','auth.local':'מצב מקומי','auth.need':'כדי לשתף טיול צריך להתחבר.','auth.ok':'אתם מחוברים.','auth.bad':'ההתחברות נכשלה.','auth.offline':'אין חיבור — השינויים נשמרים מקומית ויסתנכרנו כשתחזרו לרשת.',
@@ -381,7 +388,8 @@
         'nearby.title':'רעיונות בסביבה','nearby.none':'לא נמצאו הצעות כאן.','nearby.error':'ההצעות אינן זמינות כרגע.','nearby.find':'✦ מה יש בסביבה?',
         'place.noNotes':'אין הערות','place.checkHours':'בדקו שעות פתיחה','place.added':'נוסף מחיפוש','place.addedNearby':'נוסף מרעיונות בסביבה',
         'confirm.deleteTrip':'למחוק את היעד? אי אפשר לבטל.','confirm.minDay':'בטיול חייב להיות לפחות יום אחד.','confirm.removeDay':'להסיר את יום {n}?','confirm.moveStops':'ביום {n} יש {c} עצירות. להסיר אותו ולהעביר אותן ליום {t}?','confirm.importShared':'להוסיף את הטיול המשותף ״{name}״ לדפדפן הזה?','confirm.importFile':'להוסיף {n} טיולים מהקובץ?',
-        'toast.copied':'קישור השיתוף הועתק.','toast.copyFail':'ההעתקה נכשלה — הקישור נמצא בשורת הכתובת.','toast.exported':'קובץ הגיבוי הורד.','toast.imported':'הטיולים יובאו.','toast.badFile':'הקובץ אינו גיבוי של Roam.'
+        'toast.copied':'קישור השיתוף הועתק.','toast.copyFail':'ההעתקה נכשלה — הקישור נמצא בשורת הכתובת.','toast.exported':'קובץ הגיבוי הורד.','toast.imported':'הטיולים יובאו.','toast.badFile':'הקובץ אינו גיבוי של Roam.',
+        'image.swap':'החלפת תמונה'
       }
     };
 
@@ -407,6 +415,29 @@
     let freeMap, routeLines = [], liveMarkers = [], infoWindow, activeFilter = 'all', mapsOk = false;
     let firebaseApp=null, firebaseAuth=null, firestore=null, firebaseUser=null, firebaseUnsub=null, firebaseReady=false, cloudSaveTimer=null, suppressCloudSave=false;
     const DAY_COLORS = ['#e2673f','#5f81c4','#8768b5','#3f9182','#d4a03f','#8a6d59','#c2678c','#6a8f52','#5a8aa4','#96784d'];
+
+    /* ---------- Image lookup throttling ---------- */
+    // Commons/Wikipedia respond with 429 (Too Many Requests) once too many
+    // lookups fire at once — easy to trigger since a trip can have many
+    // places without an image, and every render() re-checks all of them.
+    // At most 2 lookups run concurrently; the rest wait in line.
+    const MAX_CONCURRENT_IMAGE_LOOKUPS = 2;
+    const IMAGE_RETRY_COOLDOWN = 5*60*1000; // don't hammer the same failed place/city more than once per 5 min
+    let activeImageLookups = 0;
+    const imageLookupQueue = [];
+    function queueImageLookup(fn){
+      return new Promise((resolve,reject)=>{
+        imageLookupQueue.push(()=>fn().then(resolve,reject));
+        pumpImageLookupQueue();
+      });
+    }
+    function pumpImageLookupQueue(){
+      while(activeImageLookups < MAX_CONCURRENT_IMAGE_LOOKUPS && imageLookupQueue.length){
+        const job = imageLookupQueue.shift();
+        activeImageLookups++;
+        job().finally(()=>{ activeImageLookups--; pumpImageLookupQueue(); });
+      }
+    }
 
     function esc(v){ return String(v==null?'':v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])) }
     function currentTrip(){ return trips.find(x=>x.id===currentTripId) }
@@ -672,7 +703,7 @@
         setTimeout(()=>finish(false), 6000);
       });
     }
-    async function wikipediaFallbackImage(query){
+    async function wikipediaFallbackImage(query, exclude){
       try{
         const api='https://en.wikipedia.org/w/api.php';
         const params={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:query,gsrlimit:3,prop:'pageimages|info',piprop:'original',inprop:'url'};
@@ -680,14 +711,17 @@
         for(const page of Object.values(data.query?.pages||{})){
           const src=page.original?.source;
           if(!src) continue;
+          const pageUrl=page.fullurl||('https://en.wikipedia.org/wiki/'+encodeURIComponent(page.title||''));
+          if(exclude && exclude.has(pageUrl)) continue;
           if(!(await imageLoads(src))) continue;
-          return { url:src, pageUrl:page.fullurl||('https://en.wikipedia.org/wiki/'+encodeURIComponent(page.title||'')), author:'', license:'', licenseUrl:'' };
+          return { url:src, pageUrl, author:'', license:'', licenseUrl:'' };
         }
       }catch(e){}
       return null;
     }
     async function wikimediaImage(query, lat, lng, options={}){
       const cityMode=!!options.city;
+      const exclude=options.exclude||null;
       const imgWidth = cityMode ? 1800 : 1000;
       const badWords=/\b(flag|flags|drapeau|fahne|bandiera|coat of arms|arms of|heraldry|heraldic|logo|logos|map|maps|locator map|symbol|emblem|seal)\b/i;
       const skylineWords=/\b(skyline|cityscape|panorama|panoramic|aerial view|city view|night view)\b/i;
@@ -727,17 +761,25 @@
       }
 
       try{
-        // Prefer real city views/skyline for cities. For individual places,
-        // prefer exterior/building/landmark photos rather than generic city shots.
-        if(cityMode){
-          await addSearch(`"${query}" skyline`);
-          await addSearch(`"${query}" cityscape`);
-        }
-        await addSearch(`"${query}"`);
-        if(!cityMode) await addSearch(`"${query}" landmark`);
+        // One targeted query up front — a city wants a skyline/cityscape shot,
+        // a place wants its own name. Extra query variations (a second city
+        // phrasing, a "landmark" suffix) used to always run too, doubling or
+        // tripling the request count for little gain; now they only run if
+        // this first query didn't turn up anything usable, and a manual
+        // "try another photo" click covers the rest far more cheaply than an
+        // exhaustive automatic search ever could.
+        await addSearch(cityMode ? `"${query}" skyline` : `"${query}"`);
+        let haveViable = candidates.some(c=>c.score>-500 && !(exclude&&exclude.has(c.info.descriptionurl)));
 
-        // Geosearch is the fallback for places whose name is hard to search.
-        if(Number.isFinite(+lat) && Number.isFinite(+lng)){
+        if(!haveViable){
+          await addSearch(cityMode ? `"${query}" cityscape` : `"${query}" landmark`);
+          haveViable = candidates.some(c=>c.score>-500 && !(exclude&&exclude.has(c.info.descriptionurl)));
+        }
+
+        // Geosearch (nearby-photos-by-coordinate) is a heavier, noisier
+        // fallback — only worth the extra request if the name search above
+        // came up empty.
+        if(!haveViable && Number.isFinite(+lat) && Number.isFinite(+lng)){
           try{
             const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:7000,ggslimit:15,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
             const data=await fetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
@@ -758,7 +800,7 @@
         }
 
         candidates.sort((a,b)=>b.score-a.score);
-        const viable=candidates.filter(x=>x.score>-500);
+        const viable=candidates.filter(x=>x.score>-500 && !(exclude&&exclude.has(x.info.descriptionurl)));
         for(const cand of viable.slice(0,6)){
           const info=cand.info, meta=cand.meta;
           const rawUrl = info.thumburl||info.url||'';
@@ -778,13 +820,14 @@
       // Commons search found nothing usable (or failed outright) — Wikipedia's
       // own lead image is a solid, almost-always-available last resort, and it
       // now always gets a chance to run instead of being skipped on any error.
-      return await wikipediaFallbackImage(query);
+      return await wikipediaFallbackImage(query, exclude);
     }
 
     function stopThumbHtml(id, p){
+      const swapBtn = `<button type="button" class="thumb-swap" data-place="${esc(id)}" title="${esc(t('image.swap'))}" aria-label="${esc(t('image.swap'))}" onclick="event.stopPropagation(); swapPlaceImage('${esc(id)}')">🔄</button>`;
       return p.image
-        ? `<div><img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}" onerror="this.onerror=null; this.style.display='none'; retryPlaceImage('${esc(id)}')">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`
-        : `<div class="stop-thumb stop-thumb-empty">⌖</div>`;
+        ? `<div class="thumb-wrap">${swapBtn}<img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy" title="${esc(p.imageAuthor||'Wikimedia Commons')}" onerror="this.onerror=null; this.style.display='none'; retryPlaceImage('${esc(id)}')">${p.imagePage?`<a class="image-credit" href="${esc(p.imagePage)}" target="_blank" rel="noopener">Wikimedia Commons${p.imageAuthor?' · '+esc(p.imageAuthor):''}</a>`:''}</div>`
+        : `<div class="thumb-wrap stop-thumb stop-thumb-empty">${swapBtn}⌖</div>`;
     }
     // Updates a single stop's thumbnail in place, without rebuilding the whole
     // itinerary or the map markers/routes — avoids the flicker that a full
@@ -796,13 +839,14 @@
         el.insertAdjacentHTML('afterbegin', stopThumbHtml(id, p));
       });
     }
-    async function enrichPlaceImage(id, place, force=false){
+    async function enrichPlaceImage(id, place, force=false, excludePages=null){
       if(!place || place.imageLoading || (!force && place.image)) return;
+      if(!force && place.imageFailedAt && Date.now()-place.imageFailedAt < IMAGE_RETRY_COOLDOWN) return;
       place.imageLoading=true;
       const tr=currentTrip();
       const cityHint=tr?.cityNameEn||tr?.cityLabel||tr?.name||'';
       const imageQuery=[place.nameEn||place.name,cityHint].filter(Boolean).join(' ');
-      const image=await wikimediaImage(imageQuery, place.lat, place.lng, {city:false});
+      const image=await queueImageLookup(()=>wikimediaImage(imageQuery, place.lat, place.lng, {city:false, exclude:excludePages}));
       place.imageLoading=false;
       if(image?.url){
         place.image=image.url;
@@ -810,15 +854,36 @@
         place.imageAuthor=image.author||'';
         place.imageLicense=image.license||'';
         place.imageLicenseUrl=image.licenseUrl||'';
+        delete place.imageFailedAt;
+        if(image.pageUrl){
+          place.imageTriedPages=place.imageTriedPages||[];
+          if(!place.imageTriedPages.includes(image.pageUrl)) place.imageTriedPages.push(image.pageUrl);
+        }
         persist();
+        if(currentTrip()) updateStopThumb(id);
+      } else {
+        place.imageFailedAt=Date.now();
         if(currentTrip()) updateStopThumb(id);
       }
     }
 
-    async function enrichCityImage(trip, force=false){
+    // Manual "try another photo" button: remembers every photo already shown
+    // for this place so it never repeats one, and only searches on request —
+    // the automatic side stays cheap (one query) and this covers the rest.
+    async function swapPlaceImage(id){
+      const p=places[id]; if(!p || p.imageLoading) return;
+      p.imageTriedPages=p.imageTriedPages||[];
+      if(p.imagePage && !p.imageTriedPages.includes(p.imagePage)) p.imageTriedPages.push(p.imagePage);
+      p.image=''; p.imagePage=''; p.imageAuthor=''; p.imageLicense=''; p.imageLicenseUrl=''; delete p.imageFailedAt;
+      updateStopThumb(id);
+      await enrichPlaceImage(id, p, true, new Set(p.imageTriedPages));
+    }
+
+    async function enrichCityImage(trip, force=false, excludePages=null){
       if(!trip || trip.cityImageLoading || (!force && trip.cityImage)) return;
+      if(!force && trip.cityImageFailedAt && Date.now()-trip.cityImageFailedAt < IMAGE_RETRY_COOLDOWN) return;
       trip.cityImageLoading=true;
-      const image=await wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1], {city:true});
+      const image=await queueImageLookup(()=>wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1], {city:true, exclude:excludePages}));
       trip.cityImageLoading=false;
       if(image?.url){
         trip.cityImage=image.url;
@@ -826,10 +891,26 @@
         trip.cityImageAuthor=image.author||'';
         trip.cityImageLicense=image.license||'';
         trip.cityImageLicenseUrl=image.licenseUrl||'';
+        delete trip.cityImageFailedAt;
+        if(image.pageUrl){
+          trip.cityImageTriedPages=trip.cityImageTriedPages||[];
+          if(!trip.cityImageTriedPages.includes(image.pageUrl)) trip.cityImageTriedPages.push(image.pageUrl);
+        }
         saveTrips();
         if(currentTripId===trip.id) renderTripHeader();
         renderHome();
+      } else {
+        trip.cityImageFailedAt=Date.now();
       }
+    }
+
+    async function swapCityImage(){
+      const trip=currentTrip(); if(!trip || trip.cityImageLoading) return;
+      trip.cityImageTriedPages=trip.cityImageTriedPages||[];
+      if(trip.cityImagePage && !trip.cityImageTriedPages.includes(trip.cityImagePage)) trip.cityImageTriedPages.push(trip.cityImagePage);
+      trip.cityImage=''; trip.cityImagePage=''; trip.cityImageAuthor=''; trip.cityImageLicense=''; trip.cityImageLicenseUrl=''; delete trip.cityImageFailedAt;
+      renderTripHeader();
+      await enrichCityImage(trip, true, new Set(trip.cityImageTriedPages));
     }
     async function bilingualNames(name, bias){
       const result={he:'',en:''};
@@ -1004,6 +1085,8 @@
             credit.style.display='inline-block';
           }else{ credit.style.display='none'; }
         }
+        const swapBtn=document.getElementById('tripHeroSwapBtn');
+        if(swapBtn) swapBtn.style.display = trip.cityImage ? 'inline-block' : 'none';
       }
       document.getElementById('modeBtn').textContent = t(trip.travelMode === 'foot' ? 'mode.walk' : 'mode.drive');
     }
@@ -1529,8 +1612,10 @@
 
     async function retryPlaceImage(id){
       const p=places[id]; if(!p || p.imageLoading) return;
+      p.imageTriedPages=p.imageTriedPages||[];
+      if(p.imagePage && !p.imageTriedPages.includes(p.imagePage)) p.imageTriedPages.push(p.imagePage);
       p.image=''; p.imagePage=''; p.imageAuthor=''; p.imageLicense=''; p.imageLicenseUrl='';
-      await enrichPlaceImage(id,p);
+      await enrichPlaceImage(id,p,true,new Set(p.imageTriedPages));
     }
 
     async function enrichMissingPlaceImages(){
