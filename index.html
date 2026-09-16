@@ -595,6 +595,13 @@
       if(!trip.travelMode) trip.travelMode = 'foot';
       if(!trip.startDate) trip.startDate = '';
       if(!trip.updatedAt) trip.updatedAt = Date.now();
+      // These are runtime-only "fetch in progress" flags. If a tab was closed
+      // (or the app reloaded) mid-fetch, a stray `true` could get saved to
+      // storage and then permanently block every future attempt, since the
+      // enrich functions treat "loading" as "already being handled". Clear
+      // them on load so a genuinely stuck city/place always gets retried.
+      trip.cityImageLoading = false;
+      Object.values(trip.places||{}).forEach(p=>{ if(p){ p.imageLoading=false; p.namesLoading=false; } });
       return trip;
     }
     function loadTrips(){
