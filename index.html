@@ -24,7 +24,7 @@
     .dest-meta { display:flex; gap:14px; color:var(--muted); font-size:12px }
     .dest-actions { display:flex; gap:8px; margin-top:auto }
     .empty-state { border:1px dashed var(--line); border-radius:17px; padding:40px; text-align:center; color:var(--muted) }
-    .mapwrap { border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); background:#d6dfcf; height:410px; position:relative }.map { width:100%; height:100%; background:linear-gradient(115deg,#dfe6d7 0%,#e8dfc7 48%,#c8d8ce 100%); position:relative; overflow:hidden }.map-label { position:absolute; bottom:17px; left:20px; background:#fffdf9e9; padding:10px 13px; border-radius:9px; font-size:12px; box-shadow:0 5px 20px #17201c15; z-index:1 }.map-controls { position:absolute; top:14px; right:14px; display:grid; gap:7px }.map-controls button { width:34px; height:34px; border:0; background:white; border-radius:8px; font-size:19px; box-shadow:0 2px 5px #17201c22 }
+    .mapwrap { border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); background:#d6dfcf; height:410px; position:relative; z-index:0 }.map { width:100%; height:100%; background:linear-gradient(115deg,#dfe6d7 0%,#e8dfc7 48%,#c8d8ce 100%); position:relative; overflow:hidden }.map-label { position:absolute; bottom:17px; left:20px; background:#fffdf9e9; padding:10px 13px; border-radius:9px; font-size:12px; box-shadow:0 5px 20px #17201c15; z-index:1 }.map-controls { position:absolute; top:14px; right:14px; display:grid; gap:7px }.map-controls button { width:34px; height:34px; border:0; background:white; border-radius:8px; font-size:19px; box-shadow:0 2px 5px #17201c22 }
     .layout { display:grid; grid-template-columns:minmax(0,1fr) 315px; gap:28px; margin-top:42px }.days { display:grid; gap:16px }.day { border:1px solid var(--line); border-radius:17px; overflow:hidden; background:white }.daytop { display:flex; align-items:center; gap:13px; padding:15px 17px; border-bottom:1px solid var(--line) }.daynum { display:grid; place-items:center; width:31px; height:31px; border-radius:8px; background:var(--sun); font:500 12px 'DM Mono' }.daytop strong { font-size:14px }.daytop span { margin-left:auto; color:var(--muted); font-size:12px }.stops { padding:11px }.stop { display:grid; grid-template-columns:29px 1fr auto; gap:10px; align-items:center; border-radius:10px; padding:10px; cursor:grab }.stop:hover { background:var(--cream) }.handle { color:#adb4ad; font-size:18px }.stop b { font-size:13px; display:block }.stop small { color:var(--muted); font-size:11px }.tag { font-size:10px; text-transform:uppercase; letter-spacing:.04em; padding:5px 8px; border-radius:99px; background:#f3f1eb; color:#626b64 }.travel { margin:1px 0 1px 38px; color:var(--muted); font-size:11px; padding-left:13px; border-left:1px dashed #b8c0b9 }.sidebar { display:grid; gap:18px; align-content:start }.card { background:white; border:1px solid var(--line); border-radius:17px; padding:18px }.card h3 { font:600 18px 'Playfair Display'; margin:0 0 13px }.weather { display:flex; align-items:center; gap:14px }.weather .sun { font-size:34px }.weather b { display:block; font-size:21px }.weather small,.check label { color:var(--muted); font-size:12px }.budget { display:flex; justify-content:space-between; align-items:end }.budget b { font-size:28px; font-family:'Playfair Display' }.progress { background:var(--cream); height:7px; border-radius:99px; margin:11px 0 7px; overflow:hidden }.progress i { display:block; background:var(--orange); width:62%; height:100%; border-radius:inherit }.check { display:grid; gap:10px }.check label { display:flex; gap:9px; align-items:center }.check input { accent-color:var(--moss) }.add { width:100%; background:none; border:1px dashed #bfc4ba; padding:9px; border-radius:8px; color:var(--moss); font-size:12px; margin-top:12px }
     .filters { display:flex; gap:8px; flex-wrap:wrap }.filter { border:1px solid var(--line); background:white; border-radius:99px; padding:7px 11px; color:var(--muted); font-size:12px }.filter.active { color:white; background:var(--moss); border-color:var(--moss) }.fab { position:fixed; right:25px; bottom:25px; width:54px; height:54px; border:0; background:var(--orange); color:white; border-radius:50%; font-size:25px; box-shadow:0 8px 22px #c2523560 }
     .modal { position:fixed; inset:0; background:#17201caa; display:none; z-index:10; align-items:center; justify-content:center; padding:20px }.modal.open { display:flex }.modal-box { background:var(--paper); width:min(650px,100%); border-radius:18px; padding:25px; max-height:90vh; overflow:auto }.modal h2 { font:600 27px 'Playfair Display'; margin:0 0 7px }.modal p { color:var(--muted); font-size:13px; line-height:1.5 }.modal textarea { width:100%; height:185px; resize:vertical; border:1px solid var(--line); background:white; border-radius:10px; padding:12px; line-height:1.5; font:12px 'DM Mono' }.modal input { width:100%; border:1px solid var(--line); background:white; border-radius:10px; padding:11px 12px }.modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px }.map-toolbar { position:absolute; z-index:7; top:14px; left:14px; display:flex; gap:7px; flex-wrap:wrap }.map-toolbar button { border:0; background:white; border-radius:8px; padding:9px 11px; color:var(--ink); font-size:12px; font-weight:600; box-shadow:0 2px 8px #17201c1f }.leaflet-popup-content { font-family:'DM Sans',sans-serif; line-height:1.45; min-width:180px }.leaflet-popup-content b { font-size:14px }.leaflet-popup-content small { color:var(--muted) }.nearby-list { max-height:170px; overflow:auto; margin-top:10px; padding-top:8px; border-top:1px solid var(--line) }.nearby-list button { display:block; width:100%; text-align:left; border:0; background:none; padding:5px 0; color:var(--moss); font-size:12px }.mini-form { display:grid; grid-template-columns:1fr auto; gap:8px; margin:12px 0 }.mini-form input { min-width:0 }.hint { background:#edf2e7; color:#45604a; padding:10px 12px; border-radius:9px; font-size:12px; line-height:1.4; margin-top:11px }.modal hr { border:0; border-top:1px solid var(--line); margin:20px 0 }.modal h3 { margin:0 0 4px; font-size:16px }.field { display:grid; gap:6px; margin-bottom:14px }.field label { font-size:12px; color:var(--muted) }
@@ -61,6 +61,43 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script>
+    /* ---------- Google Places (New) — used for search & nearby ideas, with free OSM fallback ---------- */
+    const GOOGLE_API_KEY = 'AIzaSyD8CNG9h50gcyMYaE2eOKYP02MHytavt7I';
+
+    async function googleTextSearch(query){
+      const res = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_API_KEY,
+          'X-Goog-FieldMask': 'places.displayName,places.location,places.formattedAddress,places.primaryType'
+        },
+        body: JSON.stringify({ textQuery: query })
+      });
+      if(!res.ok) throw new Error('Google text search failed: ' + res.status);
+      const data = await res.json();
+      return data.places || [];
+    }
+
+    async function googleNearby(lat, lng){
+      const res = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_API_KEY,
+          'X-Goog-FieldMask': 'places.displayName,places.location,places.primaryType,places.currentOpeningHours'
+        },
+        body: JSON.stringify({
+          includedTypes: ['tourist_attraction','restaurant','cafe','bar','park','museum'],
+          maxResultCount: 12,
+          locationRestriction: { circle: { center: { latitude: lat, longitude: lng }, radius: 1200 } }
+        })
+      });
+      if(!res.ok) throw new Error('Google nearby search failed: ' + res.status);
+      const data = await res.json();
+      return data.places || [];
+    }
+
     /* ---------- Trips storage (multiple destinations, saved on this device) ---------- */
     const STORAGE_KEY = 'roam-trips-v1';
     let trips = [];
@@ -84,9 +121,25 @@
 
     function createTrip(name, date){
       const id = 'trip' + Date.now();
-      trips.push({ id, name, date, places:{}, schedule:[{ day:'Day 1', date:'Choose a date', stops:[] }] });
+      trips.push({ id, name, date, places:{}, schedule:[{ day:'Day 1', date:'Choose a date', stops:[] }], center:null });
       saveTrips();
+      locateTripCity(id, name);
       return id;
+    }
+
+    async function locateTripCity(id, name){
+      const x = await geocode(name);
+      if(!x) return;
+      const trip = trips.find(t=>t.id===id);
+      if(!trip) return;
+      trip.center = [+x.lat, +x.lon];
+      saveTrips();
+      if(currentTripId===id) centerOnTrip();
+    }
+
+    function centerOnTrip(){
+      const trip = trips.find(t=>t.id===currentTripId);
+      if(freeMap && trip?.center) freeMap.setView(trip.center, 12);
     }
 
     function deleteTrip(id){
@@ -108,7 +161,11 @@
       document.getElementById('tripName').textContent = trip.name;
       document.getElementById('tripDates').textContent = trip.date || 'Choose your dates';
       render();
-      if(window.L){ if(!freeMap) makeMap(); else setTimeout(redrawMap, 0) }
+      if(window.L){
+        if(!freeMap) makeMap();
+        else { setTimeout(redrawMap, 0); centerOnTrip() }
+        if(!trip.center) locateTripCity(id, trip.name);
+      }
     }
 
     function backToHome(){
@@ -185,7 +242,10 @@
     function makeMap(){
       const host = document.getElementById('map');
       host.querySelector('.map-label')?.remove();
-      freeMap = L.map('map', { zoomControl:false }).setView([20,0], 2);
+      const trip = trips.find(t=>t.id===currentTripId);
+      const startCenter = trip?.center || [20,0];
+      const startZoom = trip?.center ? 12 : 2;
+      freeMap = L.map('map', { zoomControl:false }).setView(startCenter, startZoom);
       let failedTiles = 0;
       const carto = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}{r}.png', { subdomains:'abcd', maxZoom:20, attribution:'© OpenStreetMap contributors © CARTO' });
       carto.on('tileerror', ()=>{ if(++failedTiles===1){ carto.remove(); L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom:19, attribution:'Tiles © Esri' }).addTo(freeMap) } });
@@ -244,24 +304,36 @@
     }
 
     async function nearbyAt(lat,lng){
-      const query = `[out:json][timeout:15];(node(around:1200,${lat},${lng})[tourism];node(around:1200,${lat},${lng})[amenity~"restaurant|cafe|bar"];node(around:1200,${lat},${lng})[leisure~"park|garden"];);out 12;`;
       try {
-        const data = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query)).then(r=>r.json());
-        const list = data.elements.filter(x=>x.tags?.name).slice(0,8);
-        L.popup().setLatLng([lat,lng]).setContent(`<b>Nearby ideas</b><div class="nearby-list">${list.map((x,i)=>`<button class="add-idea" data-i="${i}">+ ${escapeHtml(x.tags.name)} <small>(${escapeHtml(x.tags.amenity||x.tags.tourism||x.tags.leisure||'place')})</small></button>`).join('') || 'No suggestions found.'}</div>`).openOn(freeMap);
-        setTimeout(()=>document.querySelectorAll('.add-idea').forEach(b=>b.onclick=()=>addNearby(list[+b.dataset.i])), 0);
+        let list, source = 'google';
+        try {
+          const found = await googleNearby(lat, lng);
+          if(!found.length) throw new Error('no google results');
+          list = found.map(x=>({ name:x.displayName?.text||'Unnamed place', lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' '), hours: x.currentOpeningHours ? 'See on Google' : 'Check hours' }));
+        } catch(e){
+          source = 'osm';
+          const query = `[out:json][timeout:15];(node(around:1200,${lat},${lng})[tourism];node(around:1200,${lat},${lng})[amenity~"restaurant|cafe|bar"];node(around:1200,${lat},${lng})[leisure~"park|garden"];);out 12;`;
+          const data = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query)).then(r=>r.json());
+          list = data.elements.filter(x=>x.tags?.name).slice(0,8).map(x=>({ name:x.tags.name, lat:x.lat, lng:x.lon, category:x.tags.amenity||x.tags.tourism||x.tags.leisure||'place', hours:x.tags.opening_hours||'Check hours' }));
+        }
+        L.popup().setLatLng([lat,lng]).setContent(`<b>Nearby ideas</b><div class="nearby-list">${list.map((x,i)=>`<button class="add-idea" data-i="${i}">+ ${escapeHtml(x.name)} <small>(${escapeHtml(x.category)})</small></button>`).join('') || 'No suggestions found.'}</div>`).openOn(freeMap);
+        setTimeout(()=>document.querySelectorAll('.add-idea').forEach(b=>b.onclick=()=>addNearby(list[+b.dataset.i], source)), 0);
       } catch(e){ alert('Nearby suggestions are temporarily unavailable. Try again in a moment.') }
     }
 
-    function addNearby(x){
-      const id = 'osm' + x.id;
-      places[id] = { name:x.tags.name, lat:x.lat, lng:x.lon, category:x.tags.amenity||x.tags.tourism||x.tags.leisure||'place', hours:x.tags.opening_hours||'Check hours', notes:'Added from nearby suggestions' };
+    function addNearby(x, source){
+      const id = (source==='google' ? 'gpl' : 'osm') + Date.now() + Math.floor(Math.random()*1000);
+      places[id] = { name:x.name, lat:x.lat, lng:x.lng, category:x.category, hours:x.hours||'Check hours', notes:'Added from nearby suggestions' };
       schedule[0].stops.push([id,'Flexible']);
       render();
       freeMap.closePopup();
     }
 
     async function geocode(query){
+      try {
+        const places = await googleTextSearch(query);
+        if(places[0]) return { lat: places[0].location.latitude, lon: places[0].location.longitude };
+      } catch(e){ console.info('Google geocode unavailable, falling back to OSM', e) }
       const result = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(query)).then(r=>r.json());
       return result[0] || null;
     }
@@ -269,17 +341,26 @@
     async function searchPlaces(){
       const q = document.getElementById('placeSearch').value.trim(), box = document.getElementById('searchResults');
       if(!q) return;
-      box.textContent = 'Searching OpenStreetMap…';
+      box.textContent = 'Searching…';
       try {
-        const found = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=' + encodeURIComponent(q)).then(r=>r.json());
-        box.innerHTML = found.map((x,i)=>`<button class="add" style="margin-top:6px;text-align:left" data-search="${i}">+ ${escapeHtml(x.display_name)}</button>`).join('') || '<p>No places found.</p>';
+        let found, source = 'google';
+        try {
+          found = await googleTextSearch(q);
+          if(!found.length) throw new Error('no google results');
+        } catch(e){
+          source = 'osm';
+          const osm = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=' + encodeURIComponent(q)).then(r=>r.json());
+          found = osm.map(x=>({ name:x.display_name.split(',')[0], lat:+x.lat, lng:+x.lon, category:x.type||'place' }));
+        }
+        if(source==='google') found = found.map(x=>({ name:x.displayName?.text||'Unnamed place', lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
+        box.innerHTML = found.map((x,i)=>`<button class="add" style="margin-top:6px;text-align:left" data-search="${i}">+ ${escapeHtml(x.name)} <small>(${escapeHtml(x.category)})</small></button>`).join('') || '<p>No places found.</p>';
         box.querySelectorAll('[data-search]').forEach(b=>b.onclick=()=>{
           const x = found[+b.dataset.search], id = 'search' + Date.now();
-          places[id] = { name:x.display_name.split(',')[0], lat:+x.lat, lng:+x.lon, category:x.type||'place', hours:'Check hours', notes:'Added by search' };
+          places[id] = { name:x.name, lat:x.lat, lng:x.lng, category:x.category, hours:'Check hours', notes:'Added by search' };
           schedule[0].stops.push([id,'Flexible']);
           render();
           modal.classList.remove('open');
-          if(freeMap) freeMap.setView([+x.lat, +x.lon], 15);
+          if(freeMap) freeMap.setView([x.lat, x.lng], 15);
         });
       } catch(e){ box.textContent = 'Search is unavailable right now. Please try again.' }
     }
