@@ -449,18 +449,22 @@
       if(!firebaseReady || !firebaseUser || !firestore || suppressCloudSave) return;
       try{
         const ref=firestore.doc(firestore.db,'users',firebaseUser.uid);
-        const snap=await firestore.getDoc(ref);
-        const data=snap.exists() ? snap.data() : {};
-        const cloudTrips=(data.trips||[]).map(normaliseTrip);
-        const cloudDeleted=data.deletedTripIds||{};
-        const mergedDeleted={...cloudDeleted,...deletedTripIds};
-        const localActive=filterDeletedTrips(trips.map(normaliseTrip), mergedDeleted);
-        const cloudActive=filterDeletedTrips(cloudTrips, mergedDeleted);
-        const merged=mergeTripLists(localActive, cloudActive);
+        const localSnapshot=trips.map(normaliseTrip);
+        const localDeleted={...deletedTripIds};
+        let merged=[];
+        let finalDeleted={...localDeleted};
+        await firestore.runTransaction(firestore.db, async tx=>{
+          const snap=await tx.get(ref);
+          const data=snap.exists() ? snap.data() : {};
+          const cloudTrips=(data.trips||[]).map(normaliseTrip);
+          const cloudDeleted=data.deletedTripIds||{};
+          finalDeleted={...cloudDeleted,...localDeleted};
+          merged=mergeTripLists(filterDeletedTrips(localSnapshot,finalDeleted),filterDeletedTrips(cloudTrips,finalDeleted));
+          const safeTrips=merged.map(t=>({...t,schedule:prepareScheduleForCloud(t.schedule)}));
+          tx.set(ref,{trips:safeTrips,deletedTripIds:finalDeleted,updatedAt:firestore.serverTimestamp()},{merge:true});
+        });
         trips=merged;
-        const safeTrips=merged.map(t=>({ ...t, schedule:prepareScheduleForCloud(t.schedule) }));
-        await firestore.setDoc(ref,{trips:safeTrips,deletedTripIds:mergedDeleted,updatedAt:firestore.serverTimestamp()},{merge:true});
-        deletedTripIds=mergedDeleted;
+        deletedTripIds=finalDeleted;
         saveDeletedTripIds();
         suppressCloudSave=true;
         try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(merged)) }catch(e){}
@@ -468,7 +472,7 @@
         setSyncState('synced');
         refreshOpenTripUI();
       }catch(e){
-        console.info('account sync save failed', e);
+        console.info('account sync save failed',e);
         setSyncState(navigator.onLine?'pending':'offline');
       }
     }
@@ -647,7 +651,7 @@
         const badWords=/\b(flag|flags|drapeau|fahne|bandiera|coat of arms|arms of|heraldry|heraldic|logo|logos|map|maps|locator map|symbol|emblem|seal)\b/i;
         const skylineWords=/\b(skyline|cityscape|panorama|panoramic|aerial view|city view|night view)\b/i;
         const placeWords=/\b(exterior|facade|building|landmark|monument|entrance|front)\b/i;
-        const clean=v=>{ const x=v?.value; return typeof x==='string' ? x.replace(/<[^>]*>/g,' ').replace(/&[^;]+;/g,' ').replace(/\\s+/g,' ').trim() : ''; };
+        const clean=v=>{ const x=v?.value; return typeof x==='string' ? x.replace(/<[^>]*>/g,' ').replace(/&[^;]+;/g,' ').replace(/\s+/g,' ').trim() : ''; };
         const seen=new Set(), candidates=[];
 
         async function addSearch(q){
@@ -828,11 +832,11 @@
     }
 
 
-    function deleteTrip(id){
+    async function deleteTrip(id){
       if(!confirm(t('confirm.deleteTrip'))) return;
       const trip=trips.find(x=>x.id===id);
       markTripDeleted(id);
-      trips = trips.filter(x=>x.id!==id);
+      trips=trips.filter(x=>x.id!==id);
       if(currentTripId===id){
         currentTripId=null;
         document.getElementById('homeView').style.display='block';
@@ -840,8 +844,27 @@
         document.getElementById('fabBtn').style.display='none';
         if(firebaseUnsub){ firebaseUnsub(); firebaseUnsub=null; }
       }
-      saveTrips();
       renderHome();
+      if(firebaseReady && firebaseUser && firestore){
+        try{
+          const ref=firestore.doc(firestore.db,'users',firebaseUser.uid);
+          await firestore.runTransaction(firestore.db,async tx=>{
+            const snap=await tx.get(ref);
+            const data=snap.exists()?snap.data():{};
+            const deleted={...(data.deletedTripIds||{}),[id]:Date.now()};
+            const cloudTrips=(data.trips||[]).map(normaliseTrip).filter(x=>x.id!==id&&!deleted[x.id]);
+            tx.set(ref,{trips:cloudTrips.map(x=>({...x,schedule:prepareScheduleForCloud(x.schedule)})),deletedTripIds:deleted,updatedAt:firestore.serverTimestamp()},{merge:true});
+          });
+          if(trip?.sharedId && trip.sharedRole==='owner'){
+            try{await firestore.deleteDoc(firestore.doc(firestore.db,'sharedTrips',trip.sharedId));}catch(e){console.info('shared delete failed',e)}
+          }
+          setSyncState('synced');
+        }catch(e){
+          console.info('trip delete sync failed',e);
+          setSyncState(navigator.onLine?'pending':'offline');
+          queueUserTripsSave();
+        }
+      }else{ saveTrips(); }
     }
 
     /* ---------- Trip view ---------- */
@@ -857,6 +880,7 @@
       document.getElementById('tripStart').value = trip.startDate || '';
       document.getElementById('tripNote').value = trip.note || '';
       renderTripHeader(); render(); renderPacking(); loadWeather();
+      enrichMissingPlaceNames();
        enrichCityImage(trip); enrichMissingPlaceImages();
       enrichTripCity(trip);
       enrichCityImage(trip);
@@ -1397,14 +1421,30 @@
       for(const [,p] of list) await enrichPlaceImage(p);
     }
 
+    async function enrichPlaceNames(place){
+      if(!place || place.namesLoading || (place.nameHe && place.nameEn)) return;
+      place.namesLoading=true;
+      try{
+        const n=await bilingualNames(place.name,[place.lat,place.lng]);
+        if(n.he) place.nameHe=n.he;
+        if(n.en) place.nameEn=n.en;
+        persist();
+        if(currentTrip()) render();
+      }catch(e){}
+      place.namesLoading=false;
+    }
+    async function enrichMissingPlaceNames(){
+      const list=Object.values(places).filter(p=>p && !(p.nameHe&&p.nameEn) && !p.namesLoading).slice(0,5);
+      for(const p of list) await enrichPlaceNames(p);
+    }
+
     function addPlace(x, dayIndex, note){
-      const id = 'p' + Date.now() + Math.floor(Math.random()*1000);
-      places[id] = { name:x.name, nameHe:x.nameHe||'', nameEn:x.nameEn||'', image:x.image||'', lat:x.lat, lng:x.lng, category:x.category, notes:note||'' };
+      const id='p'+Date.now()+Math.floor(Math.random()*1000);
+      places[id]={name:x.name,nameHe:x.nameHe||'',nameEn:x.nameEn||'',image:x.image||'',lat:x.lat,lng:x.lng,category:x.category,notes:note||''};
       schedule[dayIndex].stops.push([id,'']);
       render();
       if(freeMap) freeMap.panTo({lat:x.lat,lng:x.lng});
-      // Fetch a free, reusable image after the place is added so the itinerary
-      // gets a real visual even when Google Places photos are disabled.
+      enrichPlaceNames(places[id]);
       enrichPlaceImage(places[id]);
     }
 
@@ -1564,7 +1604,7 @@
         let db;
         try{ db=fireMod.getFirestore(firebaseApp); await fireMod.enableMultiTabIndexedDbPersistence(db).catch(()=>{}); }
         catch(e){ db=fireMod.getFirestore(firebaseApp); }
-        firestore={db,doc:fireMod.doc,getDoc:fireMod.getDoc,setDoc:fireMod.setDoc,onSnapshot:fireMod.onSnapshot,serverTimestamp:fireMod.serverTimestamp};
+        firestore={db,doc:fireMod.doc,getDoc:fireMod.getDoc,setDoc:fireMod.setDoc,updateDoc:fireMod.updateDoc,deleteDoc:fireMod.deleteDoc,runTransaction:fireMod.runTransaction,onSnapshot:fireMod.onSnapshot,serverTimestamp:fireMod.serverTimestamp};
         firebaseReady=true;
         authMod.onAuthStateChanged(firebaseAuth, async u=>{
           firebaseUser=u; updateAuthButton();
