@@ -792,11 +792,21 @@
         // this first query didn't turn up anything usable, and a manual
         // "try another photo" click covers the rest far more cheaply than an
         // exhaustive automatic search ever could.
-        await addSearch(cityMode ? `"${query}" skyline` : `"${query}"`);
+        // NOTE: "skyline"/"landmark"/"cityscape" are intentionally NOT sent as
+        // required search terms here — Commons' search treats an unquoted word
+        // in the query as something every result MUST contain, so a city with
+        // no file literally tagged "skyline" would get zero results even if it
+        // has plenty of good photos. Those words already boost the ranking via
+        // the regex scoring below; that's enough. Likewise, for place search,
+        // wrapping the whole "name + city" string in quotes turns it into an
+        // exact-phrase match (name and city adjacent, verbatim) which almost
+        // never occurs in real file metadata — so we search the words without
+        // quotes (still all required, but not required to be adjacent).
+        await addSearch(cityMode ? `"${query}"` : query);
         let haveViable = candidates.some(c=>c.score>-500 && !(exclude&&exclude.has(c.info.descriptionurl)));
 
         if(!haveViable){
-          await addSearch(cityMode ? `"${query}" cityscape` : `"${query}" landmark`);
+          await addSearch(cityMode ? `"${query}" cityscape` : `${query} landmark`);
           haveViable = candidates.some(c=>c.score>-500 && !(exclude&&exclude.has(c.info.descriptionurl)));
         }
 
