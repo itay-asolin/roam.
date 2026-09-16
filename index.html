@@ -120,6 +120,7 @@
     .sync-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border:1px solid var(--line);background:#fff;border-radius:99px;color:var(--muted);font-size:11.5px}
     .sync-dot{width:7px;height:7px;border-radius:50%;background:#b7beb8}.sync-dot.online{background:#4f8b62}.sync-dot.pending{background:var(--orange)}
     .member-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--cream);font-size:12px}.member-row:last-child{border-bottom:0}
+    .user-menu-wrap{position:relative;display:inline-flex;align-items:center}.user-avatar{width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:#fff;display:grid;place-items:center;padding:0;overflow:hidden;color:var(--moss);font-size:17px;font-weight:600}.user-avatar img{width:100%;height:100%;object-fit:cover;display:block}.user-menu{position:absolute;top:calc(100% + 8px);inset-inline-end:0;width:240px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 12px 35px #15231f22;z-index:15;display:none;text-align:start}.user-menu.open{display:block}.user-menu-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-menu-email{font-size:11px;color:var(--muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.user-menu-status{margin:12px 0;padding:9px 10px;border-radius:9px;background:var(--cream);font-size:11.5px;color:var(--muted)}.user-menu .btn{width:100%;margin-top:7px}
 
     @media(max-width:750px){
       .shell{padding:0 15px 34px}header{height:66px}.hero{padding:26px 22px}.hero h1{font-size:32px}
@@ -128,6 +129,7 @@
       .section-head p{display:none}.stop{cursor:default}.handle{display:none}
       .stop{grid-template-columns:1fr auto}.travel{margin-inline-start:12px}
       .btn,.icon-btn{padding:11px 13px}
+      html[dir="rtl"] body{direction:rtl} html[dir="rtl"] .head-tools{direction:rtl} html[dir="rtl"] .section-head,html[dir="rtl"] .daytop,html[dir="rtl"] .wx-row,html[dir="rtl"] .dest-meta,html[dir="rtl"] .dest-actions{direction:rtl} html[dir="rtl"] .modal-box,html[dir="rtl"] input,html[dir="rtl"] textarea,html[dir="rtl"] select{direction:rtl} html[dir="rtl"] .modal-actions{justify-content:flex-start}
     }
     @media(max-width:420px){.hero h1{font-size:28px}}
     @media print{.map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips{display:none!important}.mapwrap{height:280px}.layout{grid-template-columns:1fr}}
@@ -138,11 +140,18 @@
     <header>
       <div class="brand">roam<span>.</span></div>
       <div class="head-tools">
-        <span class="sync-pill"><i id="syncDot" class="sync-dot"></i><span id="syncLabel"></span></span>
         <button class="btn light" id="exportBtn"></button>
         <button class="btn light" id="importFileBtn"></button>
         <button class="btn light" id="langBtn">עברית</button>
-        <button class="btn light" id="authBtn" type="button"></button>
+        <div class="user-menu-wrap" id="userMenuWrap">
+          <button class="user-avatar" id="authBtn" type="button" aria-label="Account" aria-expanded="false">♙</button>
+          <div class="user-menu" id="userMenu">
+            <div class="user-menu-name" id="userMenuName"></div>
+            <div class="user-menu-email" id="userMenuEmail"></div>
+            <div class="user-menu-status" id="userMenuStatus"></div>
+            <button class="btn light" id="userMenuAction" type="button"></button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -304,7 +313,7 @@
     /* ---------- Language ---------- */
     const I18N = {
       en:{
-        'auth.title':'Account','auth.sub':'Sign in to sync trips between devices and collaborate in real time.','auth.email':'Email','auth.password':'Password','auth.login':'Sign in','auth.register':'Create account','auth.google':'Continue with Google','auth.logout':'Sign out','auth.logged':'Signed in','auth.local':'Local mode','auth.need':'Sign in to share a trip.','auth.ok':'You are signed in.','auth.bad':'Authentication failed.','auth.offline':'You are offline — local changes will sync when you reconnect.',
+        'auth.title':'Account','auth.profile':'Account','auth.profileLocal':'Local mode — data stays in this browser.','auth.profileSynced':'Signed in — trips sync across your devices.','auth.open':'Sign in','auth.close':'Close','auth.sub':'Sign in to sync trips between devices and collaborate in real time.','auth.email':'Email','auth.password':'Password','auth.login':'Sign in','auth.register':'Create account','auth.google':'Continue with Google','auth.logout':'Sign out','auth.logged':'Signed in','auth.local':'Local mode','auth.need':'Sign in to share a trip.','auth.ok':'You are signed in.','auth.bad':'Authentication failed.','auth.offline':'You are offline — local changes will sync when you reconnect.',
         'share.title':'Share this trip','share.sub':'Create a cloud copy that collaborators can edit or view.','share.role':'New collaborators','share.editor':'Editor — can change the trip','share.viewer':'Viewer — read only','share.ready':'Choose a role and create the shared trip.','share.create':'Create share link','share.created':'Share link copied. Send it to your collaborators.','share.existing':'This trip is already shared.','share.opened':'Opening shared trip…','share.owner':'Owner','share.editorRole':'Editor','share.viewerRole':'Viewer','share.members':'Members','share.copy':'Copy link','share.leave':'Leave shared trip','share.ownerOnly':'Only the owner can manage sharing.','share.loginFirst':'Sign in first to create or open a shared trip.','share.syncing':'Syncing…','share.synced':'Synced','share.offline':'Offline — saved locally',
         'lang.switch':'עברית','export':'Export','import':'Import','cancel':'Cancel','close':'Close',
         'home.eyebrow':'Your trips','home.title':'Where will you roam?','home.sub':'Open a saved destination to keep planning, or start a new one.','home.new':'+ New destination','home.listTitle':'Your destinations','home.listSub':'Everything is saved in this browser.','home.empty':'No destinations yet — create your first trip to start planning.',
@@ -329,7 +338,7 @@
         'toast.copied':'Share link copied.','toast.copyFail':'Could not copy — the link is in the address bar.','toast.exported':'Backup file downloaded.','toast.imported':'Trips imported.','toast.badFile':'That file is not a Roam backup.'
       },
       he:{
-        'auth.title':'חשבון','auth.sub':'התחברו כדי לסנכרן טיולים בין מכשירים ולעבוד יחד בזמן אמת.','auth.email':'אימייל','auth.password':'סיסמה','auth.login':'התחברות','auth.register':'יצירת חשבון','auth.google':'המשך עם Google','auth.logout':'התנתקות','auth.logged':'מחובר','auth.local':'מצב מקומי','auth.need':'כדי לשתף טיול צריך להתחבר.','auth.ok':'אתם מחוברים.','auth.bad':'ההתחברות נכשלה.','auth.offline':'אין חיבור — השינויים נשמרים מקומית ויסתנכרנו כשתחזרו לרשת.',
+        'auth.title':'חשבון','auth.profile':'חשבון','auth.profileLocal':'מצב מקומי — הנתונים נשארים בדפדפן הזה.','auth.profileSynced':'מחובר — הטיולים מסתנכרנים בין המכשירים שלך.','auth.open':'התחברות','auth.close':'סגירה','auth.sub':'התחברו כדי לסנכרן טיולים בין מכשירים ולעבוד יחד בזמן אמת.','auth.email':'אימייל','auth.password':'סיסמה','auth.login':'התחברות','auth.register':'יצירת חשבון','auth.google':'המשך עם Google','auth.logout':'התנתקות','auth.logged':'מחובר','auth.local':'מצב מקומי','auth.need':'כדי לשתף טיול צריך להתחבר.','auth.ok':'אתם מחוברים.','auth.bad':'ההתחברות נכשלה.','auth.offline':'אין חיבור — השינויים נשמרים מקומית ויסתנכרנו כשתחזרו לרשת.',
         'share.title':'שיתוף הטיול','share.sub':'ניצור עותק בענן שאפשר לערוך או לצפות בו יחד.','share.role':'הרשאה למשתתפים חדשים','share.editor':'עורך — יכול לשנות את הטיול','share.viewer':'צופה — לקריאה בלבד','share.ready':'בחרו הרשאה וצרו קישור שיתוף.','share.create':'יצירת קישור שיתוף','share.created':'הקישור הועתק. אפשר לשלוח אותו למשתתפים.','share.existing':'הטיול כבר משותף.','share.opened':'פותח טיול משותף…','share.owner':'בעלים','share.editorRole':'עורך','share.viewerRole':'צופה','share.members':'משתתפים','share.copy':'העתקת קישור','share.leave':'יציאה מהטיול המשותף','share.ownerOnly':'רק בעל הטיול יכול לנהל את השיתוף.','share.loginFirst':'יש להתחבר כדי ליצור או לפתוח טיול משותף.','share.syncing':'מסנכרן…','share.synced':'מסונכרן','share.offline':'לא מקוון — נשמר מקומית',
         'lang.switch':'English','export':'גיבוי','import':'ייבוא','cancel':'ביטול','close':'סגירה',
         'home.eyebrow':'הטיולים שלך','home.title':'לאן נוסעים?','home.sub':'פתחו יעד שמור כדי להמשיך לתכנן, או התחילו חדש.','home.new':'+ יעד חדש','home.listTitle':'היעדים שלך','home.listSub':'הכול נשמר בדפדפן הזה.','home.empty':'עדיין אין יעדים — צרו את הטיול הראשון כדי להתחיל.',
@@ -487,9 +496,12 @@
     function unsubscribeAccountTrips(){ if(userTripsUnsub){ userTripsUnsub(); userTripsUnsub=null } }
 
     function setSyncState(mode){
-      const dot=document.getElementById('syncDot'), label=document.getElementById('syncLabel'); if(!dot||!label) return;
-      dot.className='sync-dot '+(mode==='synced'?'online':mode==='pending'?'pending':'');
-      label.textContent = t(mode==='synced'?'share.synced':mode==='offline'?'share.offline':'share.syncing');
+      // Sync status is intentionally kept out of the main header.
+      // It is shown only inside the account menu.
+      const label=document.getElementById('userMenuStatus');
+      if(!label) return;
+      if(!firebaseUser){ label.textContent=t('auth.profileLocal'); return; }
+      label.textContent = mode==='offline' ? t('share.offline') : mode==='pending' ? t('share.syncing') : t('auth.profileSynced');
     }
     function toast(msg){ const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2600) }
 
@@ -1283,6 +1295,7 @@
       document.getElementById('langBtn').textContent = t('lang.switch');
       document.getElementById('exportBtn').textContent = t('export');
       document.getElementById('importFileBtn').textContent = t('import');
+      updateAuthButton();
       renderHome();
       if(currentTripId){ renderTripHeader(); render(); renderPacking(); loadWeather() }
     }
@@ -1329,7 +1342,17 @@
     }
     function updateAuthButton(){
       const b=document.getElementById('authBtn'); if(!b) return;
-      b.textContent=firebaseUser ? t('auth.logout') : t('auth.local');
+      const name=document.getElementById('userMenuName'), email=document.getElementById('userMenuEmail'), status=document.getElementById('userMenuStatus'), action=document.getElementById('userMenuAction');
+      b.innerHTML='';
+      if(firebaseUser){
+        if(firebaseUser.photoURL){ const img=document.createElement('img'); img.src=firebaseUser.photoURL; img.alt=''; b.appendChild(img); }
+        else b.textContent=(firebaseUser.displayName||firebaseUser.email||'U').trim().charAt(0).toUpperCase() || 'U';
+        name.textContent=firebaseUser.displayName || t('auth.profile');
+        email.textContent=firebaseUser.email || '';
+        action.textContent=t('auth.logout');
+      }else{
+        b.textContent='♙'; name.textContent=t('auth.profile'); email.textContent=''; action.textContent=t('auth.open');
+      }
       setSyncState(firebaseUser ? 'synced' : 'offline');
     }
     async function authAction(mode){
@@ -1350,7 +1373,11 @@
       authModGoogle=()=>m.signInWithPopup(firebaseAuth,new m.GoogleAuthProvider());
       authModSignOut=()=>m.signOut(firebaseAuth);
     }
-    document.getElementById('authBtn').onclick=async()=>{ if(firebaseUser){ await authModSignOut?.(); return; } document.getElementById('authModal').classList.add('open'); };
+    const userMenu=document.getElementById('userMenu'), userMenuWrap=document.getElementById('userMenuWrap');
+    function toggleUserMenu(){ const open=userMenu.classList.toggle('open'); document.getElementById('authBtn').setAttribute('aria-expanded',String(open)); }
+    document.getElementById('authBtn').onclick=(e)=>{ e.stopPropagation(); toggleUserMenu(); };
+    document.getElementById('userMenuAction').onclick=async()=>{ if(firebaseUser){ await authModSignOut?.(); userMenu.classList.remove('open'); } else { userMenu.classList.remove('open'); document.getElementById('authModal').classList.add('open'); } };
+    document.addEventListener('click',e=>{ if(!userMenuWrap.contains(e.target)) userMenu.classList.remove('open') });
     document.getElementById('authLoginBtn').onclick=()=>authAction('login');
     document.getElementById('authRegisterBtn').onclick=()=>authAction('register');
     document.getElementById('authGoogleBtn').onclick=async()=>{ try{ await authModGoogle?.(); document.getElementById('authModal').classList.remove('open'); }catch(e){ document.getElementById('authStatus').style.display='block'; document.getElementById('authStatus').textContent=e?.message||t('auth.bad'); } };
