@@ -396,7 +396,8 @@
       if(!firebaseReady || !firebaseUser || !firestore || !trip?.sharedId || trip.sharedRole === 'viewer' || suppressCloudSave) return;
       try{
         await firestore.setDoc(firestore.doc(firestore.db,'sharedTrips',trip.sharedId), {
-          name:trip.name, startDate:trip.startDate||'', note:trip.note||'', places:trip.places||{}, schedule:trip.schedule||[], center:trip.center||null, viewport:trip.viewport||null, cityLabel:trip.cityLabel||'', packing:trip.packing||[], travelMode:trip.travelMode||'foot', updatedAt:firestore.serverTimestamp(), updatedBy:firebaseUser.uid
+          name:trip.name, startDate:trip.startDate||'', note:trip.note||'', places:trip.places||{}, 
+          schedule: prepareScheduleForCloud(trip.schedule), center:trip.center||null, viewport:trip.viewport||null, cityLabel:trip.cityLabel||'', packing:trip.packing||[], travelMode:trip.travelMode||'foot', updatedAt:firestore.serverTimestamp(), updatedBy:firebaseUser.uid
         }, {merge:true});
         setSyncState('synced');
       }catch(e){ console.info('cloud save queued/failed',e); setSyncState(navigator.onLine?'pending':'offline') }
@@ -411,8 +412,9 @@
     async function saveUserTrips(){
       if(!firebaseReady || !firebaseUser || !firestore || suppressCloudSave) return;
       try{
+        const safeTrips = trips.map(t => ({ ...t, schedule: prepareScheduleForCloud(t.schedule) }));
         await firestore.setDoc(firestore.doc(firestore.db,'users',firebaseUser.uid), {
-          trips:trips, updatedAt:firestore.serverTimestamp()
+          trips: safeTrips, updatedAt:firestore.serverTimestamp()
         }, {merge:true});
         setSyncState('synced');
       }catch(e){ console.info('account sync save failed', e); setSyncState(navigator.onLine?'pending':'offline') }
@@ -480,9 +482,24 @@
     }
     function toast(msg){ const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2600) }
 
+    function prepareScheduleForCloud(schedule) {
+      return (schedule || []).map(d => ({
+        date: d.date || '',
+        stops: (d.stops || []).map(s => ({ p: s[0], n: s[1] || '' }))
+      }));
+    }
+
     function normaliseTrip(trip){
       trip.places = trip.places || {};
-      trip.schedule = (trip.schedule||[]).map(d=>({ date:d.date||'', stops:(d.stops||[]).map(s=>Array.isArray(s)?s:[s,'']) }));
+      trip.schedule = (trip.schedule||[]).map(d=>({
+        date:d.date||'',
+        stops:(d.stops||[]).map(s => {
+          if (Array.isArray(s)) return s;
+          // המרה חזרה לאופן שבו האפליקציה מצפה לזה
+          if (s && typeof s === 'object' && s.p) return [s.p, s.n || ''];
+          return [s, ''];
+        })
+      }));
       if(!trip.schedule.length) trip.schedule.push({ date:'', stops:[] });
       if(!Array.isArray(trip.packing)) trip.packing = [1,2,3].map(i=>({ text:t('pack.d'+i), done:false }));
       if(typeof trip.note !== 'string') trip.note = '';
@@ -1193,7 +1210,7 @@
       const role=document.getElementById('shareRole').value || 'editor';
       try{
         const ref=firestore.doc(firestore.db,'sharedTrips',id);
-        await firestore.setDoc(ref,{name:trip.name,startDate:trip.startDate||'',note:trip.note||'',places:trip.places||{},schedule:trip.schedule||[],center:trip.center||null,viewport:trip.viewport||null,cityLabel:trip.cityLabel||'',packing:trip.packing||[],travelMode:trip.travelMode||'foot',owner:firebaseUser.uid,members:{[firebaseUser.uid]:'owner'},createdAt:firestore.serverTimestamp(),updatedAt:firestore.serverTimestamp(),updatedBy:firebaseUser.uid},{merge:false});
+        await firestore.setDoc(ref,{name:trip.name,startDate:trip.startDate||'',note:trip.note||'',places:trip.places||{},schedule:prepareScheduleForCloud(trip.schedule),center:trip.center||null,viewport:trip.viewport||null,cityLabel:trip.cityLabel||'',packing:trip.packing||[],travelMode:trip.travelMode||'foot',owner:firebaseUser.uid,members:{[firebaseUser.uid]:'owner'},createdAt:firestore.serverTimestamp(),updatedAt:firestore.serverTimestamp(),updatedBy:firebaseUser.uid},{merge:false});
         trip.sharedId=id; trip.sharedRole='owner'; trip.sharedOwner=firebaseUser.uid; saveTrips();
         document.getElementById('shareModal').classList.remove('open');
         await copySharedLink(id); subscribeToSharedTrip(trip);
@@ -1213,7 +1230,7 @@
         if(!snap.exists()) return;
         const d=snap.data(); const local=currentTrip(); if(!local || local.sharedId!==trip.sharedId) return;
         suppressCloudSave=true;
-        Object.assign(local,{name:d.name||local.name,startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:d.schedule||[],center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedOwner:d.owner||local.sharedOwner,sharedRole:d.members?.[firebaseUser.uid]||local.sharedRole||'viewer'});
+        Object.assign(local,{name:d.name||local.name,startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:normaliseTrip({schedule:d.schedule}).schedule,center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedOwner:d.owner||local.sharedOwner,sharedRole:d.members?.[firebaseUser.uid]||local.sharedRole||'viewer'});
         places=local.places; schedule=local.schedule; saveTrips(); suppressCloudSave=false;
         setSyncState(snap.metadata.hasPendingWrites?'pending':'synced'); renderHome(); renderTripHeader(); render(); renderPacking();
       },(err)=>{console.error('shared trip sync',err); setSyncState(navigator.onLine?'pending':'offline');});
