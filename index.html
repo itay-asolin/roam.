@@ -19,6 +19,9 @@
     *{box-sizing:border-box}
     body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);font-weight:400;-webkit-text-size-adjust:100%}
     button,input,select,textarea{font:inherit;color:inherit}
+    input[type="date"]{cursor:pointer}
+    input[type="date"]::-webkit-calendar-picker-indicator{cursor:pointer;opacity:.55;padding:4px;border-radius:7px;transition:opacity .15s,background .15s}
+    input[type="date"]::-webkit-calendar-picker-indicator:hover{opacity:1;background:var(--cream)}
     button{cursor:pointer}
     h1,h2,h3,.brand,.stat b{font-family:var(--display);font-weight:400;letter-spacing:-.01em}
     :focus-visible{outline:2px solid var(--moss);outline-offset:2px}
@@ -27,11 +30,11 @@
     .brand{font-size:27px;direction:ltr}.brand span{color:var(--orange)}
     .head-tools{display:flex;gap:8px;flex-wrap:wrap}
     .trip-hero{background-size:cover;background-position:center;background-repeat:no-repeat}
-    .hero{min-height:260px;background:linear-gradient(90deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover;border-radius:var(--radius);padding:36px 40px;color:#fff;position:relative;overflow:hidden}
-    html[dir="rtl"] .hero{background:linear-gradient(270deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover}
-    .eyebrow{font-size:12px;opacity:.85;letter-spacing:.04em}
-    .hero h1{font-size:44px;line-height:1.08;margin:14px 0 10px}
-    .hero p{margin:0;opacity:.88;font-size:15px;max-width:52ch;line-height:1.5}
+    .hero{min-height:260px;background:linear-gradient(90deg,rgba(15,30,25,.62),rgba(15,30,25,.08)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover;border-radius:var(--radius);padding:36px 40px;color:#fff;position:relative;overflow:hidden}
+    html[dir="rtl"] .hero{background:linear-gradient(270deg,rgba(15,30,25,.62),rgba(15,30,25,.08)),url('https://images.unsplash.com/photo-1500835556837-99ac94a94552?auto=format&fit=crop&w=1800&q=85') center/cover}
+    .eyebrow{font-size:12px;opacity:.85;letter-spacing:.04em;text-shadow:0 1px 8px rgba(0,0,0,.45)}
+    .hero h1{font-size:44px;line-height:1.08;margin:14px 0 10px;text-shadow:0 2px 14px rgba(0,0,0,.5)}
+    .hero p{margin:0;opacity:.88;font-size:15px;max-width:52ch;line-height:1.5;text-shadow:0 1px 8px rgba(0,0,0,.45)}
     .hero-side{position:absolute;inset-inline-end:40px;bottom:34px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .datefield{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);border-radius:99px;font-size:13px}
     .datefield input{background:none;border:0;color:#fff;font-size:13px;width:140px}
@@ -49,17 +52,16 @@
     .dest-card-media.no-image::after{content:'🌍';position:absolute;inset:0;display:grid;place-items:center;font-size:42px;opacity:.35}
     .dest-card-body{padding:16px;display:flex;flex-direction:column;gap:7px;min-height:155px}
     .dest-card h3{margin:0;font-size:20px}.dest-card small{color:var(--muted)}
-    .en-name{display:block;color:var(--muted);font-size:12px}
+    .en-name{color:var(--muted);font-weight:400;font-size:.62em;white-space:nowrap;font-family:var(--ui);letter-spacing:0}
     .city-alt-name{margin-top:6px;font-size:12.5px;color:var(--muted)}
-    .hero .en-name{color:rgba(255,255,255,.78);font-size:14px;margin:0 0 4px}
+    .hero .en-name{color:rgba(255,255,255,.75)}
     .dest-meta{display:flex;gap:14px;color:var(--muted);font-size:12px}.dest-actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
-    .days-slider-wrap{width:100%;position:relative}
-    .days-slider-row{display:flex;align-items:center;gap:16px;width:100%}
-    .days-slider{flex:1;width:100%;height:6px;accent-color:#1677e8;cursor:pointer}
-    .days-value{min-width:72px;text-align:center;font-size:18px;font-weight:600;white-space:nowrap}
-    .days-scale{position:relative;height:24px;margin:9px 0 0;color:var(--muted);font-size:10px;direction:ltr}
-    .days-scale .tick{position:absolute;top:0;width:1px;height:5px;background:#aeb6ae;transform:translateX(-50%)}
-    .days-scale .major{top:7px;width:auto;height:auto;background:none;font-weight:500;white-space:nowrap;transform:translateX(-50%)}
+    .days-stepper{display:flex;align-items:center;justify-content:center;gap:18px;background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+    .days-step-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;font-size:19px;font-weight:600;color:var(--ink);display:grid;place-items:center;line-height:1}
+    .days-step-btn:hover{background:var(--moss);border-color:var(--moss);color:#fff}
+    .days-step-btn:active{transform:scale(.94)}
+    .days-step-btn:disabled{opacity:.35;pointer-events:none}
+    .days-value{min-width:88px;text-align:center;font-size:18px;font-weight:600;white-space:nowrap}
     .empty-state{border:1px dashed var(--line);border-radius:16px;padding:40px;text-align:center;color:var(--muted)}
     .mapwrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#d9e0d6;height:410px;position:relative;z-index:0;transition:height .2s,position .2s}.mapwrap.expanded{position:fixed;inset:14px;z-index:50;height:auto;border-radius:18px;box-shadow:0 20px 60px #15231f55}.mapwrap.expanded .map{height:100%}
     .map{width:100%;height:100%}
@@ -186,7 +188,6 @@
       <section class="hero trip-hero" id="tripHero">
         <div class="eyebrow" data-i18n="trip.eyebrow"></div>
         <h1 id="tripName"></h1>
-        <span class="en-name" id="tripNameAlt" style="display:none"></span>
         <p data-i18n="trip.heroSub"></p>
         <a id="tripHeroCredit" class="hero-image-credit" href="#" target="_blank" rel="noopener" style="display:none"></a>
         <div class="hero-side">
@@ -284,12 +285,10 @@
       <div class="city-alt-name" id="cityAltName" style="display:none"></div>
     </div>
     <div class="field"><label data-i18n="new.length"></label>
-      <div class="days-slider-wrap">
-        <div class="days-slider-row">
-          <input id="daysSlider" class="days-slider" type="range" min="1" max="30" step="1" value="3" aria-label="Trip length">
-          <div class="days-value" id="daysValue">3 ימים</div>
-        </div>
-        <div class="days-scale" aria-hidden="true"><span class="tick major" style="left:0.000000%">1</span><span class="tick" style="left:3.448276%"></span><span class="tick" style="left:6.896552%"></span><span class="tick" style="left:10.344828%"></span><span class="tick major" style="left:13.793103%">5</span><span class="tick" style="left:17.241379%"></span><span class="tick" style="left:20.689655%"></span><span class="tick" style="left:24.137931%"></span><span class="tick" style="left:27.586207%"></span><span class="tick major" style="left:31.034483%">10</span><span class="tick" style="left:34.482759%"></span><span class="tick" style="left:37.931034%"></span><span class="tick" style="left:41.379310%"></span><span class="tick" style="left:44.827586%"></span><span class="tick major" style="left:48.275862%">15</span><span class="tick" style="left:51.724138%"></span><span class="tick" style="left:55.172414%"></span><span class="tick" style="left:58.620690%"></span><span class="tick" style="left:62.068966%"></span><span class="tick major" style="left:65.517241%">20</span><span class="tick" style="left:68.965517%"></span><span class="tick" style="left:72.413793%"></span><span class="tick" style="left:75.862069%"></span><span class="tick" style="left:79.310345%"></span><span class="tick major" style="left:82.758621%">25</span><span class="tick" style="left:86.206897%"></span><span class="tick" style="left:89.655172%"></span><span class="tick" style="left:93.103448%"></span><span class="tick" style="left:96.551724%"></span><span class="tick major" style="left:100.000000%">30</span></div>
+      <div class="days-stepper" role="group" aria-label="Trip length">
+        <button type="button" class="days-step-btn" id="daysDecBtn" aria-label="−">−</button>
+        <div class="days-value" id="daysValue">3 ימים</div>
+        <button type="button" class="days-step-btn" id="daysIncBtn" aria-label="+">+</button>
       </div>
     </div>
     <div class="field"><label for="newTripDate" data-i18n="new.dates"></label><input type="date" id="newTripDate"></div>
@@ -661,10 +660,25 @@
         setTimeout(()=>finish(false), 6000);
       });
     }
+    async function wikipediaFallbackImage(query){
+      try{
+        const api='https://en.wikipedia.org/w/api.php';
+        const params={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:query,gsrlimit:3,prop:'pageimages|info',piprop:'original',inprop:'url'};
+        const data=await fetch(api+'?'+new URLSearchParams(params).toString()).then(r=>r.json());
+        for(const page of Object.values(data.query?.pages||{})){
+          const src=page.original?.source;
+          if(!src) continue;
+          if(!(await imageLoads(src))) continue;
+          return { url:src, pageUrl:page.fullurl||('https://en.wikipedia.org/wiki/'+encodeURIComponent(page.title||'')), author:'', license:'', licenseUrl:'' };
+        }
+      }catch(e){}
+      return null;
+    }
     async function wikimediaImage(query, lat, lng, options={}){
       try{
         const api='https://commons.wikimedia.org/w/api.php';
         const cityMode=!!options.city;
+        const imgWidth = cityMode ? 1800 : 1000;
         const badWords=/\b(flag|flags|drapeau|fahne|bandiera|coat of arms|arms of|heraldry|heraldic|logo|logos|map|maps|locator map|symbol|emblem|seal)\b/i;
         const skylineWords=/\b(skyline|cityscape|panorama|panoramic|aerial view|city view|night view)\b/i;
         const placeWords=/\b(exterior|facade|building|landmark|monument|entrance|front)\b/i;
@@ -672,7 +686,7 @@
         const seen=new Set(), candidates=[];
 
         async function addSearch(q){
-          const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:q,gsrnamespace:6,gsrlimit:12,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:1000};
+          const base={action:'query',format:'json',origin:'*',generator:'search',gsrsearch:q,gsrnamespace:6,gsrlimit:12,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
           const data=await fetch(api+'?'+new URLSearchParams(base).toString()).then(r=>r.json());
           for(const page of Object.values(data.query?.pages||{})){
             if(seen.has(page.pageid)) continue;
@@ -706,7 +720,7 @@
 
         // Geosearch is the fallback for places whose name is hard to search.
         if(Number.isFinite(+lat) && Number.isFinite(+lng)){
-          const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:7000,ggslimit:15,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:1000};
+          const geo={action:'query',format:'json',origin:'*',generator:'geosearch',ggsprimary:'all',ggsnamespace:6,ggsradius:7000,ggslimit:15,ggscoord:`${lat}|${lng}`,prop:'imageinfo',iiprop:'url|extmetadata',iiurlwidth:imgWidth};
           const data=await fetch(api+'?'+new URLSearchParams(geo).toString()).then(r=>r.json());
           for(const page of Object.values(data.query?.pages||{})){
             if(seen.has(page.pageid)) continue;
@@ -739,7 +753,10 @@
             licenseUrl:meta.LicenseUrl?.value||''
           };
         }
-        return null;
+        // Commons category search sometimes turns up nothing for smaller,
+        // less-categorized places even though a perfectly good photo exists —
+        // the Wikipedia article's own lead image is a reliable last resort.
+        return await wikipediaFallbackImage(query);
       }catch(e){ return null; }
     }
 
@@ -861,7 +878,7 @@
         const other = lang==='he' ? tr.cityNameEn : tr.cityNameHe;
         return `<article class="dest-card" data-id="${tr.id}">
           <div class="dest-card-media ${tr.cityImage?'':'no-image'}" style="${tr.cityImage ? `background-image:url('${esc(tr.cityImage)}')` : ''}"></div>
-          <div class="dest-card-body"><h3>${esc(title)}</h3>${other?`<span class="en-name">${esc(other)}</span>`:''}<small>${esc(dates)}</small>
+          <div class="dest-card-body"><h3>${esc(title)}${other?` <span class="en-name">· ${esc(other)}</span>`:''}</h3><small>${esc(dates)}</small>
           <div class="dest-meta"><span>${esc(t('card.places',{n:Object.keys(tr.places).length}))}</span><span>${esc(tr.schedule.length===1?t('card.day'):t('card.days',{n:tr.schedule.length}))}</span></div>
           <div class="dest-actions"><button class="btn light open-trip" data-id="${tr.id}">${esc(t('card.open'))}</button><button class="btn light danger del-trip" data-id="${tr.id}">${esc(t('card.delete'))}</button></div></div>
         </article>`;
@@ -937,20 +954,16 @@
     }
     function renderTripHeader(){
       const trip = currentTrip(); if(!trip) return;
-      document.getElementById('tripName').textContent = lang==='he' ? (trip.cityNameHe||trip.name) : (trip.cityNameEn||trip.name);
-      const altEl=document.getElementById('tripNameAlt');
-      if(altEl){
-        const alt = lang==='he' ? trip.cityNameEn : trip.cityNameHe;
-        altEl.textContent = alt||'';
-        altEl.style.display = alt ? 'block' : 'none';
-      }
+      const title = lang==='he' ? (trip.cityNameHe||trip.name) : (trip.cityNameEn||trip.name);
+      const alt = lang==='he' ? trip.cityNameEn : trip.cityNameHe;
+      document.getElementById('tripName').innerHTML = esc(title) + (alt ? ` <span class="en-name">· ${esc(alt)}</span>` : '');
       const hero=document.getElementById('tripHero');
       if(hero){
         hero.style.backgroundImage = trip.cityImage
-          ? `linear-gradient(90deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('${esc(trip.cityImage)}')`
+          ? `linear-gradient(90deg,rgba(15,30,25,.62),rgba(15,30,25,.08)),url('${esc(trip.cityImage)}')`
           : '';
         if(lang==='he') hero.style.backgroundImage = trip.cityImage
-          ? `linear-gradient(270deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('${esc(trip.cityImage)}')`
+          ? `linear-gradient(270deg,rgba(15,30,25,.62),rgba(15,30,25,.08)),url('${esc(trip.cityImage)}')`
           : '';
         hero.style.backgroundSize='cover';
         hero.style.backgroundPosition='center';
@@ -1129,7 +1142,7 @@
           const daySel = schedule.length > 1 ? `<select class="move-day" data-place="${s[0]}">${schedule.map((_,j)=>`<option value="${j}" ${j===di?'selected':''}>${esc(t('day.moveTo',{n:j+1}))}</option>`).join('')}</select>` : '';
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
-            <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy"><b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(lang==='he' ? p.nameEn : p.nameHe)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div></div>
+            <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p)}</div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
@@ -1350,16 +1363,19 @@
     const newTripModal = document.getElementById('newTripModal');
     let selectedTripDays = 3, chosenCity = null, suggestTimer;
 
-    /* Days slider: 1–30 */
+    /* Trip length stepper: 1–30 days */
     const MAX_DAYS = 30;
-    const daysSlider = document.getElementById('daysSlider');
+    const daysDecBtn = document.getElementById('daysDecBtn');
+    const daysIncBtn = document.getElementById('daysIncBtn');
     const daysValue = document.getElementById('daysValue');
     function setDays(n){
       selectedTripDays = Math.min(MAX_DAYS, Math.max(1, n));
-      daysSlider.value = selectedTripDays;
       daysValue.textContent = selectedTripDays === 1 ? t('new.day') : t('new.days',{n:selectedTripDays});
+      daysDecBtn.disabled = selectedTripDays <= 1;
+      daysIncBtn.disabled = selectedTripDays >= MAX_DAYS;
     }
-    daysSlider.addEventListener('input',()=>setDays(+daysSlider.value));
+    daysDecBtn.addEventListener('click',()=>setDays(selectedTripDays-1));
+    daysIncBtn.addEventListener('click',()=>setDays(selectedTripDays+1));
 
     document.getElementById('newTripHeroBtn').onclick = ()=>{
       document.getElementById('newTripName').value = '';
@@ -1381,7 +1397,7 @@
         const names = await bilingualNames(city.name, [city.lat, city.lng]);
         city.cityNames = names;
         const alt = lang==='he' ? names.en : names.he;
-        if(alt && chosenCity===city){ cityAltName.textContent = alt; cityAltName.style.display='block'; }
+        if(alt && chosenCity===city){ cityAltName.textContent = '· '+alt; cityAltName.style.display='block'; }
       }catch(e){}
     }
     cityInput.addEventListener('input', ()=>{
@@ -1499,7 +1515,14 @@
       persist();
     }
 
-    async function enrichPlaceNames(place){
+    function stopCopyHtml(p){
+      return `<b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(lang==='he' ? p.nameEn : p.nameHe)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small>`;
+    }
+    function updateStopName(id){
+      const p = places[id]; if(!p) return;
+      document.querySelectorAll(`.stop[data-place="${id}"] .stop-copy`).forEach(el=>{ el.innerHTML = stopCopyHtml(p); });
+    }
+    async function enrichPlaceNames(id, place){
       if(!place || place.namesLoading || (place.nameHe && place.nameEn)) return;
       place.namesLoading=true;
       try{
@@ -1509,13 +1532,13 @@
         if(!place.nameHe && lang==='he') place.nameHe=place.name;
         if(!place.nameEn && lang==='en') place.nameEn=place.name;
         persist();
-        if(currentTrip()) render();
+        if(currentTrip()) updateStopName(id);
       }catch(e){}
       place.namesLoading=false;
     }
     async function enrichMissingPlaceNames(){
-      const list=Object.values(places).filter(p=>p && !(p.nameHe&&p.nameEn) && !p.namesLoading).slice(0,5);
-      for(const p of list) await enrichPlaceNames(p);
+      const list=Object.entries(places).filter(([,p])=>p && !(p.nameHe&&p.nameEn) && !p.namesLoading).slice(0,5);
+      for(const [id,p] of list) await enrichPlaceNames(id,p);
     }
 
     function addPlace(x, dayIndex, note){
@@ -1524,7 +1547,7 @@
       schedule[dayIndex].stops.push([id,'']);
       render();
       if(freeMap) freeMap.panTo({lat:x.lat,lng:x.lng});
-      enrichPlaceNames(places[id]);
+      enrichPlaceNames(id, places[id]);
       enrichPlaceImage(id, places[id]);
     }
 
