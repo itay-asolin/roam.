@@ -318,6 +318,11 @@
         googleKey empty for the REST calls. The Maps JS script still needs a
         referrer-restricted browser key — that one is public by design.
      ============================================================ */
+  // Reminder: this key is public by design (it ships in the browser), so it
+  // is only safe as long as it's locked down in the Google Cloud console —
+  // HTTP referrer restriction to this site's domain(s) + a daily quota cap.
+  // Same idea for FIREBASE_CONFIG below: protect it with Firestore security
+  // rules, not by trying to hide the key.
   const CONFIG = {
     googleKey: 'AIzaSyAhiuT2JbQSJmoFfO2bwj98rfe923UIAoI',                 // browser key for Maps JS + Places REST (leave '' to run map-free)
     proxyBase: '',                 // e.g. 'https://your-worker.example.com' — if set, Places calls go here, no key in the browser
@@ -854,17 +859,24 @@
     }
 
     async function enrichTripCity(trip){
-      if(!trip || trip.cityEnriched) return;
-      try{
-        const q = trip.cityLabel || trip.name;
-        if(googleAvailable()){
-          const [he,en] = await Promise.all([googleTextSearchLang(q,'he',trip.center), googleTextSearchLang(q,'en',trip.center)]);
-          trip.cityNameHe = he[0]?.displayName?.text || trip.cityNameHe || (lang==='he'?trip.name:'');
-          trip.cityNameEn = en[0]?.displayName?.text || trip.cityNameEn || (lang==='en'?trip.name:'');
-        }
-      }catch(e){}
-      trip.cityEnriched = true;
-      saveTrips();
+      if(!trip) return;
+      if(!trip.cityEnriched){
+        try{
+          const q = trip.cityLabel || trip.name;
+          if(googleAvailable()){
+            const [he,en] = await Promise.all([googleTextSearchLang(q,'he',trip.center), googleTextSearchLang(q,'en',trip.center)]);
+            const gotHe = he[0]?.displayName?.text || '', gotEn = en[0]?.displayName?.text || '';
+            trip.cityNameHe = gotHe || trip.cityNameHe || (lang==='he'?trip.name:'');
+            trip.cityNameEn = gotEn || trip.cityNameEn || (lang==='en'?trip.name:'');
+            // Only lock this in once we actually got real data back — a network
+            // hiccup or empty result should not permanently block retrying.
+            if(gotHe || gotEn) trip.cityEnriched = true;
+          } else {
+            trip.cityEnriched = true; // nothing more to fetch without a key
+          }
+          saveTrips();
+        }catch(e){ /* leave cityEnriched unset so this retries next time */ }
+      }
       enrichCityImage(trip);
     }
 
@@ -887,6 +899,7 @@
       box.querySelectorAll('.open-trip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openTrip(b.dataset.id)}));
       box.querySelectorAll('.del-trip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteTrip(b.dataset.id)}));
       trips.filter(tr=>!tr.cityEnriched).slice(0,5).forEach(enrichTripCity);
+      trips.filter(tr=>tr.cityEnriched && !tr.cityImage && !tr.cityImageLoading).slice(0,5).forEach(enrichCityImage);
     }
 
 
@@ -1088,27 +1101,35 @@
       return (m/1000).toFixed(1) + (lang==='he'?' ק״מ':' km');
     }
 
+    async function fetchDayRoute(di, profile){
+      const stops = schedule[di].stops;
+      const usable = stops.map(s=>coords(s[0])).filter(Boolean);
+      if(usable.length < 2) return { di, usable, data:null };
+
+      let data = null;
+      for(const p of [profile, 'driving']){
+        try {
+          const url = `https://router.project-osrm.org/route/v1/${p}/` + usable.map(c=>c[1]+','+c[0]).join(';') + '?overview=full&geometries=geojson';
+          const json = await fetch(url).then(r=>r.json());
+          if(json.code === 'Ok' && json.routes?.[0]){ data = { route:json.routes[0], profile:p }; break }
+        } catch(e){ /* try next */ }
+      }
+      return { di, usable, data };
+    }
+
     async function computeRoutes(){
       routeLines.forEach(l=>l.setMap(null)); routeLines = [];
       const trip = currentTrip();
       const profile = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
       let totalSeconds = 0;
 
-      for(let di=0; di<schedule.length; di++){
-        const stops = schedule[di].stops;
-        const pts = stops.map(s=>coords(s[0]));
-        const usable = pts.filter(Boolean);
-        if(usable.length < 2){ setTravelTexts(di, null); continue }
+      // All days are independent, so fetch every day's route in parallel
+      // instead of waiting for each one to finish before starting the next —
+      // this was previously the slowest part of opening a multi-day trip.
+      const results = await Promise.all(schedule.map((_,di)=>fetchDayRoute(di, profile)));
 
-        let data = null;
-        for(const p of [profile, 'driving']){
-          try {
-            const url = `https://router.project-osrm.org/route/v1/${p}/` + usable.map(c=>c[1]+','+c[0]).join(';') + '?overview=full&geometries=geojson';
-            const json = await fetch(url).then(r=>r.json());
-            if(json.code === 'Ok' && json.routes?.[0]){ data = { route:json.routes[0], profile:p }; break }
-          } catch(e){ /* try next */ }
-        }
-
+      results.forEach(({di, usable, data})=>{
+        if(usable.length < 2){ setTravelTexts(di, null); return }
         const color = DAY_COLORS[di%DAY_COLORS.length];
         if(data){
           const path = data.route.geometry.coordinates.map(([lng,lat])=>({lat,lng}));
@@ -1120,7 +1141,7 @@
           if(freeMap) routeLines.push(new google.maps.Polyline({ path:usable.map(c=>({lat:c[0],lng:c[1]})), geodesic:true, strokeColor:color, strokeWeight:3, strokeOpacity:.5, map:freeMap }));
           setTravelTexts(di, null);
         }
-      }
+      });
       document.getElementById('statTime').textContent = totalSeconds ? fmtDuration(totalSeconds) : '—';
     }
 
@@ -1508,9 +1529,13 @@
         p.imageRefreshDone=true;
         await enrichPlaceImage(id,p,true);
       }
-      if(!tr.cityImageRefreshDone){
-        tr.cityImageRefreshDone=true;
-        await enrichCityImage(tr,true);
+      if(tr.cityImage){
+        if(!tr.cityImageRefreshDone){
+          tr.cityImageRefreshDone=true;
+          await enrichCityImage(tr,true);
+        }
+      } else {
+        await enrichCityImage(tr);
       }
       persist();
     }
