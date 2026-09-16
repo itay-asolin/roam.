@@ -47,11 +47,11 @@
     .dest-card h3{margin:0;font-size:20px}.dest-card small{color:var(--muted)}
     .dest-meta{display:flex;gap:14px;color:var(--muted);font-size:12px}.dest-actions{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
     .empty-state{border:1px dashed var(--line);border-radius:16px;padding:40px;text-align:center;color:var(--muted)}
-    .mapwrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#d9e0d6;height:410px;position:relative;z-index:0}
+    .mapwrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#d9e0d6;height:410px;position:relative;z-index:0;transition:height .2s,position .2s}.mapwrap.expanded{position:fixed;inset:14px;z-index:50;height:auto;border-radius:18px;box-shadow:0 20px 60px #15231f55}.mapwrap.expanded .map{height:100%}
     .map{width:100%;height:100%}
     .map-label{position:absolute;bottom:16px;inset-inline-start:18px;background:#fffdf9ee;padding:10px 13px;border-radius:9px;font-size:12px;box-shadow:0 5px 20px #17201c15;z-index:1;max-width:70%;line-height:1.45}
     .map-toolbar{position:absolute;z-index:7;top:13px;inset-inline-start:13px;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 26px)}
-    .map-toolbar button{border:0;background:#fff;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:500;box-shadow:0 2px 8px #17201c1f}
+    .map-toolbar button{border:0;background:#fff;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:500;box-shadow:0 2px 8px #17201c1f}.map-expand{margin-inline-start:auto}
     .layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:26px;margin-top:38px}
     .days{display:grid;gap:15px}.day{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
     .daytop{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -62,7 +62,7 @@
     .stops{padding:10px;min-height:52px}
     .stop{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
     .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px}
-    .stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
+    .stop-thumb{width:46px;height:46px;object-fit:cover;border-radius:9px;float:inline-start;margin-inline-end:9px}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
     .stop-tools{display:flex;gap:6px;align-items:center}
     .stop-tools select{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 7px;font-size:11.5px;color:var(--muted)}
     .tag{font-size:10.5px;padding:5px 8px;border-radius:99px;background:#f1efe8;color:#626b64}
@@ -197,6 +197,7 @@
           <button id="fitBtn" data-i18n="map.fit"></button>
           <button id="nearbyBtn" data-i18n="map.nearby"></button>
           <button id="addPlaceBtn" data-i18n="map.addPlace"></button>
+           <button id="mapExpandBtn" class="map-expand" data-i18n="map.expand"></button>
         </div>
         <div class="map-label" id="mapLabel" data-i18n="map.loading"></div>
         <div class="map" id="map"></div>
@@ -265,14 +266,12 @@
       <div class="suggest" id="citySuggest" style="display:none"></div>
     </div>
     <div class="field"><label data-i18n="new.length"></label>
-      <div class="wheel-wrap">
-        <button type="button" class="wheel-step" id="daysMinus" aria-label="−">−</button>
-        <div class="wheel">
-          <div class="wheel-band"></div>
-          <div class="wheel-scroll" id="daysWheel"></div>
-          <div class="wheel-fade"></div>
+      <div class="days-slider-wrap">
+        <div class="days-slider-row">
+          <input id="daysSlider" class="days-slider" type="range" min="1" max="30" step="1" value="3" aria-label="Trip length">
+          <div class="days-value" id="daysValue">3 ימים</div>
         </div>
-        <button type="button" class="wheel-step" id="daysPlus" aria-label="+">+</button>
+        <div class="days-scale"><span>1</span><span>5</span><span>10</span><span>15</span><span>20</span><span>25</span><span>30</span></div>
       </div>
     </div>
     <div class="field"><label for="newTripDate" data-i18n="new.dates"></label><input type="date" id="newTripDate"></div>
@@ -320,7 +319,7 @@
         'card.open':'Open','card.delete':'Delete','card.noDates':'No dates yet','card.places':'{n} places','card.days':'{n} days','card.day':'1 day',
         'trip.back':'← All destinations','trip.eyebrow':'Trip','trip.heroSub':'Search places, drop them into days, and the map keeps your city in view.','trip.start':'Start','trip.share':'Copy share link','trip.noDates':'No dates set',
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time',
-        'map.title':'Your trip map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
+        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
         'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
@@ -345,7 +344,7 @@
         'card.open':'פתיחה','card.delete':'מחיקה','card.noDates':'ללא תאריכים','card.places':'{n} מקומות','card.days':'{n} ימים','card.day':'יום אחד',
         'trip.back':'→ כל היעדים','trip.eyebrow':'טיול','trip.heroSub':'חפשו מקומות, שבצו אותם לימים, והמפה תשמור על העיר שלכם בפריים.','trip.start':'תחילה','trip.share':'העתקת קישור שיתוף','trip.noDates':'לא נקבעו תאריכים',
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה',
-        'map.title':'מפת הטיול','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
+        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
         'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
@@ -405,7 +404,7 @@
       if(!firebaseReady || !firebaseUser || !firestore || !trip?.sharedId || trip.sharedRole === 'viewer' || suppressCloudSave) return;
       try{
         await firestore.setDoc(firestore.doc(firestore.db,'sharedTrips',trip.sharedId), {
-          name:trip.name, startDate:trip.startDate||'', note:trip.note||'', places:trip.places||{}, 
+          name:trip.name, cityNameHe:trip.cityNameHe||'', cityNameEn:trip.cityNameEn||'', cityImage:trip.cityImage||'', startDate:trip.startDate||'', note:trip.note||'', places:trip.places||{}, 
           schedule: prepareScheduleForCloud(trip.schedule), center:trip.center||null, viewport:trip.viewport||null, cityLabel:trip.cityLabel||'', packing:trip.packing||[], travelMode:trip.travelMode||'foot', updatedAt:firestore.serverTimestamp(), updatedBy:firebaseUser.uid
         }, {merge:true});
         setSyncState('synced');
@@ -574,19 +573,37 @@
       if(!googleAvailable()) throw new Error('no key');
       const body = { textQuery:query, languageCode:langCode() };
       if(bias) body.locationBias = { circle:{ center:{ latitude:bias[0], longitude:bias[1] }, radius:30000 } };
-      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.displayName,places.location,places.formattedAddress,places.primaryType,places.viewport'), body:JSON.stringify(body) });
+      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.formattedAddress,places.primaryType,places.viewport,places.photos'), body:JSON.stringify(body) });
       if(!res.ok) throw new Error('searchText ' + res.status);
       return (await res.json()).places || [];
     }
+    async function googleTextSearchLang(query, language, bias){
+      if(!googleAvailable()) throw new Error('no key');
+      const body = { textQuery:query, languageCode:language };
+      if(bias) body.locationBias = { circle:{ center:{ latitude:bias[0], longitude:bias[1] }, radius:30000 } };
+      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.formattedAddress,places.primaryType,places.viewport,places.photos'), body:JSON.stringify(body) });
+      if(!res.ok) throw new Error('searchText ' + res.status);
+      return (await res.json()).places || [];
+    }
+    function photoUrl(photo){
+      if(!photo?.name || !CONFIG.googleKey || CONFIG.proxyBase) return '';
+      return 'https://places.googleapis.com/v1/' + photo.name + '/media?maxWidthPx=900&key=' + encodeURIComponent(CONFIG.googleKey);
+    }
+    async function bilingualNames(name, bias){
+      const result={he:'',en:''};
+      try{ const a=await googleTextSearchLang(name,'he',bias); result.he=a[0]?.displayName?.text||''; result.hePhoto=photoUrl(a[0]?.photos?.[0]); }catch(e){}
+      try{ const a=await googleTextSearchLang(name,'en',bias); result.en=a[0]?.displayName?.text||''; result.enPhoto=photoUrl(a[0]?.photos?.[0]); }catch(e){}
+      return result;
+    }
     async function googleCitySearch(query){
       if(!googleAvailable()) throw new Error('no key');
-      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.displayName,places.formattedAddress,places.location,places.viewport'), body:JSON.stringify({ textQuery:query, languageCode:langCode(), includedType:'locality', maxResultCount:5 }) });
+      const res = await fetch(placesUrl(':searchText'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.formattedAddress,places.location,places.viewport,places.photos'), body:JSON.stringify({ textQuery:query, languageCode:langCode(), includedType:'locality', maxResultCount:5 }) });
       if(!res.ok) throw new Error('city ' + res.status);
       return (await res.json()).places || [];
     }
     async function googleNearby(lat,lng){
       if(!googleAvailable()) throw new Error('no key');
-      const res = await fetch(placesUrl(':searchNearby'), { method:'POST', headers:placesHeaders('places.displayName,places.location,places.primaryType'), body:JSON.stringify({ includedTypes:['tourist_attraction','restaurant','cafe','bar','park','museum'], maxResultCount:12, languageCode:langCode(), locationRestriction:{ circle:{ center:{ latitude:lat, longitude:lng }, radius:1500 } } }) });
+      const res = await fetch(placesUrl(':searchNearby'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.primaryType,places.photos'), body:JSON.stringify({ includedTypes:['tourist_attraction','restaurant','cafe','bar','park','museum'], maxResultCount:12, languageCode:langCode(), locationRestriction:{ circle:{ center:{ latitude:lat, longitude:lng }, radius:1500 } } }) });
       if(!res.ok) throw new Error('nearby ' + res.status);
       return (await res.json()).places || [];
     }
@@ -620,9 +637,10 @@
       box.innerHTML = trips.map(tr=>{
         const dates = tr.startDate ? new Date(tr.startDate+'T00:00:00').toLocaleDateString(locale(),{day:'numeric',month:'short',year:'numeric'}) : t('card.noDates');
         return `<article class="dest-card" data-id="${tr.id}">
-          <h3>${esc(tr.name)}</h3><small>${esc(dates)}</small>
+          <div class="dest-card-media" style="background-image:${tr.cityImage ? `url('${esc(tr.cityImage)}')` : 'none'}"></div>
+          <div class="dest-card-body"><h3>${esc(lang==='he' ? (tr.cityNameHe||tr.name) : (tr.cityNameEn||tr.name))}</h3>${(tr.cityNameHe&&tr.cityNameEn)?`<span class="en-name">${esc(lang==='he'?tr.cityNameEn:tr.cityNameHe)}</span>`:''}<small>${esc(dates)}</small>
           <div class="dest-meta"><span>${esc(t('card.places',{n:Object.keys(tr.places).length}))}</span><span>${esc(tr.schedule.length===1?t('card.day'):t('card.days',{n:tr.schedule.length}))}</span></div>
-          <div class="dest-actions"><button class="btn light open-trip" data-id="${tr.id}">${esc(t('card.open'))}</button><button class="btn light danger del-trip" data-id="${tr.id}">${esc(t('card.delete'))}</button></div>
+          <div class="dest-actions"><button class="btn light open-trip" data-id="${tr.id}">${esc(t('card.open'))}</button><button class="btn light danger del-trip" data-id="${tr.id}">${esc(t('card.delete'))}</button></div></div>
         </article>`;
       }).join('');
       box.querySelectorAll('.dest-card').forEach(c=>c.addEventListener('click',()=>openTrip(c.dataset.id)));
@@ -661,7 +679,9 @@
     }
     function renderTripHeader(){
       const trip = currentTrip(); if(!trip) return;
-      document.getElementById('tripName').textContent = trip.name;
+      document.getElementById('tripName').textContent = lang==='he' ? (trip.cityNameHe||trip.name) : (trip.cityNameEn||trip.name);
+       const hero=document.getElementById('tripHero'); if(hero) hero.style.backgroundImage = trip.cityImage ? `linear-gradient(90deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('${trip.cityImage}')` : '';
+       if(hero && lang==='he') hero.style.backgroundImage = trip.cityImage ? `linear-gradient(270deg,rgba(15,30,25,.88),rgba(15,30,25,.30)),url('${trip.cityImage}')` : '';
       document.getElementById('modeBtn').textContent = t(trip.travelMode === 'foot' ? 'mode.walk' : 'mode.drive');
     }
     function persist(){ const trip = currentTrip(); if(trip){ trip.places = places; trip.schedule = schedule } saveTrips() }
@@ -711,7 +731,7 @@
     function popupHtml(id){
       const p = places[id];
       return `<div style="font-family:Rubik,sans-serif;line-height:1.45;min-width:180px;direction:${lang==='he'?'rtl':'ltr'};text-align:start">
-        <b style="font-size:14px">${esc(p.name)}</b><br>
+        <b style="font-size:14px">${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(p.nameHe&&p.nameEn)?`<br><small style="color:#6a746e">${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<br>
         <small style="color:#6a746e">${esc(t('filter.'+bucketOf(p)))}</small><br>
         <span style="font-size:12px">${esc(p.notes || t('place.noNotes'))}</span>
         <div class="nearby-list"><button class="nearby-one" data-id="${id}">${esc(t('nearby.find'))}</button></div></div>`;
@@ -825,7 +845,7 @@
           const daySel = schedule.length > 1 ? `<select class="move-day" data-place="${s[0]}">${schedule.map((_,j)=>`<option value="${j}" ${j===di?'selected':''}>${esc(t('day.moveTo',{n:j+1}))}</option>`).join('')}</select>` : '';
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
-            <div><b>${esc(p.name)}</b><small>${esc(t('filter.'+bucketOf(p)))}</small></div>
+            <div>${p.image?`<img class="stop-thumb" src="${esc(p.image)}" alt="" loading="lazy">`:''}<b>${esc(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name))}</b>${(p.nameHe&&p.nameEn)?`<small>${esc(lang==='he'?p.nameEn:p.nameHe)}</small>`:''}<small>${esc(t('filter.'+bucketOf(p)))}</small></div>
             <span class="stop-tools">${daySel}<button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
@@ -894,6 +914,15 @@
       }
       day.stops = ordered; render();
     }
+
+    document.getElementById('mapExpandBtn').onclick=()=>{
+      const wrap=document.querySelector('.mapwrap'); if(!wrap) return;
+      wrap.classList.toggle('expanded');
+      const b=document.getElementById('mapExpandBtn');
+      b.textContent=wrap.classList.contains('expanded') ? (lang==='he'?'⛶ הקטנת המפה':'⛶ Exit map') : t('map.expand');
+      setTimeout(()=>{ if(freeMap) google.maps.event.trigger(freeMap,'resize'); },50);
+    };
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const wrap=document.querySelector('.mapwrap'); if(wrap?.classList.contains('expanded')){ wrap.classList.remove('expanded'); document.getElementById('mapExpandBtn').textContent=t('map.expand'); setTimeout(()=>freeMap&&google.maps.event.trigger(freeMap,'resize'),50); } }});
 
     document.querySelectorAll('.filter').forEach(btn=>btn.addEventListener('click',()=>{
       document.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));
@@ -1036,39 +1065,16 @@
     const newTripModal = document.getElementById('newTripModal');
     let selectedTripDays = 3, chosenCity = null, suggestTimer;
 
-    /* Days wheel: 1–30, scroll-snapped, with − / + steppers */
-    const MAX_DAYS = 30, ROW = 44;
-    const wheel = document.getElementById('daysWheel');
-    function buildWheel(){
-      wheel.innerHTML = Array.from({length:MAX_DAYS}, (_,i)=>`<div class="wheel-opt" data-days="${i+1}">${esc(i+1 === 1 ? t('new.day') : t('new.days',{n:i+1}))}</div>`).join('');
-      wheel.querySelectorAll('.wheel-opt').forEach(el=> el.onclick = ()=> setDays(+el.dataset.days));
-      markWheel();
-    }
-    function markWheel(){
-      wheel.querySelectorAll('.wheel-opt').forEach(el=> el.classList.toggle('on', +el.dataset.days === selectedTripDays));
-    }
-    function setDays(n, smooth){
+    /* Days slider: 1–30 */
+    const MAX_DAYS = 30;
+    const daysSlider = document.getElementById('daysSlider');
+    const daysValue = document.getElementById('daysValue');
+    function setDays(n){
       selectedTripDays = Math.min(MAX_DAYS, Math.max(1, n));
-      markWheel();
-      const top = (selectedTripDays-1)*ROW;
-      if(typeof wheel.scrollTo === 'function') wheel.scrollTo({ top, behavior: smooth === false ? 'auto' : 'smooth' });
-      else wheel.scrollTop = top;
+      daysSlider.value = selectedTripDays;
+      daysValue.textContent = selectedTripDays === 1 ? t('new.day') : t('new.days',{n:selectedTripDays});
     }
-    let wheelTimer;
-    wheel.addEventListener('scroll', ()=>{
-      clearTimeout(wheelTimer);
-      wheelTimer = setTimeout(()=>{
-        const n = Math.round(wheel.scrollTop / ROW) + 1;
-        if(n !== selectedTripDays){ selectedTripDays = Math.min(MAX_DAYS, Math.max(1, n)); markWheel() }
-      }, 90);
-    }, { passive:true });
-    document.getElementById('daysMinus').onclick = ()=> setDays(selectedTripDays - 1);
-    document.getElementById('daysPlus').onclick = ()=> setDays(selectedTripDays + 1);
-    wheel.addEventListener('keydown', e=>{
-      if(e.key === 'ArrowDown'){ e.preventDefault(); setDays(selectedTripDays+1) }
-      if(e.key === 'ArrowUp'){ e.preventDefault(); setDays(selectedTripDays-1) }
-    });
-    wheel.tabIndex = 0;
+    daysSlider.addEventListener('input',()=>setDays(+daysSlider.value));
 
     document.getElementById('newTripHeroBtn').onclick = ()=>{
       document.getElementById('newTripName').value = '';
@@ -1150,11 +1156,11 @@
         try {
           const g = await googleTextSearch(q, trip && trip.center);
           if(!g.length) throw new Error('none');
-          found = g.map(x=>({ name:x.displayName?.text||q, lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
+          found = g.map(x=>({ name:x.displayName?.text||q, nameEn:'', nameHe:'', image:photoUrl(x.photos?.[0]), lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
         } catch(e){
           const near = trip?.center ? `&viewbox=${trip.center[1]-0.35},${trip.center[0]+0.35},${trip.center[1]+0.35},${trip.center[0]-0.35}&bounded=1` : '';
           const osm = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=' + langCode() + near + '&q=' + encodeURIComponent(q)).then(r=>r.json());
-          found = osm.map(x=>({ name:(x.display_name||'').split(',')[0], lat:+x.lat, lng:+x.lon, category:x.type||'place' }));
+          found = osm.map(x=>({ name:(x.display_name||'').split(',')[0], nameEn:'', nameHe:'', image:'', lat:+x.lat, lng:+x.lon, category:x.type||'place' }));
         }
         if(!found.length){ box.textContent = t('add.none'); return }
         box.innerHTML = found.map((x,i)=>`<button class="add" style="margin-top:6px;text-align:start" data-i="${i}">+ ${esc(x.name)} <small>(${esc(x.category)})</small></button>`).join('');
@@ -1164,7 +1170,7 @@
 
     function addPlace(x, dayIndex, note){
       const id = 'p' + Date.now() + Math.floor(Math.random()*1000);
-      places[id] = { name:x.name, lat:x.lat, lng:x.lng, category:x.category, notes:note||'' };
+      places[id] = { name:x.name, nameHe:x.nameHe||'', nameEn:x.nameEn||'', image:x.image||'', lat:x.lat, lng:x.lng, category:x.category, notes:note||'' };
       schedule[dayIndex].stops.push([id,'']);
       render();
       if(freeMap) freeMap.panTo({lat:x.lat,lng:x.lng});
@@ -1176,7 +1182,7 @@
         try {
           const found = await googleNearby(lat,lng);
           if(!found.length) throw new Error('none');
-          list = found.map(x=>({ name:x.displayName?.text||'—', lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
+          list = found.map(x=>({ name:x.displayName?.text||'—', nameEn:'', nameHe:'', image:photoUrl(x.photos?.[0]), lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
         } catch(e){
           const query = `[out:json][timeout:15];(node(around:1200,${lat},${lng})[tourism];node(around:1200,${lat},${lng})[amenity~"restaurant|cafe|bar"];node(around:1200,${lat},${lng})[leisure~"park|garden"];);out 12;`;
           const data = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query)).then(r=>r.json());
@@ -1239,7 +1245,7 @@
       const role=document.getElementById('shareRole').value || 'editor';
       try{
         const ref=firestore.doc(firestore.db,'sharedTrips',id);
-        await firestore.setDoc(ref,{name:trip.name,startDate:trip.startDate||'',note:trip.note||'',places:trip.places||{},schedule:prepareScheduleForCloud(trip.schedule),center:trip.center||null,viewport:trip.viewport||null,cityLabel:trip.cityLabel||'',packing:trip.packing||[],travelMode:trip.travelMode||'foot',owner:firebaseUser.uid,members:{[firebaseUser.uid]:'owner'},createdAt:firestore.serverTimestamp(),updatedAt:firestore.serverTimestamp(),updatedBy:firebaseUser.uid},{merge:false});
+        await firestore.setDoc(ref,{name:trip.name,cityNameHe:trip.cityNameHe||'',cityNameEn:trip.cityNameEn||'',cityImage:trip.cityImage||'',startDate:trip.startDate||'',note:trip.note||'',places:trip.places||{},schedule:prepareScheduleForCloud(trip.schedule),center:trip.center||null,viewport:trip.viewport||null,cityLabel:trip.cityLabel||'',packing:trip.packing||[],travelMode:trip.travelMode||'foot',owner:firebaseUser.uid,members:{[firebaseUser.uid]:'owner'},createdAt:firestore.serverTimestamp(),updatedAt:firestore.serverTimestamp(),updatedBy:firebaseUser.uid},{merge:false});
         trip.sharedId=id; trip.sharedRole='owner'; trip.sharedOwner=firebaseUser.uid; saveTrips();
         document.getElementById('shareModal').classList.remove('open');
         await copySharedLink(id); subscribeToSharedTrip(trip);
@@ -1259,7 +1265,7 @@
         if(!snap.exists()) return;
         const d=snap.data(); const local=currentTrip(); if(!local || local.sharedId!==trip.sharedId) return;
         suppressCloudSave=true;
-        Object.assign(local,{name:d.name||local.name,startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:normaliseTrip({schedule:d.schedule}).schedule,center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedOwner:d.owner||local.sharedOwner,sharedRole:d.members?.[firebaseUser.uid]||local.sharedRole||'viewer'});
+        Object.assign(local,{name:d.name||local.name,cityNameHe:d.cityNameHe||local.cityNameHe||'',cityNameEn:d.cityNameEn||local.cityNameEn||'',cityImage:d.cityImage||local.cityImage||'',startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:normaliseTrip({schedule:d.schedule}).schedule,center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedOwner:d.owner||local.sharedOwner,sharedRole:d.members?.[firebaseUser.uid]||local.sharedRole||'viewer'});
         places=local.places; schedule=local.schedule; saveTrips(); suppressCloudSave=false;
         setSyncState(snap.metadata.hasPendingWrites?'pending':'synced'); renderHome(); renderTripHeader(); render(); renderPacking();
       },(err)=>{console.error('shared trip sync',err); setSyncState(navigator.onLine?'pending':'offline');});
@@ -1274,7 +1280,7 @@
         if(!d.members?.[firebaseUser.uid]){
           await firestore.setDoc(ref,{members:{[firebaseUser.uid]:role},updatedAt:firestore.serverTimestamp()},{merge:true});
         }
-        const local={id:'trip_'+Date.now(),name:d.name||'Shared trip',startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:d.schedule||[{date:'',stops:[]}],center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||d.name||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedId:id,sharedRole:role,sharedOwner:d.owner||null};
+        const local={id:'trip_'+Date.now(),name:d.name||'Shared trip',cityNameHe:d.cityNameHe||'',cityNameEn:d.cityNameEn||'',cityImage:d.cityImage||'',startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:d.schedule||[{date:'',stops:[]}],center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||d.name||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedId:id,sharedRole:role,sharedOwner:d.owner||null};
         trips.push(normaliseTrip(local)); saveTrips(); history.replaceState(null,'',location.pathname); renderHome(); openTrip(local.id); toast(t('share.opened'));
       }catch(e){console.error(e); toast(t('share.loginFirst'));}
     }
@@ -1291,7 +1297,7 @@
       localStorage.setItem('roam-lang', lang);
       document.querySelectorAll('[data-i18n]').forEach(el=> el.textContent = t(el.dataset.i18n));
       document.querySelectorAll('[data-i18n-ph]').forEach(el=> el.placeholder = t(el.dataset.i18nPh));
-      buildWheel();
+      setDays(selectedTripDays);
       document.getElementById('langBtn').textContent = t('lang.switch');
       document.getElementById('exportBtn').textContent = t('export');
       document.getElementById('importFileBtn').textContent = t('import');
