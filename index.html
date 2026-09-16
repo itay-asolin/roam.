@@ -639,6 +639,12 @@
       let raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem('roam-trips-v1') || '[]';
       try { trips = JSON.parse(raw) } catch(e){ trips = [] }
       trips.forEach(normaliseTrip);
+      // A stuck imageLoading:true saved before this fix would otherwise make
+      // the swap button a permanent no-op for that place/trip forever.
+      trips.forEach(tr=>{
+        tr.cityImageLoading=false;
+        Object.values(tr.places||{}).forEach(p=>{ if(p) p.imageLoading=false; });
+      });
     }
 
     /* ---------- Dates ---------- */
@@ -843,11 +849,14 @@
       if(!place || place.imageLoading || (!force && place.image)) return;
       if(!force && place.imageFailedAt && Date.now()-place.imageFailedAt < IMAGE_RETRY_COOLDOWN) return;
       place.imageLoading=true;
-      const tr=currentTrip();
-      const cityHint=tr?.cityNameEn||tr?.cityLabel||tr?.name||'';
-      const imageQuery=[place.nameEn||place.name,cityHint].filter(Boolean).join(' ');
-      const image=await queueImageLookup(()=>wikimediaImage(imageQuery, place.lat, place.lng, {city:false, exclude:excludePages}));
-      place.imageLoading=false;
+      let image=null;
+      try{
+        const tr=currentTrip();
+        const cityHint=tr?.cityNameEn||tr?.cityLabel||tr?.name||'';
+        const imageQuery=[place.nameEn||place.name,cityHint].filter(Boolean).join(' ');
+        image=await queueImageLookup(()=>wikimediaImage(imageQuery, place.lat, place.lng, {city:false, exclude:excludePages}));
+      }catch(e){ image=null; }
+      finally{ place.imageLoading=false; }
       if(image?.url){
         place.image=image.url;
         place.imagePage=image.pageUrl||'';
@@ -883,8 +892,11 @@
       if(!trip || trip.cityImageLoading || (!force && trip.cityImage)) return;
       if(!force && trip.cityImageFailedAt && Date.now()-trip.cityImageFailedAt < IMAGE_RETRY_COOLDOWN) return;
       trip.cityImageLoading=true;
-      const image=await queueImageLookup(()=>wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1], {city:true, exclude:excludePages}));
-      trip.cityImageLoading=false;
+      let image=null;
+      try{
+        image=await queueImageLookup(()=>wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1], {city:true, exclude:excludePages}));
+      }catch(e){ image=null; }
+      finally{ trip.cityImageLoading=false; }
       if(image?.url){
         trip.cityImage=image.url;
         trip.cityImagePage=image.pageUrl||'';
