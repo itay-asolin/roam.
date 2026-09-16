@@ -464,7 +464,7 @@
         if(typing) return; // don't clobber what the user is mid-typing; the next debounced save reconciles it
         const cloudTrips=(snap.data().trips||[]).map(normaliseTrip);
         suppressCloudSave=true;
-        trips=cloudTrips;
+        trips=mergeTripLists(trips, cloudTrips);
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(trips)) }catch(e){}
         suppressCloudSave=false;
         refreshOpenTripUI();
