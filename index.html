@@ -557,13 +557,35 @@
       });
       return Array.from(map.values());
     }
+    // Every background cloud-sync echo used to call render()/redrawMap()
+    // unconditionally, even when the echo carried no actual change for the
+    // trip currently open — that's what was causing the map markers (and
+    // the rest of the trip view) to visibly flicker every few seconds while
+    // sync was quietly running. This compares a snapshot of what actually
+    // affects the trip view/map before doing the (expensive, visible) full
+    // re-render, and skips it when nothing really changed.
+    let lastRenderedTripKey = null;
+    function tripRenderKey(tr){
+      return JSON.stringify({
+        places:tr.places, schedule:tr.schedule, cityImage:tr.cityImage,
+        cityNameHe:tr.cityNameHe, cityNameEn:tr.cityNameEn, travelMode:tr.travelMode,
+        startDate:tr.startDate, note:tr.note, packing:tr.packing
+      });
+    }
+    function renderOpenTripIfChanged(tr){
+      const key = tripRenderKey(tr);
+      if(key === lastRenderedTripKey) return false;
+      lastRenderedTripKey = key;
+      renderTripHeader(); render(); renderPacking();
+      return true;
+    }
     function refreshOpenTripUI(){
       renderHome();
       if(!currentTripId) return;
       const tr=currentTrip();
       if(!tr){ backToHome(); return }
       places=tr.places; schedule=tr.schedule;
-      renderTripHeader(); render(); renderPacking();
+      renderOpenTripIfChanged(tr);
       document.getElementById('tripStart').value=tr.startDate||'';
       document.getElementById('tripNote').value=tr.note||'';
     }
@@ -1067,6 +1089,7 @@
       document.getElementById('tripStart').value = trip.startDate || '';
       document.getElementById('tripNote').value = trip.note || '';
       renderTripHeader(); render(); renderPacking(); loadWeather();
+      lastRenderedTripKey = tripRenderKey(trip);
       enrichMissingPlaceNames();
       enrichMissingPlaceImages();
       enrichTripCity(trip).then(()=> refreshAllImages());
@@ -1076,6 +1099,7 @@
     }
     function backToHome(){
       currentTripId = null;
+      lastRenderedTripKey = null;
       document.getElementById('homeView').style.display = 'block';
       document.getElementById('tripView').style.display = 'none';
       document.getElementById('fabBtn').style.display = 'none';
@@ -1786,7 +1810,7 @@
         suppressCloudSave=true;
         Object.assign(local,{name:d.name||local.name,cityNameHe:d.cityNameHe||local.cityNameHe||'',cityNameEn:d.cityNameEn||local.cityNameEn||'',cityImage:d.cityImage||local.cityImage||'',startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:normaliseTrip({schedule:d.schedule}).schedule,center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedOwner:d.owner||local.sharedOwner,sharedRole:d.members?.[firebaseUser.uid]||local.sharedRole||'viewer'});
         places=local.places; schedule=local.schedule; saveTrips(); suppressCloudSave=false;
-        setSyncState(snap.metadata.hasPendingWrites?'pending':'synced'); renderHome(); renderTripHeader(); render(); renderPacking();
+        setSyncState(snap.metadata.hasPendingWrites?'pending':'synced'); renderHome(); renderOpenTripIfChanged(local);
       },(err)=>{console.error('shared trip sync',err); setSyncState(navigator.onLine?'pending':'offline');});
     }
     async function openSharedFromHash(id, requestedRole='editor'){
