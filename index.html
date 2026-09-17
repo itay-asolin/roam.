@@ -428,9 +428,14 @@
     const IMAGE_RETRY_COOLDOWN = 5*60*1000; // don't hammer the same failed place/city more than once per 5 min
     let activeImageLookups = 0;
     const imageLookupQueue = [];
-    function queueImageLookup(fn){
+    function queueImageLookup(fn, priority=false){
       return new Promise((resolve,reject)=>{
-        imageLookupQueue.push(()=>fn().then(resolve,reject));
+        const job=()=>fn().then(resolve,reject);
+        // Manual "try another photo" clicks are user-initiated, in-the-moment
+        // actions — they shouldn't sit behind a big backlog of background
+        // auto-fill lookups for places/cities the user isn't even looking at.
+        // Priority jobs go to the front of the line instead of the back.
+        if(priority) imageLookupQueue.unshift(job); else imageLookupQueue.push(job);
         pumpImageLookupQueue();
       });
     }
@@ -810,7 +815,7 @@
         const tr=currentTrip();
         const cityHint=tr?.cityNameEn||tr?.cityLabel||tr?.name||'';
         const imageQuery=[place.nameEn||place.name,cityHint].filter(Boolean).join(' ');
-        image=await queueImageLookup(()=>wikimediaImage(imageQuery, place.lat, place.lng, {city:false, exclude:excludePages}));
+        image=await queueImageLookup(()=>wikimediaImage(imageQuery, place.lat, place.lng, {city:false, exclude:excludePages}), force);
       }catch(e){ image=null; }
       finally{ place.imageLoading=false; }
       if(image?.url){
@@ -844,21 +849,33 @@
       await enrichPlaceImage(id, p, true, new Set(p.imageTriedPages));
     }
 
-    async function enrichCityImage(trip, force=false, excludePages=null){
-      if(!trip || trip.cityImageLoading || (!force && trip.cityImage)) return;
-      if(!force && trip.cityImageFailedAt && Date.now()-trip.cityImageFailedAt < IMAGE_RETRY_COOLDOWN) return;
-      trip.cityImageLoading=true;
+    async function enrichCityImage(tripRef, force=false, excludePages=null){
+      if(!tripRef) return;
+      const id = tripRef.id;
+      if(tripRef.cityImageLoading || (!force && tripRef.cityImage)) return;
+      if(!force && tripRef.cityImageFailedAt && Date.now()-tripRef.cityImageFailedAt < IMAGE_RETRY_COOLDOWN) return;
+      tripRef.cityImageLoading=true;
       let image=null;
       try{
-        image=await queueImageLookup(()=>wikimediaImage(trip.cityNameEn||trip.name, trip.center?.[0], trip.center?.[1], {city:true, exclude:excludePages}));
+        image=await queueImageLookup(()=>wikimediaImage(tripRef.cityNameEn||tripRef.name, tripRef.center?.[0], tripRef.center?.[1], {city:true, exclude:excludePages}), force);
       }catch(e){ image=null; }
-      finally{ trip.cityImageLoading=false; }
+      // The `trips` array can be swapped out from under us while the lookup
+      // above was in flight (a cloud sync merge replaces trip objects with
+      // freshly-decoded ones, even on a tie). Re-resolve the *current* trip
+      // object by id and write the result there — writing to the stale
+      // `tripRef` we started with would silently vanish, since nothing in
+      // the UI reads from it anymore.
+      const trip = trips.find(x=>x.id===id);
+      tripRef.cityImageLoading=false;
+      if(!trip) return; // trip was deleted while the lookup was running
+      trip.cityImageLoading=false;
       if(image?.url){
         trip.cityImage=image.url;
         trip.cityImagePage=image.pageUrl||'';
         trip.cityImageAuthor=image.author||'';
         trip.cityImageLicense=image.license||'';
         trip.cityImageLicenseUrl=image.licenseUrl||'';
+        trip.updatedAt=Date.now();
         delete trip.cityImageFailedAt;
         if(image.pageUrl){
           trip.cityImageTriedPages=trip.cityImageTriedPages||[];
@@ -931,26 +948,35 @@
       } catch(e){ return [] }
     }
 
-    async function enrichTripCity(trip){
-      if(!trip) return;
-      if(!trip.cityEnriched){
+    async function enrichTripCity(tripRef){
+      if(!tripRef) return;
+      const id = tripRef.id;
+      if(!tripRef.cityEnriched){
         try{
-          const q = trip.cityLabel || trip.name;
+          const q = tripRef.cityLabel || tripRef.name;
           if(googleAvailable()){
-            const [he,en] = await Promise.all([googleTextSearchLang(q,'he',trip.center), googleTextSearchLang(q,'en',trip.center)]);
+            const [he,en] = await Promise.all([googleTextSearchLang(q,'he',tripRef.center), googleTextSearchLang(q,'en',tripRef.center)]);
+            // `trips` may have been swapped out (cloud sync merge) while the
+            // lookup above was running — re-resolve the live object by id
+            // before writing anything, same reason as in enrichCityImage.
+            const trip = trips.find(x=>x.id===id);
+            if(!trip) return; // trip was deleted while the lookup was running
             const gotHe = he[0]?.displayName?.text || '', gotEn = en[0]?.displayName?.text || '';
             trip.cityNameHe = gotHe || trip.cityNameHe || (lang==='he'?trip.name:'');
             trip.cityNameEn = gotEn || trip.cityNameEn || (lang==='en'?trip.name:'');
             // Only lock this in once we actually got real data back — a network
             // hiccup or empty result should not permanently block retrying.
             if(gotHe || gotEn) trip.cityEnriched = true;
+            saveTrips();
+            enrichCityImage(trip);
+            return;
           } else {
-            trip.cityEnriched = true; // nothing more to fetch without a key
+            tripRef.cityEnriched = true; // nothing more to fetch without a key
+            saveTrips();
           }
-          saveTrips();
         }catch(e){ /* leave cityEnriched unset so this retries next time */ }
       }
-      enrichCityImage(trip);
+      enrichCityImage(trips.find(x=>x.id===id) || tripRef);
     }
 
     /* ---------- Home ---------- */
@@ -974,7 +1000,7 @@
       box.querySelectorAll('.open-trip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openTrip(b.dataset.id)}));
       box.querySelectorAll('.del-trip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteTrip(b.dataset.id)}));
       trips.filter(tr=>!tr.cityEnriched).slice(0,5).forEach(enrichTripCity);
-      trips.filter(tr=>tr.cityEnriched && !tr.cityImage && !tr.cityImageLoading).slice(0,5).forEach(enrichCityImage);
+      trips.filter(tr=>tr.cityEnriched && !tr.cityImage && !tr.cityImageLoading).slice(0,5).forEach(tr=>enrichCityImage(tr));
     }
 
 
