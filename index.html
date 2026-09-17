@@ -1050,7 +1050,7 @@
           return an.localeCompare(bn, lang);
         });
       } else {
-        list.sort((a,b)=> (b.startDate||'').localeCompare(a.startDate||''));
+        list.sort((a,b)=> (a.startDate||'').localeCompare(b.startDate||''));
       }
       return list;
     }
