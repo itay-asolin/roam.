@@ -46,6 +46,9 @@
     .btn{border:0;border-radius:10px;padding:11px 15px;font-weight:500;font-size:13px;background:var(--ink);color:#fff}
     .btn.light{background:#fff;color:var(--ink);border:1px solid var(--line)}.btn.light:hover{background:var(--cream)}
     .btn.orange{background:var(--orange);color:#fff}.btn.danger{color:#b23b2f}
+    .sort-toggle{display:flex;gap:2px;background:#f1f5ee;border:1px solid var(--line);border-radius:10px;padding:2px}
+    .sort-toggle .sort-btn{border:0;background:transparent;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer}
+    .sort-toggle .sort-btn.active{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
     .destinations{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px;margin:0 0 40px}
     .dest-card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;min-width:0}
     .dest-card-media{height:145px;background:linear-gradient(135deg,#d9e0d6,#bfc9c0) center/cover no-repeat;position:relative}
@@ -186,7 +189,13 @@
         <p data-i18n="home.sub"></p>
         <div class="hero-side"><button class="btn orange" id="newTripHeroBtn" data-i18n="home.new"></button></div>
       </section>
-      <div class="section-head" style="margin-top:32px"><div><h2 data-i18n="home.listTitle"></h2><p data-i18n="home.listSub"></p></div></div>
+      <div class="section-head" style="margin-top:32px">
+        <div><h2 data-i18n="home.listTitle"></h2><p data-i18n="home.listSub"></p></div>
+        <div class="sort-toggle" id="sortToggle" role="group">
+          <button type="button" class="sort-btn" data-sort="date" data-i18n="sort.date"></button>
+          <button type="button" class="sort-btn" data-sort="az" data-i18n="sort.az"></button>
+        </div>
+      </div>
       <div class="destinations" id="destinations"></div>
     </section>
 
@@ -196,7 +205,6 @@
         <div class="eyebrow" data-i18n="trip.eyebrow"></div>
         <h1 id="tripName"></h1>
         <p data-i18n="trip.heroSub"></p>
-        <a id="tripHeroCredit" class="hero-image-credit" href="#" target="_blank" rel="noopener" style="display:none"></a>
         <button type="button" class="hero-swap" id="tripHeroSwapBtn" data-i18n="image.swap" onclick="swapCityImage()"></button>
         <div class="hero-side">
           <label class="datefield"><span data-i18n="trip.start"></span><input type="date" id="tripStart"></label>
@@ -347,6 +355,7 @@
         'lang.switch':'עברית','export':'Export','import':'Import','cancel':'Cancel','close':'Close',
         'home.eyebrow':'Your trips','home.title':'Where will you roam?','home.sub':'Open a saved destination to keep planning, or start a new one.','home.new':'+ New destination','home.listTitle':'Your destinations','home.listSub':'Everything is saved in this browser.','home.empty':'No destinations yet — create your first trip to start planning.',
         'card.open':'Open','card.delete':'Delete','card.noDates':'No dates yet','card.places':'{n} places','card.days':'{n} days','card.day':'1 day',
+        'sort.az':'A–Z','sort.date':'Date',
         'trip.back':'← All destinations','trip.eyebrow':'Trip','trip.heroSub':'Search places, drop them into days, and the map keeps your city in view.','trip.start':'Start','trip.share':'Copy share link','trip.noDates':'No dates set',
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time',
         'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
@@ -373,6 +382,7 @@
         'lang.switch':'English','export':'גיבוי','import':'ייבוא','cancel':'ביטול','close':'סגירה',
         'home.eyebrow':'הטיולים שלך','home.title':'לאן נוסעים?','home.sub':'פתחו יעד שמור כדי להמשיך לתכנן, או התחילו חדש.','home.new':'+ יעד חדש','home.listTitle':'היעדים שלך','home.listSub':'הכול נשמר בדפדפן הזה.','home.empty':'עדיין אין יעדים — צרו את הטיול הראשון כדי להתחיל.',
         'card.open':'פתיחה','card.delete':'מחיקה','card.noDates':'ללא תאריכים','card.places':'{n} מקומות','card.days':'{n} ימים','card.day':'יום אחד',
+        'sort.az':'א–ת','sort.date':'תאריך',
         'trip.back':'→ כל היעדים','trip.eyebrow':'טיול','trip.heroSub':'חפשו מקומות, שבצו אותם לימים, והמפה תשמור על העיר שלכם בפריים.','trip.start':'תחילה','trip.share':'העתקת קישור שיתוף','trip.noDates':'לא נקבעו תאריכים',
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה',
         'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
@@ -414,6 +424,7 @@
       appId: '1:31754901891:web:5991b407d2c17f0b943eb6'
     };
     let trips = [], currentTripId = null, places = {}, schedule = [];
+    let homeSortMode = localStorage.getItem('roam-home-sort') || 'date';
     let freeMap, routeLines = [], liveMarkers = [], infoWindow, activeFilter = 'all', mapsOk = false;
     let firebaseApp=null, firebaseAuth=null, firestore=null, firebaseUser=null, firebaseUnsub=null, firebaseReady=false, cloudSaveTimer=null, suppressCloudSave=false;
     const DAY_COLORS = ['#e2673f','#5f81c4','#8768b5','#3f9182','#d4a03f','#8a6d59','#c2678c','#6a8f52','#5a8aa4','#96784d'];
@@ -565,8 +576,21 @@
     // affects the trip view/map before doing the (expensive, visible) full
     // re-render, and skips it when nothing really changed.
     let lastRenderedTripKey = null;
+    // Plain JSON.stringify is sensitive to object key order, so two objects
+    // with identical content but keys inserted in a different order (e.g.
+    // one rebuilt fresh from a cloud snapshot) produced different strings —
+    // that false "changed" reading is what caused the constant flicker.
+    // Sorting keys recursively before stringifying makes the comparison
+    // depend only on actual content.
+    function stableStringify(value){
+      if(Array.isArray(value)) return '['+value.map(stableStringify).join(',')+']';
+      if(value && typeof value==='object'){
+        return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+stableStringify(value[k])).join(',')+'}';
+      }
+      return JSON.stringify(value);
+    }
     function tripRenderKey(tr){
-      return JSON.stringify({
+      return stableStringify({
         places:tr.places, schedule:tr.schedule, cityImage:tr.cityImage,
         cityNameHe:tr.cityNameHe, cityNameEn:tr.cityNameEn, travelMode:tr.travelMode,
         startDate:tr.startDate, note:tr.note, packing:tr.packing
@@ -1017,10 +1041,24 @@
     }
 
     /* ---------- Home ---------- */
+    function sortedTrips(){
+      const list = trips.slice();
+      if(homeSortMode==='az'){
+        list.sort((a,b)=>{
+          const an = (lang==='he' ? (a.cityNameHe||a.name) : (a.cityNameEn||a.name)) || '';
+          const bn = (lang==='he' ? (b.cityNameHe||b.name) : (b.cityNameEn||b.name)) || '';
+          return an.localeCompare(bn, lang);
+        });
+      } else {
+        list.sort((a,b)=> (b.startDate||'').localeCompare(a.startDate||''));
+      }
+      return list;
+    }
     function renderHome(){
       const box = document.getElementById('destinations');
+      document.querySelectorAll('#sortToggle .sort-btn').forEach(b=> b.classList.toggle('active', b.dataset.sort===homeSortMode));
       if(!trips.length){ box.innerHTML = `<div class="empty-state">${esc(t('home.empty'))}</div>`; return }
-      box.innerHTML = trips.map(tr=>{
+      box.innerHTML = sortedTrips().map(tr=>{
         const dates = tr.startDate ? new Date(tr.startDate+'T00:00:00').toLocaleDateString(locale(),{day:'numeric',month:'short',year:'numeric'}) : t('card.noDates');
         const title = lang==='he' ? (tr.cityNameHe||tr.name) : (tr.cityNameEn||tr.name);
         const other = lang==='he' ? tr.cityNameEn : tr.cityNameHe;
@@ -1120,14 +1158,6 @@
           : '';
         hero.style.backgroundSize='cover';
         hero.style.backgroundPosition='center';
-        const credit=document.getElementById('tripHeroCredit');
-        if(credit){
-          if(trip.cityImagePage){
-            credit.href=trip.cityImagePage;
-            credit.textContent='Wikimedia Commons' + (trip.cityImageAuthor ? ' · '+trip.cityImageAuthor : '');
-            credit.style.display='inline-block';
-          }else{ credit.style.display='none'; }
-        }
         const swapBtn=document.getElementById('tripHeroSwapBtn');
         if(swapBtn) swapBtn.style.display = 'inline-block';
       }
@@ -1539,6 +1569,12 @@
     }
     daysDecBtn.addEventListener('click',()=>setDays(selectedTripDays-1));
     daysIncBtn.addEventListener('click',()=>setDays(selectedTripDays+1));
+
+    document.querySelectorAll('#sortToggle .sort-btn').forEach(btn=> btn.addEventListener('click', ()=>{
+      homeSortMode = btn.dataset.sort;
+      try{ localStorage.setItem('roam-home-sort', homeSortMode) }catch(e){}
+      renderHome();
+    }));
 
     document.getElementById('newTripHeroBtn').onclick = ()=>{
       document.getElementById('newTripName').value = '';
