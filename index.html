@@ -428,6 +428,15 @@
     const IMAGE_RETRY_COOLDOWN = 5*60*1000; // don't hammer the same failed place/city more than once per 5 min
     let activeImageLookups = 0;
     const imageLookupQueue = [];
+    // Guards keyed by trip id, not by a property on the trip object itself.
+    // The `trips` array gets swapped for fresh objects on every cloud sync
+    // merge, so a flag like `trip.cityImageLoading` living on one object
+    // instance doesn't reliably stop a *different* (freshly-synced) object
+    // for the same trip id from starting a duplicate, concurrent lookup.
+    // That was producing a growing pile-up of redundant Commons searches —
+    // this Set survives the object churn because it's keyed by id.
+    const cityImageLookupsInFlight = new Set();
+    const cityMetaLookupsInFlight = new Set();
     function queueImageLookup(fn, priority=false){
       return new Promise((resolve,reject)=>{
         const job=()=>fn().then(resolve,reject);
@@ -852,13 +861,16 @@
     async function enrichCityImage(tripRef, force=false, excludePages=null){
       if(!tripRef) return;
       const id = tripRef.id;
-      if(tripRef.cityImageLoading || (!force && tripRef.cityImage)) return;
+      if(cityImageLookupsInFlight.has(id)) return;
+      if(!force && tripRef.cityImage) return;
       if(!force && tripRef.cityImageFailedAt && Date.now()-tripRef.cityImageFailedAt < IMAGE_RETRY_COOLDOWN) return;
-      tripRef.cityImageLoading=true;
+      cityImageLookupsInFlight.add(id);
+      tripRef.cityImageLoading=true; // best-effort, for any UI reading it off this instance directly
       let image=null;
       try{
         image=await queueImageLookup(()=>wikimediaImage(tripRef.cityNameEn||tripRef.name, tripRef.center?.[0], tripRef.center?.[1], {city:true, exclude:excludePages}), force);
       }catch(e){ image=null; }
+      finally{ cityImageLookupsInFlight.delete(id); }
       // The `trips` array can be swapped out from under us while the lookup
       // above was in flight (a cloud sync merge replaces trip objects with
       // freshly-decoded ones, even on a tie). Re-resolve the *current* trip
@@ -892,7 +904,7 @@
     }
 
     async function swapCityImageForTrip(id){
-      const trip=trips.find(x=>x.id===id); if(!trip || trip.cityImageLoading) return;
+      const trip=trips.find(x=>x.id===id); if(!trip || cityImageLookupsInFlight.has(id)) return;
       trip.cityImageTriedPages=trip.cityImageTriedPages||[];
       if(trip.cityImagePage && !trip.cityImageTriedPages.includes(trip.cityImagePage)) trip.cityImageTriedPages.push(trip.cityImagePage);
       // Don't clear the current image before searching — keep it showing
@@ -952,6 +964,8 @@
       if(!tripRef) return;
       const id = tripRef.id;
       if(!tripRef.cityEnriched){
+        if(cityMetaLookupsInFlight.has(id)) return;
+        cityMetaLookupsInFlight.add(id);
         try{
           const q = tripRef.cityLabel || tripRef.name;
           if(googleAvailable()){
@@ -975,6 +989,7 @@
             saveTrips();
           }
         }catch(e){ /* leave cityEnriched unset so this retries next time */ }
+        finally{ cityMetaLookupsInFlight.delete(id); }
       }
       enrichCityImage(trips.find(x=>x.id===id) || tripRef);
     }
@@ -999,8 +1014,8 @@
       box.querySelectorAll('.dest-card').forEach(c=>c.addEventListener('click',()=>openTrip(c.dataset.id)));
       box.querySelectorAll('.open-trip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openTrip(b.dataset.id)}));
       box.querySelectorAll('.del-trip').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();deleteTrip(b.dataset.id)}));
-      trips.filter(tr=>!tr.cityEnriched).slice(0,5).forEach(enrichTripCity);
-      trips.filter(tr=>tr.cityEnriched && !tr.cityImage && !tr.cityImageLoading).slice(0,5).forEach(tr=>enrichCityImage(tr));
+      trips.filter(tr=>!tr.cityEnriched && !cityMetaLookupsInFlight.has(tr.id)).slice(0,5).forEach(enrichTripCity);
+      trips.filter(tr=>tr.cityEnriched && !tr.cityImage && !cityImageLookupsInFlight.has(tr.id)).slice(0,5).forEach(tr=>enrichCityImage(tr));
     }
 
 
@@ -1628,18 +1643,17 @@
     }
     async function refreshAllImages(){
       const tr=currentTrip(); if(!tr) return;
-      // Existing images in older versions may be wrong. Refresh them once, then keep the selected Commons image.
-      const placesList=Object.entries(places).filter(([,p])=>p && !p.imageRefreshDone && !p.imageLoading);
+      // Once a place/city has an image, leave it alone — never re-search
+      // just because the trip was reopened. (This used to force one re-check
+      // per place/city "in case an older version picked a bad photo" — but
+      // that meant every trip paid for a full re-search on next open even
+      // when the existing photo was perfectly good. A found image is now
+      // treated as final; the only way to change it is the manual 🔄 swap.)
+      const placesList=Object.entries(places).filter(([,p])=>p && !p.image && !p.imageLoading);
       for(const [id,p] of placesList.slice(0,8)){
-        p.imageRefreshDone=true;
-        await enrichPlaceImage(id,p,true);
+        await enrichPlaceImage(id,p);
       }
-      if(tr.cityImage){
-        if(!tr.cityImageRefreshDone){
-          tr.cityImageRefreshDone=true;
-          await enrichCityImage(tr,true);
-        }
-      } else {
+      if(!tr.cityImage){
         await enrichCityImage(tr);
       }
       persist();
