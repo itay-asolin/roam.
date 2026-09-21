@@ -139,6 +139,18 @@
         .search-place-result{display:flex;align-items:center;gap:10px;width:100%}.search-place-result img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex:0 0 auto}
 .nearby-list{max-height:180px;overflow:auto;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
     .nearby-list button{display:block;width:100%;text-align:start;border:0;background:none;padding:6px 0;color:var(--moss);font-size:12px}
+    .idea-card{font-family:var(--ui);width:240px;line-height:1.45;color:var(--ink)}
+    .idea-card img{display:block;width:100%;height:120px;object-fit:cover;border-radius:10px;margin-bottom:8px;background:var(--cream)}
+    .idea-card h4{margin:0 0 2px;font-family:var(--display);font-weight:400;font-size:16px}
+    .idea-card .meta{font-size:12px;color:var(--muted)}
+    .idea-card .row{font-size:12px;margin-top:6px}
+    .idea-card .sum{font-size:12px;margin-top:6px;color:#3a463f}
+    .idea-card .ok{color:#2f7a4d}.idea-card .no{color:#a24a2a}
+    .idea-card .links{display:flex;gap:14px;margin-top:8px;font-size:12px}
+    .idea-card .links a{color:var(--moss)}
+    .idea-card .add-row{display:flex;gap:6px;margin-top:10px}
+    .idea-card select{flex:1;min-width:0;font-size:12px;padding:6px;border:1px solid var(--line);border-radius:8px;background:#fff}
+    .idea-card .add-idea-btn{border:0;background:var(--moss);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;white-space:nowrap}
     .day-legend{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
     .day-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:11.5px;color:var(--muted)}
     .day-chip i{width:9px;height:9px;border-radius:50%;display:block}
@@ -241,6 +253,7 @@
           <button id="centerCityBtn" data-i18n="map.centerCity"></button>
           <button id="fitBtn" data-i18n="map.fit"></button>
           <button id="nearbyBtn" data-i18n="map.nearby"></button>
+          <button id="clearIdeasBtn" data-i18n="nearby.clear" style="display:none"></button>
           <button id="addPlaceBtn" data-i18n="map.addPlace"></button>
            <button id="mapExpandBtn" class="map-expand" data-i18n="map.expand"></button>
         </div>
@@ -382,7 +395,7 @@
         'note.title':'Trip note','note.ph':'Things to remember, ideas to leave room for…',
         'new.title':'New destination','new.sub':'Pick the city you are travelling to — the map and all searches focus on it.','new.dest':'City','new.destPh':'Start typing a city — e.g. Lisbon','new.length':'Trip length','new.dates':'Start date (optional)','new.create':'Create destination','new.needName':'Pick a city first.','new.days':'{n} days','new.day':'1 day','new.searching':'Searching cities…','new.noCity':'No city found. You can still use the name as typed.',
         'add.title':'Add places','add.sub':'Search a place in your city and drop it into a day.','add.day':'Add to day','add.search':'Search','add.searchPh':'e.g. central market','add.hint':'Searches are limited to your city, so short names work.','add.searching':'Searching…','add.none':'No places found. Try a different spelling.','add.error':'Search is unavailable right now.',
-        'nearby.title':'Nearby ideas','nearby.none':'No suggestions here.','nearby.error':'Nearby ideas are unavailable right now.','nearby.find':'✦ What is near here?',
+        'nearby.title':'Nearby ideas','nearby.none':'No suggestions here.','nearby.error':'Nearby ideas are unavailable right now.','nearby.find':'✦ What is near here?','nearby.clear':'✕ Clear ideas','nearby.openNow':'Open now','nearby.closedNow':'Closed now','nearby.website':'Website','nearby.gmaps':'Google Maps','nearby.loading':'Loading details…',
         'place.noNotes':'No notes','place.checkHours':'Check hours','place.added':'Added from search','place.addedNearby':'Added from nearby ideas',
         'confirm.deleteTrip':'Delete this destination? This cannot be undone.','confirm.minDay':'A trip needs at least one day.','confirm.removeDay':'Remove day {n}?','confirm.moveStops':'Day {n} has {c} stop(s). Remove it and move them to day {t}?','confirm.importShared':'Add the shared trip “{name}” to this browser?','confirm.importFile':'Add {n} trip(s) from this file?',
         'toast.copied':'Share link copied.','toast.copyFail':'Could not copy — the link is in the address bar.','toast.exported':'Backup file downloaded.','toast.imported':'Trips imported.','toast.badFile':'That file is not a Roam backup.',
@@ -410,7 +423,7 @@
         'note.title':'הערה לטיול','note.ph':'דברים לזכור, רעיונות להשאיר להם מקום…',
         'new.title':'יעד חדש','new.sub':'בחרו את העיר שאליה נוסעים — המפה וכל החיפושים יתמקדו בה.','new.dest':'עיר','new.destPh':'התחילו להקליד עיר — למשל ליסבון','new.length':'אורך הטיול','new.dates':'תאריך התחלה (לא חובה)','new.create':'יצירת יעד','new.needName':'קודם בחרו עיר.','new.days':'{n} ימים','new.day':'יום אחד','new.searching':'מחפש ערים…','new.noCity':'לא נמצאה עיר. אפשר להשתמש בשם כפי שהוקלד.',
         'add.title':'הוספת מקומות','add.sub':'חפשו מקום בעיר שלכם ושבצו אותו ליום.','add.day':'הוספה ליום','add.search':'חיפוש','add.searchPh':'למשל: שוק מרכזי','add.hint':'החיפוש מוגבל לעיר שלכם, כך שגם שמות קצרים עובדים.','add.searching':'מחפש…','add.none':'לא נמצאו מקומות. נסו ניסוח אחר.','add.error':'החיפוש אינו זמין כרגע.',
-        'nearby.title':'רעיונות בסביבה','nearby.none':'לא נמצאו הצעות כאן.','nearby.error':'ההצעות אינן זמינות כרגע.','nearby.find':'✦ מה יש בסביבה?',
+        'nearby.title':'רעיונות בסביבה','nearby.none':'לא נמצאו הצעות כאן.','nearby.error':'ההצעות אינן זמינות כרגע.','nearby.find':'✦ מה יש בסביבה?','nearby.clear':'✕ ניקוי הצעות','nearby.openNow':'פתוח עכשיו','nearby.closedNow':'סגור עכשיו','nearby.website':'אתר','nearby.gmaps':'Google Maps','nearby.loading':'טוען פרטים…',
         'place.noNotes':'אין הערות','place.checkHours':'בדקו שעות פתיחה','place.added':'נוסף מחיפוש','place.addedNearby':'נוסף מרעיונות בסביבה',
         'confirm.deleteTrip':'למחוק את היעד? אי אפשר לבטל.','confirm.minDay':'בטיול חייב להיות לפחות יום אחד.','confirm.removeDay':'להסיר את יום {n}?','confirm.moveStops':'ביום {n} יש {c} עצירות. להסיר אותו ולהעביר אותן ליום {t}?','confirm.importShared':'להוסיף את הטיול המשותף ״{name}״ לדפדפן הזה?','confirm.importFile':'להוסיף {n} טיולים מהקובץ?',
         'toast.copied':'קישור השיתוף הועתק.','toast.copyFail':'ההעתקה נכשלה — הקישור נמצא בשורת הכתובת.','toast.exported':'קובץ הגיבוי הורד.','toast.imported':'הטיולים יובאו.','toast.badFile':'הקובץ אינו גיבוי של Roam.',
@@ -441,6 +454,7 @@
     let freeMap, routeLines = [], liveMarkers = [], infoWindow, activeFilter = 'all', mapsOk = false;
     let worldMap = null, worldMarkers = [], worldInfoWindow = null;
     let pendingPoiPlace = null;
+    let ideas = [], ideaMarkers = [], ideaWindow = null, ideaCurrent = null;
     let firebaseApp=null, firebaseAuth=null, firestore=null, firebaseUser=null, firebaseUnsub=null, firebaseReady=false, cloudSaveTimer=null, suppressCloudSave=false;
     const DAY_COLORS = ['#e2673f','#5f81c4','#8768b5','#3f9182','#d4a03f','#8a6d59','#c2678c','#6a8f52','#5a8aa4','#96784d'];
 
@@ -990,11 +1004,19 @@
       if(!res.ok) throw new Error('city ' + res.status);
       return (await res.json()).places || [];
     }
-    async function googleNearby(lat,lng){
+    async function googleNearby(lat,lng,radius=1500){
       if(!googleAvailable()) throw new Error('no key');
-      const res = await fetch(placesUrl(':searchNearby'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.primaryType'), body:JSON.stringify({ includedTypes:['tourist_attraction','restaurant','cafe','bar','park','museum'], maxResultCount:12, languageCode:langCode(), locationRestriction:{ circle:{ center:{ latitude:lat, longitude:lng }, radius:1500 } } }) });
+      const res = await fetch(placesUrl(':searchNearby'), { method:'POST', headers:placesHeaders('places.id,places.displayName,places.location,places.primaryType,places.primaryTypeDisplayName,places.formattedAddress'), body:JSON.stringify({ includedTypes:['tourist_attraction','restaurant','cafe','bar','park','museum'], maxResultCount:20, languageCode:langCode(), locationRestriction:{ circle:{ center:{ latitude:lat, longitude:lng }, radius } } }) });
       if(!res.ok) throw new Error('nearby ' + res.status);
       return (await res.json()).places || [];
+    }
+    // Loaded only when a suggestion pin is clicked (rating/hours/website are a pricier Places tier).
+    async function googlePlaceDetails(id){
+      if(!googleAvailable()) throw new Error('no key');
+      const mask = 'rating,userRatingCount,formattedAddress,regularOpeningHours.openNow,websiteUri,googleMapsUri,editorialSummary';
+      const res = await fetch(placesUrl(encodeURIComponent(id)) + '?languageCode=' + langCode(), { headers:placesHeaders(mask) });
+      if(!res.ok) throw new Error('details ' + res.status);
+      return await res.json();
     }
 
     /* ---------- City lookup (Google first, OSM fallback) ---------- */
@@ -1133,6 +1155,7 @@
     function openTrip(id){
       const trip = trips.find(x=>x.id===id);
       if(!trip) return;
+      clearIdeas();
       currentTripId = id; places = trip.places; schedule = trip.schedule;
        setSyncState(trip.sharedId ? (navigator.onLine ? 'synced' : 'offline') : 'offline');
        if(trip.sharedId && firebaseReady) subscribeToSharedTrip(trip);
@@ -1151,6 +1174,7 @@
       window.scrollTo(0,0);
     }
     function backToHome(){
+      clearIdeas();
       currentTripId = null;
       lastRenderedTripKey = null;
       document.getElementById('homeView').style.display = 'block';
@@ -1544,7 +1568,7 @@
 
     document.querySelectorAll('.filter').forEach(btn=>btn.addEventListener('click',()=>{
       document.querySelectorAll('.filter').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active'); activeFilter = btn.dataset.filter; redrawMap();
+      btn.classList.add('active'); activeFilter = btn.dataset.filter; redrawMap(); drawIdeas();
     }));
     document.getElementById('addDayBtn').onclick = ()=>{ schedule.push({date:'',stops:[]}); render(); loadWeather() };
     document.getElementById('removeDayBtn').onclick = ()=>{
@@ -1569,7 +1593,8 @@
     };
     document.getElementById('centerCityBtn').onclick = centerOnCity;
     document.getElementById('fitBtn').onclick = fitAllPlaces;
-    document.getElementById('nearbyBtn').onclick = ()=>{ if(!freeMap) return; const c = freeMap.getCenter(); nearbyAt(c.lat(), c.lng()) };
+    document.getElementById('nearbyBtn').onclick = ()=>{ if(!freeMap) return; const c = freeMap.getCenter(); nearbyAt(c.lat(), c.lng(), viewRadius()) };
+    document.getElementById('clearIdeasBtn').onclick = clearIdeas;
 
     /* ---------- Weather + weather-aware packing ---------- */
     const WX = {
@@ -1886,7 +1911,7 @@
 
     function addPlace(x, dayIndex, note){
       const id='p'+Date.now()+Math.floor(Math.random()*1000);
-      places[id]={name:x.name,nameHe:x.nameHe||'',nameEn:x.nameEn||'',image:x.image||'',lat:x.lat,lng:x.lng,category:x.category,notes:note||''};
+      places[id]={name:x.name,nameHe:x.nameHe||'',nameEn:x.nameEn||'',image:x.image||'',imagePage:x.imagePage||'',imageAuthor:x.imageAuthor||'',imageLicense:x.imageLicense||'',imageLicenseUrl:x.imageLicenseUrl||'',lat:x.lat,lng:x.lng,category:x.category,notes:note||''};
       schedule[dayIndex].stops.push([id,'']);
       render();
       if(freeMap) freeMap.panTo({lat:x.lat,lng:x.lng});
@@ -1894,27 +1919,117 @@
       enrichPlaceImage(id, places[id]);
     }
 
-    async function nearbyAt(lat,lng){
+    /* ---------- Suggestions: pins on the map, details on click ---------- */
+    const IDEA_ICON = { food:'🍽️', sight:'🏛️', activity:'🌿' };
+    function distM(la1,lo1,la2,lo2){
+      const r=x=>x*Math.PI/180, dl=r(la2-la1), dn=r(lo2-lo1);
+      const h=Math.sin(dl/2)**2+Math.cos(r(la1))*Math.cos(r(la2))*Math.sin(dn/2)**2;
+      return 12742000*Math.asin(Math.sqrt(h));
+    }
+    function viewRadius(){
+      const b = freeMap && freeMap.getBounds(); if(!b) return 1500;
+      const c = b.getCenter(), ne = b.getNorthEast();
+      return Math.round(Math.min(5000, Math.max(600, distM(c.lat(),c.lng(),ne.lat(),ne.lng())*0.7)));
+    }
+    function clearIdeas(){
+      ideaMarkers.forEach(m=>m.setMap(null)); ideaMarkers = []; ideas = []; ideaCurrent = null;
+      if(ideaWindow) ideaWindow.close();
+      const btn = document.getElementById('clearIdeasBtn'); if(btn) btn.style.display = 'none';
+    }
+    function drawIdeas(){
+      ideaMarkers.forEach(m=>m.setMap(null)); ideaMarkers = [];
+      if(!freeMap) return;
+      ideas.forEach(s=>{
+        if(!passesFilter(s)) return;
+        const m = new google.maps.Marker({
+          position:{lat:s.lat,lng:s.lng}, map:freeMap, title:s.name, zIndex:1,
+          label:{ text:IDEA_ICON[bucketOf(s)], fontSize:'13px' },
+          icon:{ path:google.maps.SymbolPath.CIRCLE, scale:15, fillColor:'#fff', fillOpacity:1, strokeColor:'#e2673f', strokeWeight:2.5 }
+        });
+        m.addListener('click', ()=>openIdea(s, m));
+        ideaMarkers.push(m);
+      });
+    }
+    function ideaCard(s){
+      const d = s.details || {};
+      const el = document.createElement('div');
+      el.className = 'idea-card'; el.dir = lang==='he' ? 'rtl' : 'ltr';
+      const bits = [];
+      if(d.rating) bits.push(`★ ${(+d.rating).toFixed(1)}${d.userRatingCount ? ` (${(+d.userRatingCount).toLocaleString(locale())})` : ''}`);
+      const open = d.regularOpeningHours && d.regularOpeningHours.openNow;
+      if(open === true) bits.push(`<span class="ok">${esc(t('nearby.openNow'))}</span>`);
+      else if(open === false) bits.push(`<span class="no">${esc(t('nearby.closedNow'))}</span>`);
+      const addr = s.address || d.formattedAddress || '';
+      const web = /^https?:\/\//i.test(d.websiteUri||'') ? d.websiteUri : '';
+      const gmaps = d.googleMapsUri || `https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}${s.id ? '&query_place_id='+encodeURIComponent(s.id) : ''}`;
+      el.innerHTML = `
+        ${s.image ? `<img src="${esc(s.image)}" alt="" title="${esc(s.imageAuthor||'Wikimedia Commons')}" onerror="this.style.display='none'">` : ''}
+        <h4>${esc(s.name)}</h4>
+        <div class="meta">${esc(s.typeLabel || s.category)}</div>
+        ${bits.length ? `<div class="row">${bits.join(' · ')}</div>` : (s.id && s.details === undefined ? `<div class="row meta">${esc(t('nearby.loading'))}</div>` : '')}
+        ${d.editorialSummary && d.editorialSummary.text ? `<div class="sum">${esc(d.editorialSummary.text)}</div>` : ''}
+        ${addr ? `<div class="row meta">${esc(addr)}</div>` : ''}
+        <div class="links">${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">${esc(t('nearby.website'))}</a>` : ''}<a href="${esc(gmaps)}" target="_blank" rel="noopener">${esc(t('nearby.gmaps'))}</a></div>
+        <div class="add-row"><select></select><button class="add-idea-btn">${esc(t('map.addThisPlace'))}</button></div>`;
+      const sel = el.querySelector('select');
+      sel.innerHTML = schedule.map((_,i)=>`<option value="${i}">${esc(t('day',{n:i+1}))}${dayDate(i) ? ' · '+esc(dayDate(i)) : ''}</option>`).join('');
+      sel.value = String(Math.min(s.day||0, schedule.length-1));
+      sel.onchange = ()=>{ s.day = +sel.value };
+      el.querySelector('.add-idea-btn').onclick = ()=>addIdea(s);
+      return el;
+    }
+    function openIdea(s, marker){
+      ideaCurrent = s;
+      if(infoWindow) infoWindow.close();
+      if(!ideaWindow) ideaWindow = new google.maps.InfoWindow();
+      ideaWindow.setContent(ideaCard(s));
+      ideaWindow.open({map:freeMap, anchor:marker});
+      loadIdeaExtras(s);
+    }
+    async function loadIdeaExtras(s){
+      const refresh = ()=>{ if(ideaCurrent === s && ideaWindow) ideaWindow.setContent(ideaCard(s)) };
+      if(!s.imageTried){
+        s.imageTried = true;
+        const tr = currentTrip(), cityHint = (tr && (tr.cityNameEn || tr.cityLabel || tr.name)) || '';
+        queueImageLookup(()=>wikimediaImage([s.nameEn||s.name, cityHint].filter(Boolean).join(' '), s.lat, s.lng, {city:false}), true)
+          .then(img=>{ if(img && img.url){ Object.assign(s,{ image:img.url, imagePage:img.pageUrl||'', imageAuthor:img.author||'', imageLicense:img.license||'', imageLicenseUrl:img.licenseUrl||'' }); refresh() } })
+          .catch(()=>{});
+      }
+      if(s.id && !s.detailsTried){
+        s.detailsTried = true;
+        try{ s.details = await googlePlaceDetails(s.id) }catch(e){ s.details = null }
+        refresh();
+      }
+    }
+    function addIdea(s){
+      const di = Math.min(s.day||0, schedule.length-1);
+      addPlace({ name:s.name, image:s.image, imagePage:s.imagePage, imageAuthor:s.imageAuthor, imageLicense:s.imageLicense, imageLicenseUrl:s.imageLicenseUrl, lat:s.lat, lng:s.lng, category:s.category }, di, t('place.addedNearby'));
+      if(ideaWindow) ideaWindow.close();
+      ideas = ideas.filter(x=>x!==s); drawIdeas();
+    }
+
+    async function nearbyAt(lat,lng,radius=1500){
       try {
         let list;
         try {
-          const found = await googleNearby(lat,lng);
+          const found = await googleNearby(lat,lng,radius);
           if(!found.length) throw new Error('none');
-          list = found.map(x=>({ name:x.displayName?.text||'—', nameEn:'', nameHe:'', image:photoUrl(x.photos?.[0]), lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
+          list = found.map(x=>({ id:x.id||'', name:x.displayName?.text||'—', typeLabel:x.primaryTypeDisplayName?.text||'', address:x.formattedAddress||'', lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
         } catch(e){
-          const query = `[out:json][timeout:15];(node(around:1200,${lat},${lng})[tourism];node(around:1200,${lat},${lng})[amenity~"restaurant|cafe|bar"];node(around:1200,${lat},${lng})[leisure~"park|garden"];);out 12;`;
+          const query = `[out:json][timeout:15];(node(around:${radius},${lat},${lng})[tourism];node(around:${radius},${lat},${lng})[amenity~"restaurant|cafe|bar"];node(around:${radius},${lat},${lng})[leisure~"park|garden"];);out 40;`;
           const data = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query)).then(r=>r.json());
-          list = data.elements.filter(x=>x.tags?.name).slice(0,8).map(x=>({ name:x.tags.name, lat:x.lat, lng:x.lon, category:x.tags.amenity||x.tags.tourism||x.tags.leisure||'place' }));
+          list = data.elements.filter(x=>x.tags?.name).slice(0,20).map(x=>({ id:'', name:x.tags.name, lat:x.lat, lng:x.lon, category:x.tags.amenity||x.tags.tourism||x.tags.leisure||'place' }));
         }
-        const win = new google.maps.InfoWindow({
-          position:{lat,lng},
-          content:`<div style="font-family:Rubik,sans-serif;direction:${lang==='he'?'rtl':'ltr'};text-align:start"><b style="font-size:14px">${esc(t('nearby.title'))}</b><div class="nearby-list">${list.map((x,i)=>`<button class="add-idea" data-i="${i}">+ ${esc(x.name)} <small>(${esc(x.category)})</small></button>`).join('') || esc(t('nearby.none'))}</div></div>`
-        });
-        win.addListener('domready', ()=>{
-          document.querySelectorAll('.gm-style-iw .add-idea').forEach(b=> b.onclick = ()=>{ addPlace(list[+b.dataset.i], 0, t('place.addedNearby')); win.close() });
-        });
-        win.open(freeMap);
-      } catch(e){ alert(t('nearby.error')) }
+        // skip places that are already in this trip
+        list = list.filter(x=>!Object.keys(places).some(id=>{ const c = coords(id); return c && distM(c[0],c[1],x.lat,x.lng) < 50 }));
+        if(!list.length){ toast(t('nearby.none')); return }
+        clearIdeas(); ideas = list; drawIdeas();
+        document.getElementById('clearIdeasBtn').style.display = '';
+        const vb = freeMap.getBounds();
+        if(!vb || ideas.some(x=>!vb.contains({lat:x.lat,lng:x.lng}))){
+          const b = new google.maps.LatLngBounds(); ideas.forEach(x=>b.extend({lat:x.lat,lng:x.lng})); freeMap.fitBounds(b, 70);
+        }
+      } catch(e){ toast(t('nearby.error')) }
     }
 
     document.getElementById('fabBtn').onclick = openImporter;
