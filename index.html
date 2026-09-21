@@ -89,7 +89,13 @@
     .thumb-swap:hover{background:var(--cream)}
     .hero-swap{position:absolute;top:18px;inset-inline-end:18px;z-index:3;border:0;background:rgba(255,255,255,.16);backdrop-filter:blur(6px);color:#fff;border-radius:99px;padding:8px 13px;font-size:12.5px;cursor:pointer}
     .hero-swap:hover{background:rgba(255,255,255,.28)}
-    .stop-tools{display:flex;gap:6px;align-items:center}
+    .stop-tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    a.icon-btn{text-decoration:none;display:inline-flex;align-items:center;line-height:1.2}
+    .stop-edit{margin:6px 0 10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#fbfaf6;display:grid;gap:8px}
+    .stop-edit input,.stop-edit textarea{width:100%;font:inherit;font-size:13.5px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;resize:vertical}
+    .stop-edit input{font-weight:500}
+    .stop-edit-actions{display:flex;gap:8px}
+    .stop-edit .save{border:0;background:var(--moss);color:#fff;border-radius:9px;padding:8px 16px;font-size:12.5px}
     .stop-tools select{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 7px;font-size:11.5px;color:var(--muted)}
     .tag{font-size:10.5px;padding:5px 8px;border-radius:99px;background:#f1efe8;color:#626b64}
     .travel{margin:0 0 0 38px;color:var(--muted);font-size:11.5px;padding-inline-start:12px;border-inline-start:1px dashed #bcc3bc;min-height:18px;line-height:18px}
@@ -185,7 +191,7 @@
       html[dir="rtl"] body{direction:rtl} html[dir="rtl"] .head-tools{direction:rtl} html[dir="rtl"] .section-head,html[dir="rtl"] .daytop,html[dir="rtl"] .wx-row,html[dir="rtl"] .dest-meta,html[dir="rtl"] .dest-actions{direction:rtl} html[dir="rtl"] .modal-box,html[dir="rtl"] input,html[dir="rtl"] textarea,html[dir="rtl"] select{direction:rtl} html[dir="rtl"] .modal-actions{justify-content:flex-start}
     }
     @media(max-width:420px){.hero h1{font-size:28px}}
-    @media print{.map-resizer{display:none!important}.map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips{display:none!important}.mapwrap{height:280px}.layout{grid-template-columns:1fr}}
+    @media print{.stop-edit,.transit-btn,.edit-stop{display:none!important}.map-resizer{display:none!important}.map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips{display:none!important}.mapwrap{height:280px}.layout{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
@@ -411,7 +417,7 @@
         'note.title':'Trip note','note.ph':'Things to remember, ideas to leave room for…',
         'new.title':'New destination','new.sub':'Pick the city you are travelling to — the map and all searches focus on it.','new.dest':'City','new.destPh':'Start typing a city — e.g. Lisbon','new.length':'Trip length','new.dates':'Start date (optional)','new.create':'Create destination','new.needName':'Pick a city first.','new.days':'{n} days','new.day':'1 day','new.searching':'Searching cities…','new.noCity':'No city found. You can still use the name as typed.',
         'add.title':'Add places','add.sub':'Search a place in your city and drop it into a day.','add.day':'Add to day','add.search':'Search','add.searchPh':'e.g. central market','add.hint':'Searches are limited to your city, so short names work.','add.searching':'Searching…','add.none':'No places found. Try a different spelling.','add.error':'Search is unavailable right now.',
-        'nearby.title':'Nearby ideas','nearby.none':'No suggestions here.','nearby.error':'Nearby ideas are unavailable right now.','nearby.find':'✦ What is near here?','nearby.clear':'✕ Clear ideas','nearby.openNow':'Open now','nearby.closedNow':'Closed now','nearby.website':'Website','nearby.gmaps':'Google Maps','nearby.loading':'Loading details…','nearby.hours':'Opening hours','idea.titlePh':'Title (optional)','idea.notePh':'A short note or explanation…','idea.save':'Save','idea.saved':'Saved','map.resize':'Drag to stretch the map',
+        'nearby.title':'Nearby ideas','nearby.none':'No suggestions here.','nearby.error':'Nearby ideas are unavailable right now.','nearby.find':'✦ What is near here?','nearby.clear':'✕ Clear ideas','nearby.openNow':'Open now','nearby.closedNow':'Closed now','nearby.website':'Website','nearby.gmaps':'Google Maps','nearby.loading':'Loading details…','nearby.hours':'Opening hours','idea.titlePh':'Title (optional)','stop.edit':'Edit title & note','stop.cancel':'Cancel','stop.transit':'Public transit to here (from the previous stop)','nearby.transit':'Public transit','idea.notePh':'A short note or explanation…','idea.save':'Save','idea.saved':'Saved','map.resize':'Drag to stretch the map',
         'place.noNotes':'No notes','place.checkHours':'Check hours','place.added':'Added from search','place.addedNearby':'Added from nearby ideas',
         'confirm.deleteTrip':'Delete this destination? This cannot be undone.','confirm.minDay':'A trip needs at least one day.','confirm.removeDay':'Remove day {n}?','confirm.moveStops':'Day {n} has {c} stop(s). Remove it and move them to day {t}?','confirm.importShared':'Add the shared trip “{name}” to this browser?','confirm.importFile':'Add {n} trip(s) from this file?',
         'toast.copied':'Share link copied.','toast.copyFail':'Could not copy — the link is in the address bar.','toast.exported':'Backup file downloaded.','toast.imported':'Trips imported.','toast.badFile':'That file is not a Roam backup.',
@@ -439,7 +445,7 @@
         'note.title':'הערה לטיול','note.ph':'דברים לזכור, רעיונות להשאיר להם מקום…',
         'new.title':'יעד חדש','new.sub':'בחרו את העיר שאליה נוסעים — המפה וכל החיפושים יתמקדו בה.','new.dest':'עיר','new.destPh':'התחילו להקליד עיר — למשל ליסבון','new.length':'אורך הטיול','new.dates':'תאריך התחלה (לא חובה)','new.create':'יצירת יעד','new.needName':'קודם בחרו עיר.','new.days':'{n} ימים','new.day':'יום אחד','new.searching':'מחפש ערים…','new.noCity':'לא נמצאה עיר. אפשר להשתמש בשם כפי שהוקלד.',
         'add.title':'הוספת מקומות','add.sub':'חפשו מקום בעיר שלכם ושבצו אותו ליום.','add.day':'הוספה ליום','add.search':'חיפוש','add.searchPh':'למשל: שוק מרכזי','add.hint':'החיפוש מוגבל לעיר שלכם, כך שגם שמות קצרים עובדים.','add.searching':'מחפש…','add.none':'לא נמצאו מקומות. נסו ניסוח אחר.','add.error':'החיפוש אינו זמין כרגע.',
-        'nearby.title':'רעיונות בסביבה','nearby.none':'לא נמצאו הצעות כאן.','nearby.error':'ההצעות אינן זמינות כרגע.','nearby.find':'✦ מה יש בסביבה?','nearby.clear':'✕ ניקוי הצעות','nearby.openNow':'פתוח עכשיו','nearby.closedNow':'סגור עכשיו','nearby.website':'אתר','nearby.gmaps':'Google Maps','nearby.loading':'טוען פרטים…','nearby.hours':'שעות פתיחה','idea.titlePh':'כותרת (אופציונלי)','idea.notePh':'הערה או הסבר קצר…','idea.save':'שמירה','idea.saved':'נשמר','map.resize':'גררו כדי למתוח את המפה',
+        'nearby.title':'רעיונות בסביבה','nearby.none':'לא נמצאו הצעות כאן.','nearby.error':'ההצעות אינן זמינות כרגע.','nearby.find':'✦ מה יש בסביבה?','nearby.clear':'✕ ניקוי הצעות','nearby.openNow':'פתוח עכשיו','nearby.closedNow':'סגור עכשיו','nearby.website':'אתר','nearby.gmaps':'Google Maps','nearby.loading':'טוען פרטים…','nearby.hours':'שעות פתיחה','idea.titlePh':'כותרת (אופציונלי)','stop.edit':'עריכת כותרת והערה','stop.cancel':'ביטול','stop.transit':'תחבורה ציבורית לכאן (מהמקום הקודם)','nearby.transit':'תחבורה ציבורית','idea.notePh':'הערה או הסבר קצר…','idea.save':'שמירה','idea.saved':'נשמר','map.resize':'גררו כדי למתוח את המפה',
         'place.noNotes':'אין הערות','place.checkHours':'בדקו שעות פתיחה','place.added':'נוסף מחיפוש','place.addedNearby':'נוסף מרעיונות בסביבה',
         'confirm.deleteTrip':'למחוק את היעד? אי אפשר לבטל.','confirm.minDay':'בטיול חייב להיות לפחות יום אחד.','confirm.removeDay':'להסיר את יום {n}?','confirm.moveStops':'ביום {n} יש {c} עצירות. להסיר אותו ולהעביר אותן ליום {t}?','confirm.importShared':'להוסיף את הטיול המשותף ״{name}״ לדפדפן הזה?','confirm.importFile':'להוסיף {n} טיולים מהקובץ?',
         'toast.copied':'קישור השיתוף הועתק.','toast.copyFail':'ההעתקה נכשלה — הקישור נמצא בשורת הכתובת.','toast.exported':'קובץ הגיבוי הורד.','toast.imported':'הטיולים יובאו.','toast.badFile':'הקובץ אינו גיבוי של Roam.',
@@ -471,6 +477,7 @@
     let worldMap = null, worldMarkers = [], worldInfoWindow = null;
     let pendingPoiPlace = null;
     let ideas = [], ideaMarkers = [], ideaWindow = null, ideaCurrent = null;
+    let editingStop = null, stopDraft = null;
     let firebaseApp=null, firebaseAuth=null, firestore=null, firebaseUser=null, firebaseUnsub=null, firebaseReady=false, cloudSaveTimer=null, suppressCloudSave=false;
     const DAY_COLORS = ['#e2673f','#5f81c4','#8768b5','#3f9182','#d4a03f','#8a6d59','#c2678c','#6a8f52','#5a8aa4','#96784d'];
 
@@ -1171,7 +1178,7 @@
     function openTrip(id){
       const trip = trips.find(x=>x.id===id);
       if(!trip) return;
-      clearIdeas();
+      clearIdeas(); editingStop = null; stopDraft = null;
       currentTripId = id; places = trip.places; schedule = trip.schedule;
        setSyncState(trip.sharedId ? (navigator.onLine ? 'synced' : 'offline') : 'offline');
        if(trip.sharedId && firebaseReady) subscribeToSharedTrip(trip);
@@ -1340,6 +1347,7 @@
           icon:{ path:google.maps.SymbolPath.CIRCLE, scale:13, fillColor:color, fillOpacity:.95, strokeColor:'#fff', strokeWeight:2 }
         });
         m.addListener('click', ()=>openIdea(ideaFromTrip(id), m));
+        m._pid = id;
         liveMarkers.push(m);
       });
       renderDayLegend();
@@ -1500,8 +1508,8 @@
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p)}</div></div>
-            <span class="stop-tools">${daySel}<button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
-          </div>${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
+            <span class="stop-tools">${daySel}${coords(s[0]) ? `<a class="icon-btn transit-btn" href="${esc(transitUrlForPlace(s[0]))}" target="_blank" rel="noopener" title="${esc(t('stop.transit'))}" aria-label="${esc(t('stop.transit'))}" onclick="event.stopPropagation()">🚌</a>` : ''}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
+          </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
 
         return `<article class="day">
@@ -1520,6 +1528,8 @@
       document.getElementById('statDays').textContent = schedule.length;
 
       daysBox.querySelectorAll('.del-stop').forEach(b=> b.onclick = e=>{ e.stopPropagation(); removePlace(b.dataset.place) });
+      daysBox.querySelectorAll('.edit-stop').forEach(b=> b.onclick = e=>{ e.stopPropagation(); editingStop===b.dataset.place ? closeStopEditor() : openStopEditor(b.dataset.place) });
+      daysBox.querySelectorAll('.stop-edit').forEach(bindStopEditor);
       daysBox.querySelectorAll('.opt-day').forEach(b=> b.onclick = ()=> optimiseDay(+b.dataset.day));
       daysBox.querySelectorAll('.move-day').forEach(sel=>{
         sel.onclick = e=>e.stopPropagation();
@@ -1532,6 +1542,68 @@
       fillDaySelect();
     }
 
+    /* ---------- Inline title/note editor (under a stop) + public-transit links ---------- */
+    function stopEditorHtml(id){
+      const p = places[id]; if(!p) return '';
+      const d = stopDraft || { title:p.title||'', note:isAutoNote(p.notes) ? '' : (p.notes||'') };
+      return `<div class="stop-edit" data-place="${esc(id)}">
+        <input type="text" data-f="title" maxlength="80" value="${esc(d.title)}" placeholder="${esc(t('idea.titlePh'))}">
+        <textarea data-f="note" rows="3" maxlength="600" placeholder="${esc(t('idea.notePh'))}">${esc(d.note)}</textarea>
+        <div class="stop-edit-actions"><button type="button" class="save">${esc(t('idea.save'))}</button><button type="button" class="icon-btn cancel">${esc(t('stop.cancel'))}</button></div>
+      </div>`;
+    }
+    function bindStopEditor(ed){
+      const ti = ed.querySelector('[data-f="title"]'), no = ed.querySelector('[data-f="note"]');
+      const keep = ()=>{ stopDraft = { title:ti.value, note:no.value } };
+      ti.oninput = keep; no.oninput = keep;
+      ed.onkeydown = e=>{
+        if(e.key === 'Escape'){ e.stopPropagation(); closeStopEditor() }
+        else if(e.key === 'Enter' && (e.ctrlKey || e.metaKey || e.target === ti)){ e.preventDefault(); saveStopEditor(ed) }
+      };
+      ed.querySelector('.save').onclick = ()=>saveStopEditor(ed);
+      ed.querySelector('.cancel').onclick = closeStopEditor;
+    }
+    function openStopEditor(id){
+      closeStopEditor();
+      const stopEl = daysBox.querySelector(`.stop[data-place="${id}"]`); if(!stopEl || !places[id]) return;
+      editingStop = id; stopDraft = null;
+      stopEl.insertAdjacentHTML('afterend', stopEditorHtml(id));
+      const ed = stopEl.nextElementSibling; bindStopEditor(ed);
+      ed.querySelector('[data-f="title"]').focus();
+      ed.scrollIntoView({ block:'nearest' });
+    }
+    function closeStopEditor(){ daysBox.querySelectorAll('.stop-edit').forEach(e=>e.remove()); editingStop = null; stopDraft = null }
+    function saveStopEditor(ed){
+      const id = ed.dataset.place, p = places[id];
+      if(p){
+        p.title = ed.querySelector('[data-f="title"]').value.trim();
+        p.notes = ed.querySelector('[data-f="note"]').value.trim();
+        closeStopEditor(); persist(); updateStopName(id);
+        liveMarkers.forEach(m=>{ if(m._pid === id && m.setTitle) m.setTitle(p.title || p.name) });
+        // keep the map card in step if it is open for the same place
+        const c = ideaCurrent;
+        if(c && c.tripId === id && c._el){
+          c.title = p.title || ''; c.note = isAutoNote(p.notes) ? '' : p.notes;
+          c._el.querySelector('[data-f="title"]').value = c.title; c._el.querySelector('[data-f="note"]').value = c.note; fillIdeaTop(c);
+        }
+      } else closeStopEditor();
+    }
+    // Free deep link: Google Maps directions in public-transit mode (no extra API billing).
+    function transitUrl(lat, lng, gid, from){
+      let u = 'https://www.google.com/maps/dir/?api=1&travelmode=transit&destination=' + lat + ',' + lng;
+      if(gid) u += '&destination_place_id=' + encodeURIComponent(gid);
+      if(from){ u += '&origin=' + from.lat + ',' + from.lng; if(from.gid) u += '&origin_place_id=' + encodeURIComponent(from.gid) }
+      return u;
+    }
+    function prevStopId(id){
+      for(const d of schedule){ const i = d.stops.findIndex(x=>x[0]===id); if(i === 0) return ''; if(i > 0) return d.stops[i-1][0] }
+      return '';
+    }
+    function transitUrlForPlace(id){
+      const p = places[id], pid = prevStopId(id), pp = pid && coords(pid);
+      return transitUrl(+p.lat, +p.lng, p.gid, pp ? { lat:pp[0], lng:pp[1], gid:places[pid].gid } : null);
+    }
+
     function moveStop(id, toDay){
       const from = schedule.findIndex(d=>d.stops.some(s=>s[0]===id));
       if(from < 0 || from === toDay) return;
@@ -1542,7 +1614,7 @@
     }
     function removePlace(id){
       schedule.forEach(d=> d.stops = d.stops.filter(s=>s[0]!==id));
-      delete places[id];
+      delete places[id]; if(editingStop===id) editingStop = null;
       render();
     }
     function bindDrag(){
@@ -2033,7 +2105,7 @@
         ${d.editorialSummary && d.editorialSummary.text ? `<div class="sum">${esc(d.editorialSummary.text)}</div>` : ''}
         ${addr ? `<div class="row meta">${esc(addr)}</div>` : ''}
         ${hours.length ? `<details class="hours"><summary>${esc(t('nearby.hours'))}</summary>${hours.map(h=>`<div>${esc(h)}</div>`).join('')}</details>` : ''}
-        <div class="links">${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">${esc(t('nearby.website'))}</a>` : ''}${phone ? `<a href="tel:${esc(phone.replace(/[^\d+]/g,''))}">${esc(phone)}</a>` : ''}<a href="${esc(gmaps)}" target="_blank" rel="noopener">${esc(t('nearby.gmaps'))}</a></div>`;
+        <div class="links">${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">${esc(t('nearby.website'))}</a>` : ''}${phone ? `<a href="tel:${esc(phone.replace(/[^\d+]/g,''))}">${esc(phone)}</a>` : ''}<a href="${esc(s.tripId && places[s.tripId] ? transitUrlForPlace(s.tripId) : transitUrl(s.lat, s.lng, s.id, null))}" target="_blank" rel="noopener">🚌 ${esc(t('nearby.transit'))}</a><a href="${esc(gmaps)}" target="_blank" rel="noopener">${esc(t('nearby.gmaps'))}</a></div>`;
       const im = el.querySelector('.idea-top img');
       if(im){ im.onload = ()=>growIdea(s); im.onerror = ()=>{ im.style.display = 'none' } }
     }
