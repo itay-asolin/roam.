@@ -1450,10 +1450,23 @@
       const usable = stops.map(s=>coords(s[0])).filter(Boolean);
       if(usable.length < 2) return { di, usable, data:null };
 
+      // router.project-osrm.org only actually serves the driving/car profile —
+      // it silently accepts "foot" in the URL but returns car routes anyway.
+      // Real pedestrian routing needs the separate routed-foot instance on
+      // routing.openstreetmap.de. Still fall back to driving if that's down.
+      const endpoints = profile === 'foot'
+        ? [
+            { p:'foot', base:'https://routing.openstreetmap.de/routed-foot/route/v1/foot/' },
+            { p:'driving', base:'https://router.project-osrm.org/route/v1/driving/' }
+          ]
+        : [
+            { p:'driving', base:'https://router.project-osrm.org/route/v1/driving/' }
+          ];
+
       let data = null;
-      for(const p of [profile, 'driving']){
+      for(const {p, base} of endpoints){
         try {
-          const url = `https://router.project-osrm.org/route/v1/${p}/` + usable.map(c=>c[1]+','+c[0]).join(';') + '?overview=full&geometries=geojson';
+          const url = base + usable.map(c=>c[1]+','+c[0]).join(';') + '?overview=full&geometries=geojson';
           const json = await fetch(url).then(r=>r.json());
           if(json.code === 'Ok' && json.routes?.[0]){ data = { route:json.routes[0], profile:p }; break }
         } catch(e){ /* try next */ }
