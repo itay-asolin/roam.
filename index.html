@@ -180,8 +180,12 @@
     .mapwrap.expanded{height:auto!important}
     .mapwrap.expanded + .map-resizer{display:none}
     .day-legend{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
-    .day-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:11.5px;color:var(--muted)}
+    .day-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:11.5px;color:var(--muted);cursor:pointer}
     .day-chip i{width:9px;height:9px;border-radius:50%;display:block}
+    .day-chip.active{color:var(--ink);border-color:currentColor;font-weight:600}
+    .icon-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+    .stop-hours{display:block;margin-top:2px;font-size:11.5px;font-weight:600;color:#c1432a}
+    .stop-hours.closed{color:#8a938b;font-weight:500}
     .toast{position:fixed;inset-inline:0;bottom:26px;margin:auto;width:max-content;max-width:90vw;background:var(--ink);color:#fff;padding:11px 16px;border-radius:99px;font-size:13px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none}
     .toast.show{opacity:1}
     .sync-pill{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border:1px solid var(--line);background:#fff;border-radius:99px;color:var(--muted);font-size:11.5px}
@@ -250,6 +254,22 @@
     [data-theme="dark"] .gm-style-iw-d{ background:transparent!important; }
     [data-theme="dark"] .gm-style-iw-t::after,[data-theme="dark"] .gm-style-iw-tc::after{ background:#1a2622!important; box-shadow:none!important; }
     [data-theme="dark"] .gm-ui-hover-effect{ filter:invert(1); opacity:.8; }
+    /* .btn's fill normally tracks --ink, which flips to a near-white tone at
+       night — leaving white text on a white button. Give it its own fixed dark
+       fill instead so it stays legible without affecting .btn.light/.orange. */
+    [data-theme="dark"] .btn:not(.light):not(.orange){ background:#2f3f38; color:#e9ece9; }
+    [data-theme="dark"] .hint{ background:#1c2b22; color:#a9d3b4; }
+    [data-theme="dark"] .warn{ background:#2c211b; color:#e2a186; }
+    [data-theme="dark"] .wheel-band{ background:#22322c; border-color:#3a4a43; }
+    [data-theme="dark"] .day-chip.active{ color:var(--ink); }
+    [data-theme="dark"] .stop-hours{ color:#ff9169; }
+    [data-theme="dark"] .stop-hours.closed{ color:#8a978f; }
+    /* Real photos (place thumbnails, POI cards, city covers) read as too bright
+       against the dark palette, so dim and desaturate them slightly at night. */
+    [data-theme="dark"] .stop-thumb,[data-theme="dark"] .idea-card img,
+    [data-theme="dark"] .dest-card-media,[data-theme="dark"] .search-place-result img{
+      filter:brightness(.82) saturate(1.05);
+    }
   </style>
 </head>
 <body>
@@ -337,6 +357,7 @@
           <button id="nearbyBtn" data-i18n="map.nearby"></button>
           <button id="clearIdeasBtn" data-i18n="nearby.clear" style="display:none"></button>
           <button id="rulerBtn" data-i18n="map.ruler"></button>
+          <button id="overlayDaysBtn"></button>
            <button id="mapExpandBtn" class="map-expand" data-i18n="map.expand"></button>
         </div>
         <div class="map-label" id="mapLabel" data-i18n="map.loading"></div>
@@ -469,9 +490,9 @@
         'world.title':'All destinations','world.sub':'Every planned trip on one map. Tap a pin to open it.','world.startHere':'🧳 Start a trip here',
         'trip.back':'← All destinations','trip.eyebrow':'Trip','trip.heroSub':'Search places, drop them into days, and the map keeps your city in view.','trip.start':'Start','trip.share':'Copy share link','trip.noDates':'No dates set',
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
-        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
+        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.overlayOn':'🗺️ All days together','map.overlayOff':'🗺️ One day at a time','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
-        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}',
+        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
         'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…',
         'wx.title':'Weather','wx.needDate':'Set a start date and the forecast for your days will appear here.','wx.forecast':'Forecast for your dates.','wx.typical':'Typical for these dates, based on last year — a forecast appears about two weeks before you go.','wx.error':'Weather is unavailable right now.','wx.loading':'Loading weather…',
@@ -498,9 +519,9 @@
         'world.title':'כל היעדים','world.sub':'כל הטיולים המתוכננים על מפה אחת. לחצו על סימון כדי לפתוח אותו.','world.startHere':'🧳 להתחיל טיול כאן',
         'trip.back':'→ כל היעדים','trip.eyebrow':'טיול','trip.heroSub':'חפשו מקומות, שבצו אותם לימים, והמפה תשמור על העיר שלכם בפריים.','trip.start':'תחילה','trip.share':'העתקת קישור שיתוף','trip.noDates':'לא נקבעו תאריכים',
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
-        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
+        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.overlayOn':'🗺️ כל הימים יחד','map.overlayOff':'🗺️ יום אחד בכל פעם','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
-        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}',
+        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
         'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…',
         'wx.title':'מזג אוויר','wx.needDate':'בחרו תאריך התחלה והתחזית לימי הטיול תופיע כאן.','wx.forecast':'תחזית לתאריכים שלכם.','wx.typical':'ממוצע אופייני לתאריכים האלה לפי השנה שעברה — תחזית אמיתית תופיע כשבועיים לפני הנסיעה.','wx.error':'נתוני מזג האוויר אינם זמינים כרגע.','wx.loading':'טוען מזג אוויר…',
@@ -540,12 +561,36 @@
     let trips = [], currentTripId = null, places = {}, schedule = [];
     let homeSortMode = localStorage.getItem('roam-home-sort') || 'date';
     let freeMap, routeLines = [], liveMarkers = [], infoWindow, activeFilter = 'all', mapsOk = false;
+    // When true (default), every day's pins/route are overlaid on the map at
+    // once, as before. When false, only mapFocusDay is drawn — pick a day by
+    // clicking its chip under the map.
+    let mapOverlayDays = true, mapFocusDay = 0;
     let worldMap = null, worldMarkers = [], worldInfoWindow = null;
     let pendingPoiPlace = null;
     let ideas = [], ideaMarkers = [], ideaWindow = null, ideaCurrent = null;
     let editingStop = null, stopDraft = null, changePlaceId = null;
     let firebaseApp=null, firebaseAuth=null, firestore=null, firebaseUser=null, firebaseUnsub=null, firebaseReady=false, cloudSaveTimer=null, suppressCloudSave=false;
     const DAY_COLORS = ['#e2673f','#5f81c4','#8768b5','#3f9182','#d4a03f','#8a6d59','#c2678c','#6a8f52','#5a8aa4','#96784d'];
+    // A plain light-tile map sitting inside the dark UI at night looked out of
+    // place, so swap in a dark tile style whenever data-theme="dark".
+    const MAP_DARK_STYLE = [
+      { elementType:'geometry', stylers:[{ color:'#1a2622' }] },
+      { elementType:'labels.text.stroke', stylers:[{ color:'#1a2622' }] },
+      { elementType:'labels.text.fill', stylers:[{ color:'#8f9c95' }] },
+      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#2b3a34' }] },
+      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#22322c' }] },
+      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#213028' }] },
+      { featureType:'road', elementType:'geometry', stylers:[{ color:'#2b3a34' }] },
+      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#1a2622' }] },
+      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#33453e' }] },
+      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#22322c' }] },
+      { featureType:'water', elementType:'geometry', stylers:[{ color:'#12201b' }] }
+    ];
+    function applyMapTheme(){
+      const styles = theme === 'dark' ? MAP_DARK_STYLE : [];
+      if(freeMap) freeMap.setOptions({ styles });
+      if(worldMap) worldMap.setOptions({ styles });
+    }
 
     /* ---------- Image lookup throttling ---------- */
     // Commons/Wikipedia respond with 429 (Too Many Requests) once too many
@@ -795,6 +840,7 @@
     function prepareScheduleForCloud(schedule) {
       return (schedule || []).map(d => ({
         date: d.date || '',
+        loop: !!d.loop,
         stops: (d.stops || []).map(s => ({ p: s[0], n: s[1] || '' }))
       }));
     }
@@ -809,6 +855,7 @@
       trip.places = trip.places || {};
       trip.schedule = (trip.schedule||[]).map(d=>({
         date:d.date||'',
+        loop: !!d.loop,
         stops:(d.stops||[]).map(s => {
           if (Array.isArray(s)) return s;
           // המרה חזרה לאופן שבו האפליקציה מצפה לזה
@@ -851,6 +898,30 @@
       if(isNaN(d)) return '';
       d.setDate(d.getDate() + i);
       return d.toLocaleDateString(locale(), { weekday:'short', day:'numeric', month:'short' });
+    }
+    function dateForDay(i){
+      const trip = currentTrip();
+      if(!trip || !trip.startDate) return null;
+      const d = new Date(trip.startDate + 'T00:00:00');
+      if(isNaN(d)) return null;
+      d.setDate(d.getDate() + i);
+      return d;
+    }
+    // weekdayDescriptions comes back as seven localized "Day: hours" lines, but
+    // Google doesn't document a fixed starting weekday for them — so instead of
+    // assuming an index order, match each line by its own leading day name.
+    function hoursLineForDate(weekdayDescriptions, dateObj){
+      if(!weekdayDescriptions || !weekdayDescriptions.length || !dateObj) return '';
+      const ref = new Date(Date.UTC(2023, 0, 1 + dateObj.getDay())); // 2023-01-01 was a Sunday
+      const long = ref.toLocaleDateString(langCode(), { weekday:'long' }).toLowerCase();
+      const short = ref.toLocaleDateString(langCode(), { weekday:'short' }).toLowerCase().replace(/\.$/, '');
+      const hit = weekdayDescriptions.find(s=>{
+        const head = (s.split(':')[0] || '').trim().toLowerCase();
+        return head === long || head === short || head.includes(long) || long.includes(head) || head.includes(short);
+      });
+      if(!hit) return '';
+      const ci = hit.indexOf(':');
+      return (ci >= 0 ? hit.slice(ci + 1) : hit).trim();
     }
     function isoForDay(i, startDate){
       if(!startDate) return null;
@@ -1246,6 +1317,7 @@
       if(!trip) return;
       clearIdeas(); editingStop = null; stopDraft = null;
       currentTripId = id; places = trip.places; schedule = trip.schedule;
+      mapOverlayDays = true; mapFocusDay = 0; updateOverlayBtn();
        setSyncState(trip.sharedId ? (navigator.onLine ? 'synced' : 'offline') : 'offline');
        if(trip.sharedId && firebaseReady) subscribeToSharedTrip(trip);
       document.getElementById('homeView').style.display = 'none';
@@ -1443,7 +1515,8 @@
       freeMap = new google.maps.Map(document.getElementById('map'), {
         center: trip?.center ? {lat:trip.center[0],lng:trip.center[1]} : {lat:20,lng:0},
         zoom: trip?.center ? 12 : 2,
-        mapTypeControl:false, streetViewControl:false, fullscreenControl:false, clickableIcons:true
+        mapTypeControl:false, streetViewControl:false, fullscreenControl:false, clickableIcons:true,
+        styles: theme === 'dark' ? MAP_DARK_STYLE : []
       });
       infoWindow = new google.maps.InfoWindow();
       infoWindow.addListener('domready', ()=>{
@@ -1467,7 +1540,12 @@
     }
 
     function renderDayLegend(){
-      document.getElementById('dayLegend').innerHTML = schedule.map((d,i)=>`<span class="day-chip"><i style="background:${DAY_COLORS[i%DAY_COLORS.length]}"></i>${esc(t('day',{n:i+1}))}${dayDate(i)?' · '+esc(dayDate(i)):''}</span>`).join('');
+      document.getElementById('dayLegend').innerHTML = schedule.map((d,i)=>`<span class="day-chip${!mapOverlayDays && i===mapFocusDay?' active':''}" data-day="${i}" style="${!mapOverlayDays && i===mapFocusDay?`color:${DAY_COLORS[i%DAY_COLORS.length]}`:''}"><i style="background:${DAY_COLORS[i%DAY_COLORS.length]}"></i>${esc(t('day',{n:i+1}))}${dayDate(i)?' · '+esc(dayDate(i)):''}</span>`).join('');
+      document.querySelectorAll('#dayLegend .day-chip').forEach(el=> el.onclick = ()=>{
+        mapFocusDay = +el.dataset.day;
+        if(mapOverlayDays){ mapOverlayDays = false; updateOverlayBtn(); }
+        redrawMap();
+      });
     }
 
     function redrawMap(){
@@ -1478,11 +1556,16 @@
         if(!passesFilter(p)) return;
         const c = coords(id); if(!c) return;
         const di = dayForPlace(id);
+        if(!mapOverlayDays && di>=0 && di!==mapFocusDay) return;
         const color = di>=0 ? DAY_COLORS[di%DAY_COLORS.length] : '#6a746e';
+        // The stop that starts (and, on a loop day, also ends) the route gets a
+        // heavier black ring so it reads as the loop point at a glance.
+        const day = di>=0 ? schedule[di] : null;
+        const isLoopStart = day && day.loop && day.stops[0] && day.stops[0][0] === id;
         const m = new google.maps.Marker({
           position:{lat:c[0],lng:c[1]}, map:freeMap, title:p.title||p.name,
           label:{ text:String(placeNumbers.get(id)||'•'), color:'#15231f', fontSize:'11px', fontWeight:'700' },
-          icon:{ path:google.maps.SymbolPath.CIRCLE, scale:13, fillColor:color, fillOpacity:.95, strokeColor:'#fff', strokeWeight:2 }
+          icon:{ path:google.maps.SymbolPath.CIRCLE, scale:isLoopStart ? 14 : 13, fillColor:color, fillOpacity:.95, strokeColor:isLoopStart ? '#111' : '#fff', strokeWeight:isLoopStart ? 4 : 2 }
         });
         m.addListener('click', ()=>openIdea(ideaFromTrip(id), m));
         m._pid = id;
@@ -1515,7 +1598,8 @@
       document.getElementById('worldMapLabel')?.remove();
       worldMap = new google.maps.Map(document.getElementById('worldMap'), {
         center:{lat:20,lng:0}, zoom:2,
-        mapTypeControl:false, streetViewControl:false, fullscreenControl:false, clickableIcons:true
+        mapTypeControl:false, streetViewControl:false, fullscreenControl:false, clickableIcons:true,
+        styles: theme === 'dark' ? MAP_DARK_STYLE : []
       });
       worldInfoWindow = new google.maps.InfoWindow();
       worldInfoWindow.addListener('domready', ()=>{
@@ -1584,9 +1668,11 @@
     }
 
     async function fetchDayRoute(di, profile){
-      const stops = schedule[di].stops;
-      const usable = stops.map(s=>coords(s[0])).filter(Boolean);
+      const day = schedule[di];
+      const stops = day.stops;
+      let usable = stops.map(s=>coords(s[0])).filter(Boolean);
       if(usable.length < 2) return { di, usable, data:null };
+      if(day.loop) usable = usable.concat([usable[0]]);
 
       // router.project-osrm.org only actually serves the driving/car profile —
       // it silently accepts "foot" in the URL but returns car routes anyway.
@@ -1626,14 +1712,15 @@
       results.forEach(({di, usable, data})=>{
         if(usable.length < 2){ setTravelTexts(di, null); return }
         const color = DAY_COLORS[di%DAY_COLORS.length];
+        const showOnMap = mapOverlayDays || di === mapFocusDay;
         if(data){
           const path = data.route.geometry.coordinates.map(([lng,lat])=>({lat,lng}));
-          if(freeMap) routeLines.push(new google.maps.Polyline({ path, geodesic:true, strokeColor:color, strokeWeight:4, strokeOpacity:.8, map:freeMap }));
+          if(freeMap && showOnMap) routeLines.push(new google.maps.Polyline({ path, geodesic:true, strokeColor:color, strokeWeight:4, strokeOpacity:.8, map:freeMap }));
           const legs = data.route.legs.map(l=>({ sec:l.duration, m:l.distance, profile:data.profile }));
           legs.forEach(l=>{ totalSeconds += l.sec; totalMeters += l.m });
           setTravelTexts(di, legs);
         } else {
-          if(freeMap) routeLines.push(new google.maps.Polyline({ path:usable.map(c=>({lat:c[0],lng:c[1]})), geodesic:true, strokeColor:color, strokeWeight:3, strokeOpacity:.5, map:freeMap }));
+          if(freeMap && showOnMap) routeLines.push(new google.maps.Polyline({ path:usable.map(c=>({lat:c[0],lng:c[1]})), geodesic:true, strokeColor:color, strokeWeight:3, strokeOpacity:.5, map:freeMap }));
           setTravelTexts(di, null);
         }
       });
@@ -1669,7 +1756,7 @@
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
             <span class="stop-num" style="background:${color}">${placeNumbers.get(s[0])||''}</span>
-            <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p)}</div></div>
+            <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
@@ -1679,13 +1766,14 @@
             <span class="daynum" style="background:${color}22;border:1px solid ${color};color:${color}">${String(di+1).padStart(2,'0')}</span>
             <strong>${esc(t('day',{n:di+1}))}</strong>
             <span class="dd">${esc(dayDate(di))}</span>
-            <span class="day-tools">${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}</span>
+            <span class="day-tools">${d.stops.length>1?`<button class="icon-btn loop-day${d.loop?' active':''}" data-day="${di}" title="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}" aria-label="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}">${d.loop?'🔁':'↩️'}</button>`:''}${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}</span>
           </div>
           <div class="stops" data-day="${di}">${stopsHtml}</div>
         </article>`;
       }).join('');
 
       Object.entries(places).forEach(([id,p])=>{ if(!p.image && !p.imageLoading) enrichPlaceImage(id,p); });
+      Object.entries(places).forEach(([id,p])=>{ if(p.gid && ideaDetailsCache[p.gid]===undefined && !hoursLoading.has(p.gid)) enrichPlaceHours(id,p); });
       document.getElementById('statPlaces').textContent = Object.keys(places).length;
       document.getElementById('statDays').textContent = schedule.length;
 
@@ -1694,6 +1782,7 @@
       daysBox.querySelectorAll('.stop-main').forEach(el=> el.onclick = ()=> showStopHours(el.closest('.stop').dataset.place));
       daysBox.querySelectorAll('.stop-edit').forEach(bindStopEditor);
       daysBox.querySelectorAll('.opt-day').forEach(b=> b.onclick = ()=> optimiseDay(+b.dataset.day));
+      daysBox.querySelectorAll('.loop-day').forEach(b=> b.onclick = ()=>{ const day = schedule[+b.dataset.day]; if(day){ day.loop = !day.loop; render(); } });
       daysBox.querySelectorAll('.move-day').forEach(sel=>{
         sel.onclick = e=>e.stopPropagation();
         sel.onchange = ()=> moveStop(sel.dataset.place, +sel.value);
@@ -1868,6 +1957,12 @@
     document.getElementById('nearbyBtn').onclick = ()=>{ if(!freeMap) return; const c = freeMap.getCenter(); nearbyAt(c.lat(), c.lng(), viewRadius()) };
     document.getElementById('clearIdeasBtn').onclick = clearIdeas;
     document.getElementById('rulerBtn').onclick = toggleRuler;
+    function updateOverlayBtn(){
+      const b = document.getElementById('overlayDaysBtn'); if(!b) return;
+      b.textContent = t(mapOverlayDays ? 'map.overlayOn' : 'map.overlayOff');
+      b.classList.toggle('active', mapOverlayDays);
+    }
+    document.getElementById('overlayDaysBtn').onclick = ()=>{ mapOverlayDays = !mapOverlayDays; updateOverlayBtn(); redrawMap(); };
     {
       const msi = document.getElementById('mapSearchInput'), msr = document.getElementById('mapSearchResults');
       let mapSearchDebounce = 0;
@@ -2190,16 +2285,21 @@
       persist();
     }
 
-    function stopCopyHtml(p){
+    function stopCopyHtml(p, id, di){
       const own = lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name);
       const other = lang==='he' ? p.nameEn : p.nameHe;
       const main = p.title || own, sub = p.title ? own : other;
       const note = p.notes && !isAutoNote(p.notes) ? p.notes : '';
-      return `<b>${esc(main)}</b>${sub?`<small>${esc(sub)}</small>`:''}<small class="stop-type" title="${esc(t('filter.'+bucketOf(p)))}">${IDEA_ICON[bucketOf(p)]}</small>${note?`<small class="stop-note">${esc(note)}</small>`:''}`;
+      const det = p.gid ? ideaDetailsCache[p.gid] : undefined;
+      const list = (det && det.regularOpeningHours && det.regularOpeningHours.weekdayDescriptions) || [];
+      const hoursLine = list.length && Number.isFinite(di) ? hoursLineForDate(list, dateForDay(di)) : '';
+      const closed = /closed|סגור/i.test(hoursLine);
+      return `<b>${esc(main)}</b>${sub?`<small>${esc(sub)}</small>`:''}<small class="stop-type" title="${esc(t('filter.'+bucketOf(p)))}">${IDEA_ICON[bucketOf(p)]}</small>${note?`<small class="stop-note">${esc(note)}</small>`:''}${hoursLine?`<small class="stop-hours${closed?' closed':''}">🕐 ${esc(hoursLine)}</small>`:''}`;
     }
     function updateStopName(id){
       const p = places[id]; if(!p) return;
-      document.querySelectorAll(`.stop[data-place="${id}"] .stop-copy`).forEach(el=>{ el.innerHTML = stopCopyHtml(p); });
+      const di = dayForPlace(id);
+      document.querySelectorAll(`.stop[data-place="${id}"] .stop-copy`).forEach(el=>{ el.innerHTML = stopCopyHtml(p, id, di); });
     }
     async function enrichPlaceNames(id, place){
       if(!place || place.namesLoading || (place.nameHe && place.nameEn)) return;
@@ -2262,6 +2362,18 @@
       });
     }
     const ideaDetailsCache = {};
+    const hoursLoading = new Set();
+    // Same details endpoint/cache used by the map-pin popup, but fetched eagerly
+    // per stop so the day list can show that day's hours inline. Only runs once
+    // per place (gid) per session — results stay in ideaDetailsCache.
+    async function enrichPlaceHours(id, p){
+      if(!p.gid || ideaDetailsCache[p.gid] !== undefined || hoursLoading.has(p.gid)) return;
+      hoursLoading.add(p.gid);
+      try{ ideaDetailsCache[p.gid] = await googlePlaceDetails(p.gid) }
+      catch(e){ ideaDetailsCache[p.gid] = null }
+      hoursLoading.delete(p.gid);
+      if(currentTrip()) updateStopName(id);
+    }
     function isAutoNote(n){ if(!n) return true; return ['en','he'].some(l=>['place.added','place.addedNearby'].some(k=>I18N[l] && I18N[l][k]===n)) }
     function ideaFromTrip(id){
       const p = places[id];
@@ -2540,6 +2652,7 @@
       document.getElementById('exportBtn').textContent = t('export');
       document.getElementById('importFileBtn').textContent = t('import');
       updateAuthButton();
+      updateOverlayBtn();
       renderHome();
       if(currentTripId){ renderTripHeader(); render(); renderPacking(); loadWeather() }
       if(worldMap) redrawWorldMap();
@@ -2551,6 +2664,7 @@
     function applyTheme(){
       document.documentElement.dataset.theme = theme;
       const btn = document.getElementById('themeBtn'); if(btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+      applyMapTheme();
     }
     document.getElementById('themeBtn').onclick = ()=>{ theme = theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('roam-theme', theme); applyTheme() };
     applyTheme();
