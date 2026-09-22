@@ -205,13 +205,13 @@
       .hero-swap,.hero-side,.thumb-wrap,.dest-swap,.sync-pill,.user-menu-wrap{display:none!important}
       :root{ --ink:#15231f!important; --muted:#6a746e!important; --paper:#f6f4ef!important; --cream:#ebe8df!important; --line:#dcdcd2!important }
       body{background:#fff!important;color:#000!important}
-      .hero{background:none!important;min-height:auto!important;padding:0 0 12px!important;border-radius:0!important}
-      .hero h1{text-shadow:none!important;color:var(--ink)!important;font-size:26px!important;margin:6px 0!important}
+      .hero{background:none!important;min-height:auto!important;padding:0 0 8px!important;border-radius:0!important}
+      .hero h1{text-shadow:none!important;color:var(--ink)!important;font-size:24px!important;margin:4px 0!important}
       .hero p,.hero .eyebrow{text-shadow:none!important;color:var(--muted)!important;opacity:1!important}
-      .mapwrap{height:380px!important}
+      .stats{margin:12px 0 16px!important}
+      .mapwrap{height:280px!important}
       .layout{grid-template-columns:1fr!important}
       .stop-main{gap:0!important}
-      .day{break-inside:avoid;page-break-inside:avoid}
     }
 
     /* ---------- Night mode ---------- */
@@ -242,6 +242,11 @@
     [data-theme="dark"] .empty-state{ border-color:#3a4a43; }
     [data-theme="dark"] input[type="date"]{ color-scheme:dark; }
     [data-theme="dark"] .idea-card .ok{ color:#7fce9c; } [data-theme="dark"] .idea-card .no{ color:#e2673f; }
+    [data-theme="dark"] .idea-card .sum,[data-theme="dark"] .idea-card .hours{ color:var(--muted); }
+    [data-theme="dark"] .gm-style-iw-c{ background:#1a2622!important; }
+    [data-theme="dark"] .gm-style-iw-d{ background:transparent!important; }
+    [data-theme="dark"] .gm-style-iw-t::after,[data-theme="dark"] .gm-style-iw-tc::after{ background:#1a2622!important; box-shadow:none!important; }
+    [data-theme="dark"] .gm-ui-hover-effect{ filter:invert(1); opacity:.8; }
   </style>
 </head>
 <body>
@@ -1094,7 +1099,7 @@
     // Loaded only when a suggestion pin is clicked (rating/hours/website are a pricier Places tier).
     async function googlePlaceDetails(id){
       if(!googleAvailable()) throw new Error('no key');
-      const mask = 'rating,userRatingCount,formattedAddress,regularOpeningHours.openNow,regularOpeningHours.weekdayDescriptions,nationalPhoneNumber,websiteUri,googleMapsUri,editorialSummary';
+      const mask = 'rating,userRatingCount,formattedAddress,regularOpeningHours.openNow,regularOpeningHours.weekdayDescriptions,websiteUri,googleMapsUri,editorialSummary';
       const res = await fetch(placesUrl(encodeURIComponent(id)) + '?languageCode=' + langCode(), { headers:placesHeaders(mask) });
       if(!res.ok) throw new Error('details ' + res.status);
       return await res.json();
@@ -1650,7 +1655,7 @@
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p)}</div></div>
-            <span class="stop-tools">${daySel}${coords(s[0]) ? `<a class="icon-btn transit-btn" href="${esc(transitUrlForPlace(s[0]))}" target="_blank" rel="noopener" title="${esc(t('stop.transit'))}" aria-label="${esc(t('stop.transit'))}" onclick="event.stopPropagation()">🚌</a>` : ''}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
+            <span class="stop-tools">${daySel}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
 
@@ -1797,7 +1802,6 @@
       b.textContent=wrap.classList.contains('expanded') ? (lang==='he'?'⛶ הקטנת המפה':'⛶ Exit map') : t('map.expand');
       setTimeout(afterMapResize,50);
     };
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ const wrap=tripMapWrap(); if(wrap?.classList.contains('expanded')){ wrap.classList.remove('expanded'); document.getElementById('mapExpandBtn').textContent=t('map.expand'); setTimeout(afterMapResize,50); } }});
     window.addEventListener('resize', ()=>sizeIdeaCard());
 
     // Drag the bar under a map to stretch it (mouse, touch, or ArrowUp/ArrowDown); double-click resets.
@@ -2282,7 +2286,6 @@
       else if(open === false) bits.push(`<span class="no">${esc(t('nearby.closedNow'))}</span>`);
       const addr = s.address || d.formattedAddress || '';
       const web = /^https?:\/\//i.test(d.websiteUri||'') ? d.websiteUri : '';
-      const phone = d.nationalPhoneNumber || '';
       const hours = (d.regularOpeningHours && d.regularOpeningHours.weekdayDescriptions) || [];
       const gmaps = d.googleMapsUri || `https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}${s.id ? '&query_place_id='+encodeURIComponent(s.id) : ''}`;
       const meta = [s.title ? s.name : '', s.typeLabel || s.category].filter(Boolean).join(' · ');
@@ -2294,7 +2297,7 @@
         ${d.editorialSummary && d.editorialSummary.text ? `<div class="sum">${esc(d.editorialSummary.text)}</div>` : ''}
         ${addr ? `<div class="row meta">${esc(addr)}</div>` : ''}
         ${hours.length ? `<details class="hours"><summary>${esc(t('nearby.hours'))}</summary>${hours.map(h=>`<div>${esc(h)}</div>`).join('')}</details>` : ''}
-        <div class="links">${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">${esc(t('nearby.website'))}</a>` : ''}${phone ? `<a href="tel:${esc(phone.replace(/[^\d+]/g,''))}">${esc(phone)}</a>` : ''}<a href="${esc(s.tripId && places[s.tripId] ? transitUrlForPlace(s.tripId) : transitUrl(s.lat, s.lng, s.id, null))}" target="_blank" rel="noopener">🚌 ${esc(t('nearby.transit'))}</a><a href="${esc(gmaps)}" target="_blank" rel="noopener">${esc(t('nearby.gmaps'))}</a></div>`;
+        <div class="links">${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">${esc(t('nearby.website'))}</a>` : ''}<a href="${esc(s.tripId && places[s.tripId] ? transitUrlForPlace(s.tripId) : transitUrl(s.lat, s.lng, s.id, null))}" target="_blank" rel="noopener">🚌 ${esc(t('nearby.transit'))}</a><a href="${esc(gmaps)}" target="_blank" rel="noopener">${esc(t('nearby.gmaps'))}</a></div>`;
       const im = el.querySelector('.idea-top img');
       if(im){ im.onload = ()=>growIdea(s); im.onerror = ()=>{ im.style.display = 'none' } }
     }
@@ -2408,7 +2411,21 @@
     document.getElementById('placeSearch').addEventListener('keydown', e=>{ if(e.key==='Enter') searchPlaces() });
     document.getElementById('closeBtn').onclick = ()=>{ modal.classList.remove('open'); changePlaceId = null; };
     document.querySelectorAll('.modal').forEach(m=> m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open') }));
-    document.addEventListener('keydown', e=>{ if(e.key==='Escape') document.querySelectorAll('.modal.open').forEach(m=>m.classList.remove('open')) });
+    // Escape: unwind whatever's frontmost — ruler mode, the details bubble,
+    // an open stop editor, a modal, the account menu, then the expanded map —
+    // one press always backs out of something rather than doing nothing.
+    document.addEventListener('keydown', e=>{
+      if(e.key !== 'Escape') return;
+      if(rulerActive){ toggleRuler(); return }
+      if(ideaCurrent){ closeIdea(); return }
+      if(editingStop){ closeStopEditor(); return }
+      const openModal = document.querySelector('.modal.open');
+      if(openModal){ openModal.classList.remove('open'); changePlaceId = null; return }
+      const menu = document.querySelector('.user-menu.open');
+      if(menu){ menu.classList.remove('open'); return }
+      const wrap = tripMapWrap();
+      if(wrap?.classList.contains('expanded')){ wrap.classList.remove('expanded'); document.getElementById('mapExpandBtn').textContent = t('map.expand'); setTimeout(afterMapResize, 50) }
+    });
 
     /* ---------- Backup, import, share ---------- */
     function b64encode(obj){ return btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj)))) }
