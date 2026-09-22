@@ -39,7 +39,7 @@
     .datefield{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);border-radius:99px;font-size:13px}
     .datefield input{background:none;border:0;color:#fff;font-size:13px;width:140px}
     .datefield input::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.8}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:22px 0 32px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:22px 0 32px}
     .stat{background:var(--paper);padding:16px 18px}.stat b{display:block;font-size:22px}.stat span{color:var(--muted);font-size:12px}
     .section-head{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 16px}
     .section-head h2{font-size:26px;margin:0}.section-head p{margin:0;color:var(--muted);font-size:13px}
@@ -73,6 +73,13 @@
     .map-label{position:absolute;bottom:16px;inset-inline-start:18px;background:#fffdf9ee;padding:10px 13px;border-radius:9px;font-size:12px;box-shadow:0 5px 20px #17201c15;z-index:1;max-width:70%;line-height:1.45}
     .map-toolbar{position:absolute;z-index:7;top:13px;inset-inline-start:13px;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 26px)}
     .map-toolbar button{border:0;background:#fff;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:500;box-shadow:0 2px 8px #17201c1f}.map-expand{margin-inline-start:auto}
+    .map-toolbar button.active{background:var(--moss);color:#fff}
+    .mode-switch{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px;background:#fff}
+    .mode-opt{border:0;background:transparent;border-radius:99px;padding:8px 13px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted)}
+    .mode-opt.active{background:var(--moss);color:#fff}
+    .map-search{position:relative}
+    .map-search input{border:0;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:500;box-shadow:0 2px 8px #17201c1f;min-width:160px;font-family:inherit}
+    .map-search .suggest{top:calc(100% + 4px)}
     .layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:26px;margin-top:38px}
     .days{display:grid;gap:15px}.day{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
     .daytop{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -83,7 +90,7 @@
     .stops{padding:10px;min-height:52px}
     .stop{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
     .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px}
-    .stop-main{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer}.stop-thumb{width:72px;height:72px;object-fit:cover;border-radius:11px;flex:0 0 72px}.stop-thumb-empty{display:grid;place-items:center;background:#f1efe8;color:#8a938b;font-size:24px}.stop-copy{min-width:0}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
+    .stop-main{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer}.stop-thumb{width:72px;height:72px;object-fit:cover;border-radius:11px;flex:0 0 72px;background:var(--cream)}.stop-thumb-empty{display:grid;place-items:center;background:#f1efe8;color:#8a938b;font-size:24px}.stop-copy{min-width:0}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
     .thumb-wrap{position:relative}
     .thumb-swap{position:absolute;bottom:-6px;inset-inline-end:-6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:11px;display:grid;place-items:center;padding:0;line-height:1;box-shadow:0 2px 6px #17201c2a;z-index:2}
     .thumb-swap:hover{background:var(--cream)}
@@ -142,7 +149,7 @@
     .mini-form{display:grid;grid-template-columns:1fr auto;gap:8px;margin:12px 0}.mini-form input{min-width:0}
     .hint{background:#eef3ea;color:#3d5a45;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.45;margin-top:11px}
     .warn{background:#fdf0e9;color:#94432a;padding:10px 12px;border-radius:9px;font-size:12px;line-height:1.45;margin:12px 0}
-        .search-place-result{display:flex;align-items:center;gap:10px;width:100%}.search-place-result img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex:0 0 auto}
+        .search-place-result{display:flex;align-items:center;gap:10px;width:100%}.search-place-result img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex:0 0 auto;background:var(--cream)}
 .nearby-list{max-height:180px;overflow:auto;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
     .nearby-list button{display:block;width:100%;text-align:start;border:0;background:none;padding:6px 0;color:var(--moss);font-size:12px}
     .idea-card{font-family:var(--ui);width:min(420px,72vw);max-height:60vh;overflow-y:auto;overscroll-behavior:contain;padding-inline-end:6px;line-height:1.5;color:var(--ink);font-size:14px}
@@ -183,7 +190,7 @@
 
     @media(max-width:750px){
       .shell{padding:0 15px 34px}header{height:66px}.hero{padding:26px 22px}.hero h1{font-size:32px}
-      .hero-side{position:static;margin-top:16px}.stats{grid-template-columns:repeat(3,1fr)}.stat{padding:12px}.stat b{font-size:18px}
+      .hero-side{position:static;margin-top:16px}.stats{grid-template-columns:repeat(2,1fr)}.stat{padding:12px}.stat b{font-size:18px}
       .mapwrap{height:340px}.layout{grid-template-columns:1fr;gap:22px}.sidebar{grid-template-columns:1fr}
       .section-head p{display:none}.stop{cursor:default}.handle{display:none}
       .stop{grid-template-columns:1fr auto}.travel{margin-inline-start:12px}
@@ -191,7 +198,21 @@
       html[dir="rtl"] body{direction:rtl} html[dir="rtl"] .head-tools{direction:rtl} html[dir="rtl"] .section-head,html[dir="rtl"] .daytop,html[dir="rtl"] .wx-row,html[dir="rtl"] .dest-meta,html[dir="rtl"] .dest-actions{direction:rtl} html[dir="rtl"] .modal-box,html[dir="rtl"] input,html[dir="rtl"] textarea,html[dir="rtl"] select{direction:rtl} html[dir="rtl"] .modal-actions{justify-content:flex-start}
     }
     @media(max-width:420px){.hero h1{font-size:28px}}
-    @media print{.stop-edit,.transit-btn,.edit-stop{display:none!important}.map-resizer{display:none!important}.map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips{display:none!important}.mapwrap{height:280px}.layout{grid-template-columns:1fr}}
+    @media print{
+      .stop-edit,.transit-btn,.edit-stop{display:none!important}
+      .map-resizer{display:none!important}
+      .map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips{display:none!important}
+      .hero-swap,.hero-side,.thumb-wrap,.dest-swap,.sync-pill,.user-menu-wrap{display:none!important}
+      :root{ --ink:#15231f!important; --muted:#6a746e!important; --paper:#f6f4ef!important; --cream:#ebe8df!important; --line:#dcdcd2!important }
+      body{background:#fff!important;color:#000!important}
+      .hero{background:none!important;min-height:auto!important;padding:0 0 12px!important;border-radius:0!important}
+      .hero h1{text-shadow:none!important;color:var(--ink)!important;font-size:26px!important;margin:6px 0!important}
+      .hero p,.hero .eyebrow{text-shadow:none!important;color:var(--muted)!important;opacity:1!important}
+      .mapwrap{height:380px!important}
+      .layout{grid-template-columns:1fr!important}
+      .stop-main{gap:0!important}
+      .day{break-inside:avoid;page-break-inside:avoid}
+    }
 
     /* ---------- Night mode ---------- */
     :root[data-theme="dark"]{
@@ -206,7 +227,8 @@
     [data-theme="dark"] .idea-card .idea-edit input,[data-theme="dark"] .idea-card .idea-edit textarea,
     [data-theme="dark"] .idea-card select,[data-theme="dark"] .add-idea-btn.ghost,[data-theme="dark"] .day-chip,
     [data-theme="dark"] .sync-pill,[data-theme="dark"] .user-avatar,[data-theme="dark"] .user-menu,
-    [data-theme="dark"] .sort-toggle,[data-theme="dark"] .chip{ background:#1a2622; }
+    [data-theme="dark"] .sort-toggle,[data-theme="dark"] .chip,[data-theme="dark"] .map-search input,
+    [data-theme="dark"] .mode-switch{ background:#1a2622; }
     [data-theme="dark"] .stop-edit{ background:#152019; }
     [data-theme="dark"] .stop-thumb-empty,[data-theme="dark"] .tag{ background:#22322c; color:#a9b3ac; }
     [data-theme="dark"] .chip{ color:#bcd6c6; border-color:#33513f; }
@@ -287,7 +309,8 @@
       <div class="stats">
         <div class="stat"><b id="statPlaces">0</b><span data-i18n="stat.places"></span></div>
         <div class="stat"><b id="statDays">1</b><span data-i18n="stat.days"></span></div>
-        <div class="stat"><b id="statTime">—</b><span data-i18n="stat.time"></span></div>
+        <div class="stat"><b id="statTime">—</b><span id="statTimeLabel" data-i18n="stat.time"></span></div>
+        <div class="stat"><b id="statDistance">—</b><span id="statDistanceLabel" data-i18n="stat.distance"></span></div>
       </div>
       <div class="section-head">
         <div><h2 data-i18n="map.title"></h2><p data-i18n="map.sub"></p></div>
@@ -300,11 +323,12 @@
       </div>
       <section class="mapwrap">
         <div class="map-toolbar">
+          <div class="map-search" id="mapSearchWrap"><input type="text" id="mapSearchInput" data-i18n-ph="map.searchPh"><div class="suggest" id="mapSearchResults" style="display:none"></div></div>
           <button id="centerCityBtn" data-i18n="map.centerCity"></button>
           <button id="fitBtn" data-i18n="map.fit"></button>
           <button id="nearbyBtn" data-i18n="map.nearby"></button>
           <button id="clearIdeasBtn" data-i18n="nearby.clear" style="display:none"></button>
-          <button id="addPlaceBtn" data-i18n="map.addPlace"></button>
+          <button id="rulerBtn" data-i18n="map.ruler"></button>
            <button id="mapExpandBtn" class="map-expand" data-i18n="map.expand"></button>
         </div>
         <div class="map-label" id="mapLabel" data-i18n="map.loading"></div>
@@ -318,7 +342,10 @@
           <div class="section-head">
             <div><h2 data-i18n="days.title"></h2><p data-i18n="days.sub"></p></div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn light" id="modeBtn"></button>
+              <div class="mode-switch" id="modeSwitch">
+                <button type="button" class="mode-opt" data-mode="foot" data-i18n="mode.walk"></button>
+                <button type="button" class="mode-opt" data-mode="driving" data-i18n="mode.drive"></button>
+              </div>
               <button class="btn light" id="removeDayBtn" data-i18n="days.remove"></button>
               <button class="btn light" id="addDayBtn" data-i18n="days.add"></button>
               <button class="btn light" id="printBtn" data-i18n="days.print"></button>
@@ -433,8 +460,8 @@
         'sort.az':'A–Z','sort.date':'Date',
         'world.title':'All destinations','world.sub':'Every planned trip on one map. Tap a pin to open it.','world.startHere':'🧳 Start a trip here',
         'trip.back':'← All destinations','trip.eyebrow':'Trip','trip.heroSub':'Search places, drop them into days, and the map keeps your city in view.','trip.start':'Start','trip.share':'Copy share link','trip.noDates':'No dates set',
-        'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time',
-        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
+        'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
+        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
         'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
@@ -462,8 +489,8 @@
         'sort.az':'א–ת','sort.date':'תאריך',
         'world.title':'כל היעדים','world.sub':'כל הטיולים המתוכננים על מפה אחת. לחצו על סימון כדי לפתוח אותו.','world.startHere':'🧳 להתחיל טיול כאן',
         'trip.back':'→ כל היעדים','trip.eyebrow':'טיול','trip.heroSub':'חפשו מקומות, שבצו אותם לימים, והמפה תשמור על העיר שלכם בפריים.','trip.start':'תחילה','trip.share':'העתקת קישור שיתוף','trip.noDates':'לא נקבעו תאריכים',
-        'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה',
-        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
+        'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
+        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
         'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
@@ -1254,7 +1281,10 @@
         const swapBtn=document.getElementById('tripHeroSwapBtn');
         if(swapBtn) swapBtn.style.display = 'inline-block';
       }
-      document.getElementById('modeBtn').textContent = t(trip.travelMode === 'foot' ? 'mode.walk' : 'mode.drive');
+      document.querySelectorAll('#modeSwitch .mode-opt').forEach(b=> b.classList.toggle('active', b.dataset.mode === (trip.travelMode || 'foot')));
+      const walking = (trip.travelMode || 'foot') !== 'driving';
+      document.getElementById('statTimeLabel').textContent = t(walking ? 'stat.walkTime' : 'stat.driveTime');
+      document.getElementById('statDistanceLabel').textContent = t(walking ? 'stat.walkDist' : 'stat.driveDist');
     }
     function persist(){ const trip = currentTrip(); if(trip){ trip.places = places; trip.schedule = schedule } saveTrips() }
 
@@ -1301,6 +1331,73 @@
       Object.keys(places).forEach(id=>{ const c = coords(id); if(c && passesFilter(places[id])){ b.extend({lat:c[0],lng:c[1]}); n++ } });
       if(!n) return centerOnCity();
       if(n===1){ freeMap.setCenter(b.getCenter()); freeMap.setZoom(15) } else freeMap.fitBounds(b, 70);
+    }
+
+    /* ---------- Ruler: click a point, then move the mouse to measure ---------- */
+    let rulerActive=false, rulerOrigin=null, rulerLine=null, rulerLabel=null, rulerClickListener=null, rulerMoveListener=null;
+    function toggleRuler(){
+      if(!freeMap) return;
+      rulerActive = !rulerActive;
+      document.getElementById('rulerBtn').classList.toggle('active', rulerActive);
+      rulerActive ? startRuler() : stopRuler();
+    }
+    function startRuler(){
+      freeMap.setOptions({ draggableCursor:'crosshair' });
+      rulerClickListener = freeMap.addListener('click', e=>{
+        rulerOrigin = { lat:e.latLng.lat(), lng:e.latLng.lng() };
+        if(!rulerLine) rulerLine = new google.maps.Polyline({ map:freeMap, strokeColor:'#e2673f', strokeWeight:3, strokeOpacity:.9, geodesic:true, path:[rulerOrigin, rulerOrigin] });
+        else rulerLine.setPath([rulerOrigin, rulerOrigin]);
+      });
+      rulerMoveListener = freeMap.addListener('mousemove', e=>{
+        if(!rulerOrigin || !rulerLine) return;
+        const cur = { lat:e.latLng.lat(), lng:e.latLng.lng() };
+        rulerLine.setPath([rulerOrigin, cur]);
+        if(!rulerLabel) rulerLabel = new google.maps.InfoWindow({ disableAutoPan:true });
+        rulerLabel.setContent(`<div style="font:600 12.5px Rubik,sans-serif;padding:1px 3px;white-space:nowrap">${esc(fmtDistance(distM(rulerOrigin.lat, rulerOrigin.lng, cur.lat, cur.lng)))}</div>`);
+        rulerLabel.setPosition(cur);
+        if(!rulerLabel.get('map')) rulerLabel.open(freeMap);
+      });
+    }
+    function stopRuler(){
+      if(rulerClickListener) google.maps.event.removeListener(rulerClickListener);
+      if(rulerMoveListener) google.maps.event.removeListener(rulerMoveListener);
+      rulerClickListener = rulerMoveListener = null;
+      if(rulerLine){ rulerLine.setMap(null); rulerLine = null }
+      if(rulerLabel){ rulerLabel.close(); rulerLabel = null }
+      rulerOrigin = null;
+      freeMap.setOptions({ draggableCursor:null });
+    }
+
+    /* ---------- Map search: find any place and open the same details bubble used everywhere else ---------- */
+    let mapSearchFound = [];
+    async function runMapSearch(q){
+      const box = document.getElementById('mapSearchResults');
+      if(!q){ box.style.display='none'; box.innerHTML=''; return }
+      const trip = currentTrip();
+      try{
+        let found;
+        try{
+          const g = await googleTextSearch(q, trip && trip.center);
+          if(!g.length) throw new Error('none');
+          found = g.map(x=>({ id:x.id||'', name:x.displayName?.text||q, address:x.formattedAddress||'', lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
+        }catch(e){
+          const near = trip?.center ? `&viewbox=${trip.center[1]-0.35},${trip.center[0]+0.35},${trip.center[1]+0.35},${trip.center[0]-0.35}&bounded=1` : '';
+          const osm = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=' + langCode() + near + '&q=' + encodeURIComponent(q)).then(r=>r.json());
+          found = osm.map(x=>({ id:'', name:(x.display_name||'').split(',')[0], address:x.display_name||'', lat:+x.lat, lng:+x.lon, category:x.type||'place' }));
+        }
+        mapSearchFound = found;
+        box.innerHTML = found.length
+          ? found.map((x,i)=>`<button type="button" class="add search-place-result" data-i="${i}" style="text-align:start"><span>📍 ${esc(x.name)} <small>${esc(x.address||x.category||'')}</small></span></button>`).join('')
+          : `<div class="hint" style="padding:10px 12px;margin:0">${esc(t('add.none'))}</div>`;
+        box.style.display = 'block';
+      }catch(e){ box.innerHTML = `<div class="hint" style="padding:10px 12px;margin:0">${esc(t('add.error'))}</div>`; box.style.display = 'block' }
+    }
+    function pickMapSearchResult(i){
+      const x = mapSearchFound[i]; if(!x || !freeMap) return;
+      document.getElementById('mapSearchResults').style.display = 'none';
+      document.getElementById('mapSearchInput').value = '';
+      freeMap.panTo({ lat:x.lat, lng:x.lng }); freeMap.setZoom(Math.max(freeMap.getZoom(), 15));
+      openIdea({ id:x.id, name:x.name, address:x.address, lat:x.lat, lng:x.lng, category:x.category, typeLabel:t('filter.'+bucketOf({category:x.category})) });
     }
 
     function popupHtml(id){
@@ -1509,7 +1606,7 @@
       routeLines.forEach(l=>l.setMap(null)); routeLines = [];
       const trip = currentTrip();
       const profile = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
-      let totalSeconds = 0;
+      let totalSeconds = 0, totalMeters = 0;
 
       // All days are independent, so fetch every day's route in parallel
       // instead of waiting for each one to finish before starting the next —
@@ -1523,7 +1620,7 @@
           const path = data.route.geometry.coordinates.map(([lng,lat])=>({lat,lng}));
           if(freeMap) routeLines.push(new google.maps.Polyline({ path, geodesic:true, strokeColor:color, strokeWeight:4, strokeOpacity:.8, map:freeMap }));
           const legs = data.route.legs.map(l=>({ sec:l.duration, m:l.distance, profile:data.profile }));
-          legs.forEach(l=> totalSeconds += l.sec);
+          legs.forEach(l=>{ totalSeconds += l.sec; totalMeters += l.m });
           setTravelTexts(di, legs);
         } else {
           if(freeMap) routeLines.push(new google.maps.Polyline({ path:usable.map(c=>({lat:c[0],lng:c[1]})), geodesic:true, strokeColor:color, strokeWeight:3, strokeOpacity:.5, map:freeMap }));
@@ -1531,6 +1628,7 @@
         }
       });
       document.getElementById('statTime').textContent = totalSeconds ? fmtDuration(totalSeconds) : '—';
+      document.getElementById('statDistance').textContent = totalMeters ? fmtDistance(totalMeters) : '—';
     }
 
     function setTravelTexts(di, legs){
@@ -1736,11 +1834,12 @@
     };
     document.getElementById('printBtn').onclick = ()=>window.print();
     document.getElementById('backHomeBtn').onclick = backToHome;
-    document.getElementById('modeBtn').onclick = ()=>{
-      const trip = currentTrip(); if(!trip) return;
-      trip.travelMode = trip.travelMode === 'foot' ? 'driving' : 'foot';
+    document.getElementById('modeSwitch').addEventListener('click', e=>{
+      const b = e.target.closest('.mode-opt'); if(!b) return;
+      const trip = currentTrip(); if(!trip || trip.travelMode === b.dataset.mode) return;
+      trip.travelMode = b.dataset.mode;
       saveTrips(); renderTripHeader(); computeRoutes();
-    };
+    });
     document.getElementById('tripStart').onchange = e=>{
       const trip = currentTrip(); if(!trip) return;
       trip.startDate = e.target.value; saveTrips(); render(); loadWeather();
@@ -1749,6 +1848,14 @@
     document.getElementById('fitBtn').onclick = fitAllPlaces;
     document.getElementById('nearbyBtn').onclick = ()=>{ if(!freeMap) return; const c = freeMap.getCenter(); nearbyAt(c.lat(), c.lng(), viewRadius()) };
     document.getElementById('clearIdeasBtn').onclick = clearIdeas;
+    document.getElementById('rulerBtn').onclick = toggleRuler;
+    {
+      const msi = document.getElementById('mapSearchInput'), msr = document.getElementById('mapSearchResults');
+      let mapSearchDebounce = 0;
+      msi.oninput = ()=>{ clearTimeout(mapSearchDebounce); const q = msi.value.trim(); mapSearchDebounce = setTimeout(()=>runMapSearch(q), 350) };
+      msi.onkeydown = e=>{ if(e.key==='Enter'){ e.preventDefault(); clearTimeout(mapSearchDebounce); runMapSearch(msi.value.trim()) } };
+      msr.addEventListener('click', e=>{ const b = e.target.closest('[data-i]'); if(b) pickMapSearchResult(+b.dataset.i) });
+    }
 
     /* ---------- Weather + weather-aware packing ---------- */
     const WX = {
@@ -2297,7 +2404,6 @@
     }
 
     document.getElementById('fabBtn').onclick = openImporter;
-    document.getElementById('addPlaceBtn').onclick = openImporter;
     document.getElementById('searchBtn').onclick = searchPlaces;
     document.getElementById('placeSearch').addEventListener('keydown', e=>{ if(e.key==='Enter') searchPlaces() });
     document.getElementById('closeBtn').onclick = ()=>{ modal.classList.remove('open'); changePlaceId = null; };
