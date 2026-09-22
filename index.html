@@ -88,8 +88,9 @@
     .day-tools{margin-inline-start:auto;display:flex;gap:6px;flex-wrap:wrap}
     .icon-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:12px;color:var(--muted)}.icon-btn:hover{background:var(--cream);color:var(--ink)}
     .stops{padding:10px;min-height:52px}
-    .stop{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
+    .stop{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
     .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px}
+    .stop-num{flex:0 0 20px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#fff}
     .stop-main{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer}.stop-thumb{width:72px;height:72px;object-fit:cover;border-radius:11px;flex:0 0 72px;background:var(--cream)}.stop-thumb-empty{display:grid;place-items:center;background:#f1efe8;color:#8a938b;font-size:24px}.stop-copy{min-width:0}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
     .thumb-wrap{position:relative}
     .thumb-swap{position:absolute;bottom:-6px;inset-inline-end:-6px;width:20px;height:20px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--ink);font-size:11px;display:grid;place-items:center;padding:0;line-height:1;box-shadow:0 2px 6px #17201c2a;z-index:2}
@@ -193,7 +194,7 @@
       .hero-side{position:static;margin-top:16px}.stats{grid-template-columns:repeat(2,1fr)}.stat{padding:12px}.stat b{font-size:18px}
       .mapwrap{height:340px}.layout{grid-template-columns:1fr;gap:22px}.sidebar{grid-template-columns:1fr}
       .section-head p{display:none}.stop{cursor:default}.handle{display:none}
-      .stop{grid-template-columns:1fr auto}.travel{margin-inline-start:12px}
+      .stop{grid-template-columns:auto 1fr auto}.travel{margin-inline-start:12px}
       .btn,.icon-btn{padding:11px 13px}
       html[dir="rtl"] body{direction:rtl} html[dir="rtl"] .head-tools{direction:rtl} html[dir="rtl"] .section-head,html[dir="rtl"] .daytop,html[dir="rtl"] .wx-row,html[dir="rtl"] .dest-meta,html[dir="rtl"] .dest-actions{direction:rtl} html[dir="rtl"] .modal-box,html[dir="rtl"] input,html[dir="rtl"] textarea,html[dir="rtl"] select{direction:rtl} html[dir="rtl"] .modal-actions{justify-content:flex-start}
     }
@@ -212,6 +213,8 @@
       .mapwrap{height:280px!important}
       .layout{grid-template-columns:1fr!important}
       .stop-main{gap:0!important}
+      .hero,.stats,.mapwrap{break-inside:avoid;page-break-inside:avoid}
+      .stop{break-inside:avoid;page-break-inside:avoid}
     }
 
     /* ---------- Night mode ---------- */
@@ -1339,7 +1342,7 @@
     }
 
     /* ---------- Ruler: click a point, then move the mouse to measure ---------- */
-    let rulerActive=false, rulerOrigin=null, rulerLine=null, rulerLabel=null, rulerClickListener=null, rulerMoveListener=null;
+    let rulerActive=false, rulerOrigin=null, rulerLine=null, rulerLabel=null, rulerClickListener=null, rulerMoveListener=null, rulerRightClickListener=null;
     function toggleRuler(){
       if(!freeMap) return;
       rulerActive = !rulerActive;
@@ -1362,11 +1365,15 @@
         rulerLabel.setPosition(cur);
         if(!rulerLabel.get('map')) rulerLabel.open(freeMap);
       });
+      // Right-click also exits ruler mode — a mouse-based way out that works
+      // even if the map has keyboard focus and swallows the Escape key.
+      rulerRightClickListener = freeMap.addListener('rightclick', ()=> toggleRuler());
     }
     function stopRuler(){
       if(rulerClickListener) google.maps.event.removeListener(rulerClickListener);
       if(rulerMoveListener) google.maps.event.removeListener(rulerMoveListener);
-      rulerClickListener = rulerMoveListener = null;
+      if(rulerRightClickListener) google.maps.event.removeListener(rulerRightClickListener);
+      rulerClickListener = rulerMoveListener = rulerRightClickListener = null;
       if(rulerLine){ rulerLine.setMap(null); rulerLine = null }
       if(rulerLabel){ rulerLabel.close(); rulerLabel = null }
       rulerOrigin = null;
@@ -1466,9 +1473,7 @@
     function redrawMap(){
       if(!freeMap) return;
       liveMarkers.forEach(m=>m.setMap(null)); liveMarkers = [];
-      const placeNumbers = new Map();
-      let number = 1;
-      schedule.forEach(d=>d.stops.forEach(s=>{ if(places[s[0]]) placeNumbers.set(s[0], number++); }));
+      const placeNumbers = computePlaceNumbers();
       Object.entries(places).forEach(([id,p])=>{
         if(!passesFilter(p)) return;
         const c = coords(id); if(!c) return;
@@ -1645,8 +1650,17 @@
     }
 
     /* ---------- Itinerary ---------- */
+    // Sequential number for each stop across the whole trip (day 1's stops,
+    // then day 2's, etc.) — shared by the map pins and the itinerary list so
+    // the same number identifies the same stop in both places.
+    function computePlaceNumbers(){
+      const map = new Map(); let n = 1;
+      schedule.forEach(d=>d.stops.forEach(s=>{ if(places[s[0]]) map.set(s[0], n++) }));
+      return map;
+    }
     const daysBox = document.getElementById('days');
     function render(){
+      const placeNumbers = computePlaceNumbers();
       daysBox.innerHTML = schedule.map((d,di)=>{
         const color = DAY_COLORS[di%DAY_COLORS.length];
         const stopsHtml = d.stops.length ? d.stops.map((s,i)=>{
@@ -1654,6 +1668,7 @@
           const daySel = schedule.length > 1 ? `<select class="move-day" data-place="${s[0]}">${schedule.map((_,j)=>`<option value="${j}" ${j===di?'selected':''}>${esc(t('day.moveTo',{n:j+1}))}</option>`).join('')}</select>` : '';
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
+            <span class="stop-num" style="background:${color}">${placeNumbers.get(s[0])||''}</span>
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p)}</div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
@@ -2414,6 +2429,9 @@
     // Escape: unwind whatever's frontmost — ruler mode, the details bubble,
     // an open stop editor, a modal, the account menu, then the expanded map —
     // one press always backs out of something rather than doing nothing.
+    // Capture phase: when focus is inside the Google Map div, Google's own
+    // keydown handling can swallow the bubble-phase event before it reaches
+    // document, which is why Escape previously seemed to do nothing there.
     document.addEventListener('keydown', e=>{
       if(e.key !== 'Escape') return;
       if(rulerActive){ toggleRuler(); return }
@@ -2425,7 +2443,7 @@
       if(menu){ menu.classList.remove('open'); return }
       const wrap = tripMapWrap();
       if(wrap?.classList.contains('expanded')){ wrap.classList.remove('expanded'); document.getElementById('mapExpandBtn').textContent = t('map.expand'); setTimeout(afterMapResize, 50) }
-    });
+    }, true);
 
     /* ---------- Backup, import, share ---------- */
     function b64encode(obj){ return btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj)))) }
