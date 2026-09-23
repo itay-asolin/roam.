@@ -107,7 +107,11 @@
     .stop-edit .save{border:0;background:var(--moss);color:#fff;border-radius:9px;padding:8px 16px;font-size:12.5px}
     .stop-tools select{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 7px;font-size:11.5px;color:var(--muted)}
     .tag{font-size:10.5px;padding:5px 8px;border-radius:99px;background:#f1efe8;color:#626b64}
-    .travel{margin:0 0 0 38px;color:var(--muted);font-size:11.5px;padding-inline-start:12px;border-inline-start:1px dashed #bcc3bc;min-height:18px;line-height:18px}
+    .travel{margin:0 0 0 38px;color:var(--muted);font-size:11.5px;padding-inline-start:12px;border-inline-start:1px dashed #bcc3bc;min-height:18px;line-height:18px;display:flex;align-items:center;gap:6px}
+    .transit-toggle{border:0;background:none;padding:0;font-size:12px;cursor:pointer;opacity:.4;line-height:1}
+    .transit-toggle:hover{opacity:1}
+    .travel.transit{color:#3f7ad9}
+    .travel.transit .transit-toggle{opacity:1}
     html[dir="rtl"] .travel{margin:0 38px 0 0}
     .day-empty{color:var(--muted);font-size:12px;padding:12px 10px}
     .sidebar{display:grid;gap:16px;align-content:start}
@@ -212,7 +216,7 @@
     @media print{
       .stop-edit,.transit-btn,.edit-stop{display:none!important}
       .map-resizer{display:none!important}
-      .map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips{display:none!important}
+      .map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips,.transit-toggle{display:none!important}
       .hero-swap,.hero-side,.thumb-wrap,.dest-swap,.sync-pill,.user-menu-wrap{display:none!important}
       .map-label,.day-legend,.mode-switch{display:none!important}
       :root{ --ink:#15231f!important; --muted:#6a746e!important; --paper:#f6f4ef!important; --cream:#ebe8df!important; --line:#dcdcd2!important }
@@ -512,7 +516,7 @@
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
         'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
-        'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…',
+        'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} (transit — no time estimate)','travel.transitNoDist':'🚌 Public transit','travel.transitToggle':'Mark this leg as public transit',
         'wx.title':'Weather','wx.needDate':'Set a start date and the forecast for your days will appear here.','wx.forecast':'Forecast for your dates.','wx.typical':'Typical for these dates, based on last year — a forecast appears about two weeks before you go.','wx.error':'Weather is unavailable right now.','wx.loading':'Loading weather…',
         'pack.title':'Packing list','pack.add':'+ Add item','pack.prompt':'What do you want to pack?','pack.suggested':'Suggested by the weather:',
         'pack.d1':'Walking shoes','pack.d2':'Portable charger','pack.d3':'Travel documents',
@@ -541,7 +545,7 @@
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
         'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
-        'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…',
+        'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} (תחבורה ציבורית — בלי הערכת זמן)','travel.transitNoDist':'🚌 תחבורה ציבורית','travel.transitToggle':'סימון הקטע כתחבורה ציבורית',
         'wx.title':'מזג אוויר','wx.needDate':'בחרו תאריך התחלה והתחזית לימי הטיול תופיע כאן.','wx.forecast':'תחזית לתאריכים שלכם.','wx.typical':'ממוצע אופייני לתאריכים האלה לפי השנה שעברה — תחזית אמיתית תופיע כשבועיים לפני הנסיעה.','wx.error':'נתוני מזג האוויר אינם זמינים כרגע.','wx.loading':'טוען מזג אוויר…',
         'pack.title':'רשימת ציוד','pack.add':'+ הוספת פריט','pack.prompt':'מה להוסיף לרשימה?','pack.suggested':'מומלץ לפי מזג האוויר:',
         'pack.d1':'נעלי הליכה','pack.d2':'מטען נייד','pack.d3':'מסמכי נסיעה',
@@ -870,6 +874,7 @@
         date: d.date || '',
         loop: !!d.loop,
         travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
+        transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(n=>Number.isInteger(n)) : [],
         stops: (d.stops || []).map(s => ({ p: s[0], n: s[1] || '' }))
       }));
     }
@@ -894,6 +899,7 @@
         date:d.date||'',
         loop: !!d.loop,
         travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
+        transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(n=>Number.isInteger(n)) : [],
         stops:(d.stops||[]).map(s => {
           if (Array.isArray(s)) return s;
           // המרה חזרה לאופן שבו האפליקציה מצפה לזה
@@ -1827,11 +1833,12 @@
         if(usable.length < 2){ setTravelTexts(di, null); return }
         const color = DAY_COLORS[di%DAY_COLORS.length];
         const showOnMap = mapOverlayDays || di === mapFocusDay;
+        const transitLegs = schedule[di] && Array.isArray(schedule[di].transitLegs) ? schedule[di].transitLegs : [];
         if(data){
           const path = data.route.geometry.coordinates.map(([lng,lat])=>({lat,lng}));
           if(freeMap && showOnMap) routeLines.push(new google.maps.Polyline({ path, geodesic:true, strokeColor:color, strokeWeight:4, strokeOpacity:.8, map:freeMap }));
           const legs = data.route.legs.map(l=>({ sec:l.duration, m:l.distance, profile:data.profile }));
-          legs.forEach(l=>{ totalSeconds += l.sec; totalMeters += l.m });
+          legs.forEach((l,li)=>{ if(!transitLegs.includes(li)){ totalSeconds += l.sec; totalMeters += l.m } });
           setTravelTexts(di, legs);
         } else {
           if(freeMap && showOnMap) routeLines.push(new google.maps.Polyline({ path:usable.map(c=>({lat:c[0],lng:c[1]})), geodesic:true, strokeColor:color, strokeWeight:3, strokeOpacity:.5, map:freeMap }));
@@ -1843,14 +1850,34 @@
     }
 
     function setTravelTexts(di, legs){
-      document.querySelectorAll(`.travel[data-day="${di}"]`).forEach((el,i)=>{
-        if(!legs || !legs[i]){ el.textContent = ''; return }
-        const leg = legs[i];
-        el.textContent = t(leg.profile === 'foot' ? 'travel.walk' : 'travel.drive', { time:fmtDuration(leg.sec), dist:fmtDistance(leg.m) });
+      const day = schedule[di];
+      document.querySelectorAll(`.travel[data-day="${di}"]`).forEach(el=>{
+        const li = +el.dataset.leg;
+        const textEl = el.querySelector('.travel-text') || el;
+        const isTransit = day && Array.isArray(day.transitLegs) && day.transitLegs.includes(li);
+        el.classList.toggle('transit', !!isTransit);
+        if(isTransit){
+          const a = day && coords(day.stops[li]?.[0]);
+          const bId = (day && day.loop && li === day.stops.length-1) ? day.stops[0]?.[0] : day?.stops[li+1]?.[0];
+          const b = coords(bId);
+          textEl.textContent = a && b ? t('travel.transit', { dist:fmtDistance(distM(a[0],a[1],b[0],b[1])) }) : t('travel.transitNoDist');
+          return;
+        }
+        if(!legs || !legs[li]){ textEl.textContent = ''; return }
+        const leg = legs[li];
+        textEl.textContent = t(leg.profile === 'foot' ? 'travel.walk' : 'travel.drive', { time:fmtDuration(leg.sec), dist:fmtDistance(leg.m) });
       });
     }
 
     /* ---------- Itinerary ---------- */
+    // A leg between two stops (or, on a loop day, the return leg back to the
+    // first stop) can be marked as public transit instead of walking/driving
+    // — there's no free transit-routing API, so it just shows the straight-
+    // line distance with no time, rather than a real (and wrong) walk/drive
+    // estimate for a leg you're actually taking a bus for.
+    function travelDivHtml(di, leg){
+      return `<div class="travel" data-day="${di}" data-leg="${leg}"><button type="button" class="transit-toggle" data-day="${di}" data-leg="${leg}" title="${esc(t('travel.transitToggle'))}" aria-label="${esc(t('travel.transitToggle'))}">🚌</button><span class="travel-text">${esc(t('travel.pending'))}</span></div>`;
+    }
     // Sequential number for each stop across the whole trip (day 1's stops,
     // then day 2's, etc.) — shared by the map pins and the itinerary list so
     // the same number identifies the same stop in both places.
@@ -1874,8 +1901,8 @@
             <span class="stop-num" style="background:${color}">${placeNumbers.get(s[0])||''}</span>
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
-          </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
-        }).join('') + (d.loop && d.stops.length>1 && places[d.stops[0][0]] ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div><div class="stop stop-return" data-place="${d.stops[0][0]}"><span class="handle" style="visibility:hidden">⠿</span><span class="stop-num" style="background:${color}">↩</span><div class="stop-main"><div class="stop-thumb stop-thumb-empty">↩️</div><div class="stop-copy"><strong>${esc(t('day.returnTo',{name:places[d.stops[0][0]].name}))}</strong></div></div></div>` : '') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
+          </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? travelDivHtml(di, i) : ''}`;
+        }).join('') + (d.loop && d.stops.length>1 && places[d.stops[0][0]] ? travelDivHtml(di, d.stops.length-1) + `<div class="stop stop-return" data-place="${d.stops[0][0]}"><span class="handle" style="visibility:hidden">⠿</span><span class="stop-num" style="background:${color}">↩</span><div class="stop-main"><div class="stop-thumb stop-thumb-empty">↩️</div><div class="stop-copy"><strong>${esc(t('day.returnTo',{name:places[d.stops[0][0]].name}))}</strong></div></div></div>` : '') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
 
         const effMode = d.travelMode || tripMode;
         const modeAuto = !d.travelMode;
@@ -1902,6 +1929,16 @@
       daysBox.querySelectorAll('.stop-edit').forEach(bindStopEditor);
       daysBox.querySelectorAll('.opt-day').forEach(b=> b.onclick = ()=> optimiseDay(+b.dataset.day));
       daysBox.querySelectorAll('.loop-day').forEach(b=> b.onclick = ()=>{ const day = schedule[+b.dataset.day]; if(day){ day.loop = !day.loop; render(); } });
+      daysBox.querySelectorAll('.transit-toggle').forEach(b=> b.onclick = e=>{
+        e.stopPropagation();
+        const day = schedule[+b.dataset.day]; if(!day) return;
+        const leg = +b.dataset.leg;
+        if(!Array.isArray(day.transitLegs)) day.transitLegs = [];
+        const at = day.transitLegs.indexOf(leg);
+        at >= 0 ? day.transitLegs.splice(at,1) : day.transitLegs.push(leg);
+        persist();
+        computeRoutes();
+      });
       daysBox.querySelectorAll('.mode-day').forEach(b=> b.onclick = ()=>{
         const day = schedule[+b.dataset.day]; if(!day) return;
         day.travelMode = !day.travelMode ? 'foot' : day.travelMode==='foot' ? 'driving' : null;
