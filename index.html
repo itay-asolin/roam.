@@ -255,7 +255,7 @@
     [data-theme="dark"] .add{ border-color:#3a4a43; }
     [data-theme="dark"] .stop .stop-note{ color:#a7b3ac; }
     [data-theme="dark"] .sync-dot{ background:#3a4a43; }
-    [data-theme="dark"] .mapwrap,[data-theme="dark"] .dest-card-media{ background:linear-gradient(135deg,#22322c,#1a2622); }
+    [data-theme="dark"] .mapwrap,[data-theme="dark"] .dest-card-media.no-image{ background:linear-gradient(135deg,#22322c,#1a2622); }
     [data-theme="dark"] .map-label{ background:#1a2622ee; }
     [data-theme="dark"] .wheel-fade{ background:linear-gradient(#1a2622 0%,#1a262200 34%,#1a262200 66%,#1a2622 100%); }
     [data-theme="dark"] .empty-state{ border-color:#3a4a43; }
@@ -1472,7 +1472,8 @@
         const cur = { lat:e.latLng.lat(), lng:e.latLng.lng() };
         rulerLine.setPath([rulerOrigin, cur]);
         if(!rulerLabel) rulerLabel = new google.maps.InfoWindow({ disableAutoPan:true });
-        rulerLabel.setContent(`<div style="font:600 12.5px Rubik,sans-serif;padding:1px 3px;white-space:nowrap">${esc(fmtDistance(distM(rulerOrigin.lat, rulerOrigin.lng, cur.lat, cur.lng)))}</div>`);
+        const rulerDark = theme === 'dark';
+        rulerLabel.setContent(`<div style="font:600 12.5px Rubik,sans-serif;padding:3px 7px;white-space:nowrap;border-radius:6px;background:${rulerDark?'#1a2622':'#fff'};color:${rulerDark?'#e9ece9':'#15231f'}">${esc(fmtDistance(distM(rulerOrigin.lat, rulerOrigin.lng, cur.lat, cur.lng)))}</div>`);
         rulerLabel.setPosition(cur);
         if(!rulerLabel.get('map')) rulerLabel.open(freeMap);
       });
