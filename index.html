@@ -89,6 +89,7 @@
     .icon-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:12px;color:var(--muted)}.icon-btn:hover{background:var(--cream);color:var(--ink)}
     .stops{padding:10px;min-height:52px}
     .stop{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
+    .stop-return{cursor:pointer;opacity:.85}
     .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px}
     .stop-num{flex:0 0 20px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#fff}
     .stop-main{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer}.stop-thumb{width:72px;height:72px;object-fit:cover;border-radius:11px;flex:0 0 72px;background:var(--cream)}.stop-thumb-empty{display:grid;place-items:center;background:#f1efe8;color:#8a938b;font-size:24px}.stop-copy{min-width:0}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
@@ -509,7 +510,7 @@
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
         'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','city.all':'🌐 All cities','city.add':'+ Add city','city.addPh':'City name…','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
-        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.modeAuto':'following trip default',
+        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
         'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…',
         'wx.title':'Weather','wx.needDate':'Set a start date and the forecast for your days will appear here.','wx.forecast':'Forecast for your dates.','wx.typical':'Typical for these dates, based on last year — a forecast appears about two weeks before you go.','wx.error':'Weather is unavailable right now.','wx.loading':'Loading weather…',
@@ -538,7 +539,7 @@
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
         'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','city.all':'🌐 כל הערים','city.add':'+ הוספת עיר','city.addPh':'שם העיר…','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
-        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.modeAuto':'לפי ברירת המחדל של הטיול',
+        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
         'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…',
         'wx.title':'מזג אוויר','wx.needDate':'בחרו תאריך התחלה והתחזית לימי הטיול תופיע כאן.','wx.forecast':'תחזית לתאריכים שלכם.','wx.typical':'ממוצע אופייני לתאריכים האלה לפי השנה שעברה — תחזית אמיתית תופיע כשבועיים לפני הנסיעה.','wx.error':'נתוני מזג האוויר אינם זמינים כרגע.','wx.loading':'טוען מזג אוויר…',
@@ -1441,7 +1442,13 @@
       const { center, viewport } = focusCityCoords();
       if(!center) return;
       if(viewport){
+        // City viewports from Nominatim/Places are often the whole
+        // administrative area (suburbs, countryside and all), which makes
+        // fitBounds zoom out far past what "the city" actually looks like.
+        // Fit the bounds, then pull back in to a sane city-level zoom if it
+        // landed too wide.
         freeMap.fitBounds(new google.maps.LatLngBounds({lat:viewport.south,lng:viewport.west},{lat:viewport.north,lng:viewport.east}), 40);
+        google.maps.event.addListenerOnce(freeMap, 'idle', ()=>{ if(freeMap.getZoom() < 12) freeMap.setZoom(12) });
       } else { freeMap.setCenter({lat:center[0],lng:center[1]}); freeMap.setZoom(12) }
     }
     function fitAllPlaces(){
@@ -1567,6 +1574,7 @@
         if(addBtn && pendingPoiPlace) addBtn.onclick = ()=>{ addPlace(pendingPoiPlace, 0, t('place.added')); infoWindow.close() };
       });
       freeMap.addListener('click', e=>{
+        if(rulerActive) return;
         if(!e.placeId) return;
         e.stop();
         fetchPlaceDetails(freeMap, e.placeId).then(place=>{
@@ -1867,7 +1875,7 @@
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
-        }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
+        }).join('') + (d.loop && d.stops.length>1 && places[d.stops[0][0]] ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div><div class="stop stop-return" data-place="${d.stops[0][0]}"><span class="handle" style="visibility:hidden">⠿</span><span class="stop-num" style="background:${color}">↩</span><div class="stop-main"><div class="stop-thumb stop-thumb-empty">↩️</div><div class="stop-copy"><strong>${esc(t('day.returnTo',{name:places[d.stops[0][0]].name}))}</strong></div></div></div>` : '') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
 
         const effMode = d.travelMode || tripMode;
         const modeAuto = !d.travelMode;
@@ -1877,7 +1885,7 @@
             <span class="daynum" style="background:${color}22;border:1px solid ${color};color:${color}">${String(di+1).padStart(2,'0')}</span>
             <strong>${esc(t('day',{n:di+1}))}</strong>
             <span class="dd">${esc(dayDate(di))}</span>
-            <span class="day-tools">${d.stops.length>1?`<button class="icon-btn mode-day${modeAuto?'':' active'}" data-day="${di}" title="${esc(modeTitle)}" aria-label="${esc(modeTitle)}">${effMode==='driving'?'🚗':'🚶'}</button>`:''}${d.stops.length>1?`<button class="icon-btn loop-day${d.loop?' active':''}" data-day="${di}" title="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}" aria-label="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}">${d.loop?'🔁':'↩️'}</button>`:''}${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}</span>
+            <span class="day-tools">${d.stops.length>1 && schedule.length>1?`<button class="icon-btn mode-day${modeAuto?'':' active'}" data-day="${di}" title="${esc(modeTitle)}" aria-label="${esc(modeTitle)}">${effMode==='driving'?'🚗':'🚶'}</button>`:''}${d.stops.length>1?`<button class="icon-btn loop-day${d.loop?' active':''}" data-day="${di}" title="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}" aria-label="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}">${d.loop?'🔁':'↩️'}</button>`:''}${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}</span>
           </div>
           <div class="stops" data-day="${di}">${stopsHtml}</div>
         </article>`;
@@ -1982,6 +1990,21 @@
       schedule[toDay].stops.push(stop);
       render();
     }
+    // Drag-and-drop reorder: drops onto a specific stop insert the dragged
+    // stop right before it (same day or a different one), instead of only
+    // being able to move a stop across days like moveStop() does.
+    function moveStopTo(id, toDay, beforeId){
+      if(id === beforeId) return;
+      const from = schedule.findIndex(d=>d.stops.some(s=>s[0]===id));
+      const target = schedule[toDay];
+      if(from < 0 || !target) return;
+      const stop = schedule[from].stops.find(s=>s[0]===id);
+      schedule[from].stops = schedule[from].stops.filter(s=>s[0]!==id);
+      let idx = beforeId ? target.stops.findIndex(s=>s[0]===beforeId) : -1;
+      if(idx < 0) idx = target.stops.length;
+      target.stops.splice(idx, 0, stop);
+      render();
+    }
     function removePlace(id){
       schedule.forEach(d=> d.stops = d.stops.filter(s=>s[0]!==id));
       delete places[id]; if(editingStop===id) editingStop = null;
@@ -1992,6 +2015,16 @@
       document.querySelectorAll('.stop').forEach(el=>{
         el.addEventListener('dragstart',()=>{ dragged = el; el.style.opacity='.4' });
         el.addEventListener('dragend',()=>{ el.style.opacity='1' });
+        // Dropping directly on another stop reorders within (or into) that
+        // stop's day, placing the dragged stop right before it. Without
+        // this, dropping back into the same day's list did nothing.
+        el.addEventListener('dragover', e=>{ e.preventDefault(); e.stopPropagation() });
+        el.addEventListener('drop', e=>{
+          e.preventDefault(); e.stopPropagation();
+          if(!dragged || dragged === el) return;
+          const box = el.closest('.stops'); if(!box) return;
+          moveStopTo(dragged.dataset.place, +box.dataset.day, el.dataset.place);
+        });
       });
       document.querySelectorAll('.stops').forEach(box=>{
         box.addEventListener('dragover', e=>e.preventDefault());
@@ -2058,6 +2091,21 @@
       schedule.pop(); render(); loadWeather();
     };
     document.getElementById('printBtn').onclick = ()=>window.print();
+    // Printing captures whatever the map happens to be showing, which is
+    // often zoomed out to the whole city rather than the trip's actual
+    // stops. Snap it tight to the places before printing, then restore
+    // whatever view the person had.
+    let preprintMapView = null;
+    window.addEventListener('beforeprint', ()=>{
+      if(!freeMap) return;
+      preprintMapView = { center:freeMap.getCenter(), zoom:freeMap.getZoom() };
+      fitAllPlaces();
+    });
+    window.addEventListener('afterprint', ()=>{
+      if(!freeMap || !preprintMapView) return;
+      freeMap.setCenter(preprintMapView.center); freeMap.setZoom(preprintMapView.zoom);
+      preprintMapView = null;
+    });
     document.getElementById('backHomeBtn').onclick = backToHome;
     document.getElementById('modeSwitch').addEventListener('click', e=>{
       const b = e.target.closest('.mode-opt'); if(!b) return;
