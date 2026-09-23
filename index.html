@@ -183,6 +183,11 @@
     .day-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:11.5px;color:var(--muted);cursor:pointer}
     .day-chip i{width:9px;height:9px;border-radius:50%;display:block}
     .day-chip.active{color:var(--ink);border-color:currentColor;font-weight:600}
+    .city-legend{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 10px}
+    .city-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border:1px solid var(--line);background:#fff;border-radius:99px;font-size:11.5px;color:var(--muted);cursor:pointer}
+    .city-chip.active{background:var(--moss);border-color:var(--moss);color:#fff;font-weight:600}
+    .city-chip.add{border-style:dashed;color:var(--moss)}
+    .city-add-input{border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:11.5px;width:150px;background:#fff;color:var(--ink)}
     .icon-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
     .stop-hours{display:block;margin-top:2px;font-size:11.5px;font-weight:600;color:#c1432a}
     .stop-hours.closed{color:#8a938b;font-weight:500}
@@ -269,6 +274,8 @@
     [data-theme="dark"] .warn{ background:#2c211b; color:#e2a186; }
     [data-theme="dark"] .wheel-band{ background:#22322c; border-color:#3a4a43; }
     [data-theme="dark"] .day-chip.active{ color:var(--ink); }
+    [data-theme="dark"] .city-chip{ background:#1a2622; }
+    [data-theme="dark"] .city-add-input{ background:#1a2622; color:var(--ink); }
     [data-theme="dark"] .stop-hours{ color:#ff9169; }
     [data-theme="dark"] .stop-hours.closed{ color:#8a978f; }
     /* Photos (place thumbnails, POI cards, city covers) read as too bright and
@@ -373,6 +380,7 @@
         <div class="map" id="map"></div>
       </section>
       <div class="map-resizer" id="mapResizer" role="separator" aria-orientation="horizontal" tabindex="0"><span data-i18n="map.resize"></span></div>
+      <div class="city-legend" id="cityLegend" style="display:none"></div>
       <div class="day-legend" id="dayLegend"></div>
 
       <div class="layout">
@@ -499,7 +507,7 @@
         'world.title':'All destinations','world.sub':'Every planned trip on one map. Tap a pin to open it.','world.startHere':'🧳 Start a trip here',
         'trip.back':'← All destinations','trip.eyebrow':'Trip','trip.heroSub':'Search places, drop them into days, and the map keeps your city in view.','trip.start':'Start','trip.share':'Copy share link','trip.noDates':'No dates set',
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
-        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
+        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','city.all':'🌐 All cities','city.add':'+ Add city','city.addPh':'City name…','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
         'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
@@ -528,7 +536,7 @@
         'world.title':'כל היעדים','world.sub':'כל הטיולים המתוכננים על מפה אחת. לחצו על סימון כדי לפתוח אותו.','world.startHere':'🧳 להתחיל טיול כאן',
         'trip.back':'→ כל היעדים','trip.eyebrow':'טיול','trip.heroSub':'חפשו מקומות, שבצו אותם לימים, והמפה תשמור על העיר שלכם בפריים.','trip.start':'תחילה','trip.share':'העתקת קישור שיתוף','trip.noDates':'לא נקבעו תאריכים',
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
-        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
+        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','city.all':'🌐 כל הערים','city.add':'+ הוספת עיר','city.addPh':'שם העיר…','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
         'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
@@ -574,6 +582,16 @@
     // once, as before. When false, only mapFocusDay is drawn — pick a day by
     // clicking its chip under the map.
     let mapOverlayDays = true, mapFocusDay = 0;
+    // Multi-city trips: null = no city filter (today's behaviour, biased around
+    // the primary city); 'primary' = explicitly the primary city; a number =
+    // index into trip.cities. Picked via the city chips above the map.
+    let mapCityFocus = null;
+    function focusCityCoords(){
+      const trip = currentTrip(); if(!trip) return { center:null, viewport:null };
+      if(mapCityFocus === 'primary') return { center:trip.center||null, viewport:trip.viewport||null };
+      if(typeof mapCityFocus === 'number') { const c = (trip.cities||[])[mapCityFocus]; if(c) return { center:c.center, viewport:c.viewport||null }; }
+      return { center:trip.center||null, viewport:trip.viewport||null };
+    }
     let worldMap = null, worldMarkers = [], worldInfoWindow = null;
     let pendingPoiPlace = null;
     let ideas = [], ideaMarkers = [], ideaWindow = null, ideaCurrent = null;
@@ -673,7 +691,7 @@
       try{
         await firestore.setDoc(firestore.doc(firestore.db,'sharedTrips',trip.sharedId), {
           name:trip.name, cityNameHe:trip.cityNameHe||'', cityNameEn:trip.cityNameEn||'', cityImage:trip.cityImage||'', startDate:trip.startDate||'', note:trip.note||'', places:trip.places||{}, 
-          schedule: prepareScheduleForCloud(trip.schedule), center:trip.center||null, viewport:trip.viewport||null, cityLabel:trip.cityLabel||'', packing:trip.packing||[], travelMode:trip.travelMode||'foot', updatedAt:firestore.serverTimestamp(), updatedBy:firebaseUser.uid
+          schedule: prepareScheduleForCloud(trip.schedule), center:trip.center||null, viewport:trip.viewport||null, cityLabel:trip.cityLabel||'', cities:trip.cities||[], packing:trip.packing||[], travelMode:trip.travelMode||'foot', updatedAt:firestore.serverTimestamp(), updatedBy:firebaseUser.uid
         }, {merge:true});
         setSyncState('synced');
       }catch(e){ console.info('cloud save queued/failed',e); setSyncState(navigator.onLine?'pending':'offline') }
@@ -863,6 +881,14 @@
         const n=Date.parse(trip.updatedAt); if(Number.isFinite(n)) trip.updatedAt=n;
       }
       trip.places = trip.places || {};
+      // Extra cities beyond the trip's primary city (cityNameHe/En/center/etc,
+      // unchanged), used for the map's "focus this city" picker on multi-city
+      // trips. Each entry: { label, nameHe, nameEn, center:[lat,lng], viewport }.
+      if(!Array.isArray(trip.cities)) trip.cities = [];
+      trip.cities = trip.cities.filter(c=>c && c.center).map(c=>({
+        label:c.label||c.nameEn||c.nameHe||'', nameHe:c.nameHe||'', nameEn:c.nameEn||'',
+        center:c.center, viewport:c.viewport||null
+      }));
       trip.schedule = (trip.schedule||[]).map(d=>({
         date:d.date||'',
         loop: !!d.loop,
@@ -1328,7 +1354,7 @@
       if(!trip) return;
       clearIdeas(); editingStop = null; stopDraft = null;
       currentTripId = id; places = trip.places; schedule = trip.schedule;
-      mapOverlayDays = true; mapFocusDay = 0; updateOverlayBtn();
+      mapOverlayDays = true; mapFocusDay = 0; mapCityFocus = null; updateOverlayBtn();
        setSyncState(trip.sharedId ? (navigator.onLine ? 'synced' : 'offline') : 'offline');
        if(trip.sharedId && firebaseReady) subscribeToSharedTrip(trip);
       document.getElementById('homeView').style.display = 'none';
@@ -1411,10 +1437,12 @@
 
     function centerOnCity(){
       const trip = currentTrip();
-      if(!freeMap || !trip || !trip.center) return;
-      if(trip.viewport){
-        freeMap.fitBounds(new google.maps.LatLngBounds({lat:trip.viewport.south,lng:trip.viewport.west},{lat:trip.viewport.north,lng:trip.viewport.east}), 40);
-      } else { freeMap.setCenter({lat:trip.center[0],lng:trip.center[1]}); freeMap.setZoom(12) }
+      if(!freeMap || !trip) return;
+      const { center, viewport } = focusCityCoords();
+      if(!center) return;
+      if(viewport){
+        freeMap.fitBounds(new google.maps.LatLngBounds({lat:viewport.south,lng:viewport.west},{lat:viewport.north,lng:viewport.east}), 40);
+      } else { freeMap.setCenter({lat:center[0],lng:center[1]}); freeMap.setZoom(12) }
     }
     function fitAllPlaces(){
       if(!freeMap) return;
@@ -1469,14 +1497,15 @@
       const box = document.getElementById('mapSearchResults');
       if(!q){ box.style.display='none'; box.innerHTML=''; return }
       const trip = currentTrip();
+      const focusCenter = focusCityCoords().center || (trip && trip.center);
       try{
         let found;
         try{
-          const g = await googleTextSearch(q, trip && trip.center);
+          const g = await googleTextSearch(q, focusCenter);
           if(!g.length) throw new Error('none');
           found = g.map(x=>({ id:x.id||'', name:x.displayName?.text||q, address:x.formattedAddress||'', lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
         }catch(e){
-          const near = trip?.center ? `&viewbox=${trip.center[1]-0.35},${trip.center[0]+0.35},${trip.center[1]+0.35},${trip.center[0]-0.35}&bounded=1` : '';
+          const near = focusCenter ? `&viewbox=${focusCenter[1]-0.35},${focusCenter[0]+0.35},${focusCenter[1]+0.35},${focusCenter[0]-0.35}&bounded=1` : '';
           const osm = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=' + langCode() + near + '&q=' + encodeURIComponent(q)).then(r=>r.json());
           found = osm.map(x=>({ id:'', name:(x.display_name||'').split(',')[0], address:x.display_name||'', lat:+x.lat, lng:+x.lon, category:x.type||'place' }));
         }
@@ -1550,6 +1579,70 @@
       centerOnCity(); redrawMap();
     }
 
+    function renderCityLegend(){
+      const trip = currentTrip();
+      const box = document.getElementById('cityLegend');
+      if(!trip || !trip.center){ box.style.display = 'none'; return }
+      const extra = trip.cities || [];
+      box.style.display = 'flex';
+      if(!extra.length){
+        box.innerHTML = `<span class="city-chip add" id="cityAddChip">${esc(t('city.add'))}</span>`;
+        document.getElementById('cityAddChip').onclick = ()=> openCityAddInput();
+        return;
+      }
+      const primaryLabel = (lang==='he' ? (trip.cityNameHe||trip.cityNameEn) : (trip.cityNameEn||trip.cityNameHe)) || trip.cityLabel || trip.name;
+      const cityLabel = c => (lang==='he' ? (c.nameHe||c.nameEn) : (c.nameEn||c.nameHe)) || c.label;
+      box.innerHTML = `<span class="city-chip${mapCityFocus===null?' active':''}" data-focus="all">${esc(t('city.all'))}</span>` +
+        `<span class="city-chip${mapCityFocus==='primary'?' active':''}" data-focus="primary">📍 ${esc(primaryLabel)}</span>` +
+        extra.map((c,i)=>`<span class="city-chip${mapCityFocus===i?' active':''}" data-focus="${i}">📍 ${esc(cityLabel(c))}</span>`).join('') +
+        `<span class="city-chip add" id="cityAddChip">${esc(t('city.add'))}</span>`;
+      box.querySelectorAll('.city-chip[data-focus]').forEach(el=> el.onclick = ()=>{
+        const f = el.dataset.focus;
+        mapCityFocus = f==='all' ? null : f==='primary' ? 'primary' : +f;
+        renderCityLegend();
+        centerOnCity();
+      });
+      const addChip = document.getElementById('cityAddChip');
+      if(addChip) addChip.onclick = ()=> openCityAddInput();
+    }
+    function openCityAddInput(){
+      const box = document.getElementById('cityLegend');
+      const wrap = document.createElement('span');
+      wrap.style.position = 'relative';
+      wrap.innerHTML = `<input class="city-add-input" id="cityAddInput" placeholder="${esc(t('city.addPh'))}"><div class="suggest" id="cityAddSuggest" style="display:none;position:absolute;top:100%;inset-inline-start:0;min-width:220px;z-index:5"></div>`;
+      document.getElementById('cityAddChip').replaceWith(wrap);
+      const input = document.getElementById('cityAddInput'), suggest = document.getElementById('cityAddSuggest');
+      input.focus();
+      let timer;
+      input.addEventListener('input', ()=>{
+        clearTimeout(timer);
+        const q = input.value.trim();
+        if(!q){ suggest.style.display = 'none'; return }
+        timer = setTimeout(async ()=>{
+          suggest.style.display = 'block';
+          suggest.innerHTML = `<button disabled>${esc(t('new.searching'))}</button>`;
+          const hits = await findCities(q);
+          if(!hits.length){ suggest.innerHTML = `<button disabled>${esc(t('new.noCity'))}</button>`; return }
+          suggest.innerHTML = hits.map((h,i)=>`<button data-i="${i}">${esc(h.name)}<small>${esc(h.detail)}</small></button>`).join('');
+          suggest.querySelectorAll('button[data-i]').forEach(b=> b.onclick = async ()=>{
+            const hit = hits[+b.dataset.i];
+            const trip = currentTrip(); if(!trip) return;
+            let names = { he:'', en:'' };
+            if(googleAvailable()) { try{ names = await bilingualNames(hit.name, [hit.lat, hit.lng]) }catch(e){} }
+            trip.cities = trip.cities || [];
+            trip.cities.push({ label:hit.name, nameHe:names.he||(lang==='he'?hit.name:''), nameEn:names.en||(lang==='en'?hit.name:''), center:[hit.lat,hit.lng], viewport:hit.viewport||null });
+            persist();
+            renderCityLegend();
+          });
+        }, 380);
+      });
+      document.addEventListener('click', function onDoc(e){
+        if(wrap.contains(e.target)) return;
+        document.removeEventListener('click', onDoc);
+        renderCityLegend();
+      });
+    }
+
     function renderDayLegend(){
       document.getElementById('dayLegend').innerHTML = schedule.map((d,i)=>`<span class="day-chip${!mapOverlayDays && i===mapFocusDay?' active':''}" data-day="${i}" style="${!mapOverlayDays && i===mapFocusDay?`color:${DAY_COLORS[i%DAY_COLORS.length]}`:''}"><i style="background:${DAY_COLORS[i%DAY_COLORS.length]}"></i>${esc(t('day',{n:i+1}))}${dayDate(i)?' · '+esc(dayDate(i)):''}</span>`).join('');
       document.querySelectorAll('#dayLegend .day-chip').forEach(el=> el.onclick = ()=>{
@@ -1583,6 +1676,7 @@
         liveMarkers.push(m);
       });
       renderDayLegend();
+      renderCityLegend();
       computeRoutes();
     }
 
@@ -1811,6 +1905,7 @@
       bindDrag();
       persist();
       renderDayLegend();
+      renderCityLegend();
       if(freeMap) redrawMap(); else computeRoutes();
       fillDaySelect();
     }
@@ -2239,14 +2334,15 @@
       if(!q) return;
       box.textContent = t('add.searching');
       const trip = currentTrip();
+      const focusCenter = focusCityCoords().center || (trip && trip.center);
       try {
         let found;
         try {
-          const g = await googleTextSearch(q, trip && trip.center);
+          const g = await googleTextSearch(q, focusCenter);
           if(!g.length) throw new Error('none');
           found = g.map(x=>({ gid:x.id||'', name:x.displayName?.text||q, nameEn:'', nameHe:'', image:photoUrl(x.photos?.[0]), lat:x.location.latitude, lng:x.location.longitude, category:(x.primaryType||'place').replace(/_/g,' ') }));
         } catch(e){
-          const near = trip?.center ? `&viewbox=${trip.center[1]-0.35},${trip.center[0]+0.35},${trip.center[1]+0.35},${trip.center[0]-0.35}&bounded=1` : '';
+          const near = focusCenter ? `&viewbox=${focusCenter[1]-0.35},${focusCenter[0]+0.35},${focusCenter[1]+0.35},${focusCenter[0]-0.35}&bounded=1` : '';
           const osm = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=' + langCode() + near + '&q=' + encodeURIComponent(q)).then(r=>r.json());
           found = osm.map(x=>({ name:(x.display_name||'').split(',')[0], nameEn:'', nameHe:'', image:'', lat:+x.lat, lng:+x.lon, category:x.type||'place' }));
         }
@@ -2617,7 +2713,7 @@
       const role=document.getElementById('shareRole').value || 'editor';
       try{
         const ref=firestore.doc(firestore.db,'sharedTrips',id);
-        await firestore.setDoc(ref,{name:trip.name,cityNameHe:trip.cityNameHe||'',cityNameEn:trip.cityNameEn||'',cityImage:trip.cityImage||'',startDate:trip.startDate||'',note:trip.note||'',places:trip.places||{},schedule:prepareScheduleForCloud(trip.schedule),center:trip.center||null,viewport:trip.viewport||null,cityLabel:trip.cityLabel||'',packing:trip.packing||[],travelMode:trip.travelMode||'foot',owner:firebaseUser.uid,members:{[firebaseUser.uid]:'owner'},createdAt:firestore.serverTimestamp(),updatedAt:firestore.serverTimestamp(),updatedBy:firebaseUser.uid},{merge:false});
+        await firestore.setDoc(ref,{name:trip.name,cityNameHe:trip.cityNameHe||'',cityNameEn:trip.cityNameEn||'',cityImage:trip.cityImage||'',startDate:trip.startDate||'',note:trip.note||'',places:trip.places||{},schedule:prepareScheduleForCloud(trip.schedule),center:trip.center||null,viewport:trip.viewport||null,cityLabel:trip.cityLabel||'',cities:trip.cities||[],packing:trip.packing||[],travelMode:trip.travelMode||'foot',owner:firebaseUser.uid,members:{[firebaseUser.uid]:'owner'},createdAt:firestore.serverTimestamp(),updatedAt:firestore.serverTimestamp(),updatedBy:firebaseUser.uid},{merge:false});
         trip.sharedId=id; trip.sharedRole='owner'; trip.sharedOwner=firebaseUser.uid; saveTrips();
         document.getElementById('shareModal').classList.remove('open');
         await copySharedLink(id); subscribeToSharedTrip(trip);
@@ -2637,7 +2733,7 @@
         if(!snap.exists()) return;
         const d=snap.data(); const local=currentTrip(); if(!local || local.sharedId!==trip.sharedId) return;
         suppressCloudSave=true;
-        Object.assign(local,{name:d.name||local.name,cityNameHe:d.cityNameHe||local.cityNameHe||'',cityNameEn:d.cityNameEn||local.cityNameEn||'',cityImage:d.cityImage||local.cityImage||'',startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:normaliseTrip({schedule:d.schedule}).schedule,center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedOwner:d.owner||local.sharedOwner,sharedRole:d.members?.[firebaseUser.uid]||local.sharedRole||'viewer'});
+        Object.assign(local,{name:d.name||local.name,cityNameHe:d.cityNameHe||local.cityNameHe||'',cityNameEn:d.cityNameEn||local.cityNameEn||'',cityImage:d.cityImage||local.cityImage||'',startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:normaliseTrip({schedule:d.schedule}).schedule,center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||'',cities:d.cities||local.cities||[],packing:d.packing||[],travelMode:d.travelMode||'foot',sharedOwner:d.owner||local.sharedOwner,sharedRole:d.members?.[firebaseUser.uid]||local.sharedRole||'viewer'});
         places=local.places; schedule=local.schedule; saveTrips(); suppressCloudSave=false;
         setSyncState(snap.metadata.hasPendingWrites?'pending':'synced'); renderHome(); renderOpenTripIfChanged(local);
       },(err)=>{console.error('shared trip sync',err); setSyncState(navigator.onLine?'pending':'offline');});
@@ -2652,7 +2748,7 @@
         if(!d.members?.[firebaseUser.uid]){
           await firestore.setDoc(ref,{members:{[firebaseUser.uid]:role},updatedAt:firestore.serverTimestamp()},{merge:true});
         }
-        const local={id:'trip_'+Date.now(),name:d.name||'Shared trip',cityNameHe:d.cityNameHe||'',cityNameEn:d.cityNameEn||'',cityImage:d.cityImage||'',startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:d.schedule||[{date:'',stops:[]}],center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||d.name||'',packing:d.packing||[],travelMode:d.travelMode||'foot',sharedId:id,sharedRole:role,sharedOwner:d.owner||null};
+        const local={id:'trip_'+Date.now(),name:d.name||'Shared trip',cityNameHe:d.cityNameHe||'',cityNameEn:d.cityNameEn||'',cityImage:d.cityImage||'',startDate:d.startDate||'',note:d.note||'',places:d.places||{},schedule:d.schedule||[{date:'',stops:[]}],center:d.center||null,viewport:d.viewport||null,cityLabel:d.cityLabel||d.name||'',cities:d.cities||[],packing:d.packing||[],travelMode:d.travelMode||'foot',sharedId:id,sharedRole:role,sharedOwner:d.owner||null};
         trips.push(normaliseTrip(local)); saveTrips(); history.replaceState(null,'',location.pathname); renderHome(); openTrip(local.id); toast(t('share.opened'));
       }catch(e){console.error(e); toast(t('share.loginFirst'));}
     }
