@@ -208,16 +208,23 @@
       .map-resizer{display:none!important}
       .map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips{display:none!important}
       .hero-swap,.hero-side,.thumb-wrap,.dest-swap,.sync-pill,.user-menu-wrap{display:none!important}
+      .map-label,.day-legend,.mode-switch{display:none!important}
       :root{ --ink:#15231f!important; --muted:#6a746e!important; --paper:#f6f4ef!important; --cream:#ebe8df!important; --line:#dcdcd2!important }
       body{background:#fff!important;color:#000!important}
+      .shell{max-width:none!important;padding:0 16px!important}
       .hero{background:none!important;min-height:auto!important;padding:0 0 8px!important;border-radius:0!important}
       .hero h1{text-shadow:none!important;color:var(--ink)!important;font-size:24px!important;margin:4px 0!important}
       .hero p,.hero .eyebrow{text-shadow:none!important;color:var(--muted)!important;opacity:1!important}
       .stats{margin:12px 0 16px!important}
-      .mapwrap{height:280px!important}
+      .mapwrap{width:100%!important;height:280px!important}
+      .map{width:100%!important}
       .layout{grid-template-columns:1fr!important}
-      .stop-main{gap:0!important}
+      .sidebar{display:none!important}
+      .days{column-count:2;column-gap:24px}
+      .stop-main{gap:8px!important}
+      .stop-thumb{width:44px!important;height:44px!important;flex:0 0 44px!important}
       .hero,.stats,.mapwrap{break-inside:avoid;page-break-inside:avoid}
+      .day{break-inside:avoid;page-break-inside:avoid;margin-bottom:10px}
       .stop{break-inside:avoid;page-break-inside:avoid}
     }
 
@@ -264,11 +271,13 @@
     [data-theme="dark"] .day-chip.active{ color:var(--ink); }
     [data-theme="dark"] .stop-hours{ color:#ff9169; }
     [data-theme="dark"] .stop-hours.closed{ color:#8a978f; }
-    /* Real photos (place thumbnails, POI cards, city covers) read as too bright
-       against the dark palette, so dim and desaturate them slightly at night. */
+    /* Photos (place thumbnails, POI cards, city covers) read as too bright and
+       edge-less against the dark palette at night. A colour filter made them
+       look off compared to daytime, so give them a quiet border instead and
+       leave the photo itself untouched. */
     [data-theme="dark"] .stop-thumb,[data-theme="dark"] .idea-card img,
     [data-theme="dark"] .dest-card-media,[data-theme="dark"] .search-place-result img{
-      filter:brightness(.82) saturate(1.05);
+      box-shadow:0 0 0 1px #3a4a43 inset;
     }
   </style>
 </head>
@@ -490,9 +499,9 @@
         'world.title':'All destinations','world.sub':'Every planned trip on one map. Tap a pin to open it.','world.startHere':'🧳 Start a trip here',
         'trip.back':'← All destinations','trip.eyebrow':'Trip','trip.heroSub':'Search places, drop them into days, and the map keeps your city in view.','trip.start':'Start','trip.share':'Copy share link','trip.noDates':'No dates set',
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
-        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.overlayOn':'🗺️ All days together','map.overlayOff':'🗺️ One day at a time','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
+        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
-        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off',
+        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
         'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…',
         'wx.title':'Weather','wx.needDate':'Set a start date and the forecast for your days will appear here.','wx.forecast':'Forecast for your dates.','wx.typical':'Typical for these dates, based on last year — a forecast appears about two weeks before you go.','wx.error':'Weather is unavailable right now.','wx.loading':'Loading weather…',
@@ -519,9 +528,9 @@
         'world.title':'כל היעדים','world.sub':'כל הטיולים המתוכננים על מפה אחת. לחצו על סימון כדי לפתוח אותו.','world.startHere':'🧳 להתחיל טיול כאן',
         'trip.back':'→ כל היעדים','trip.eyebrow':'טיול','trip.heroSub':'חפשו מקומות, שבצו אותם לימים, והמפה תשמור על העיר שלכם בפריים.','trip.start':'תחילה','trip.share':'העתקת קישור שיתוף','trip.noDates':'לא נקבעו תאריכים',
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
-        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.overlayOn':'🗺️ כל הימים יחד','map.overlayOff':'🗺️ יום אחד בכל פעם','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
+        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
-        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי',
+        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
         'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…',
         'wx.title':'מזג אוויר','wx.needDate':'בחרו תאריך התחלה והתחזית לימי הטיול תופיע כאן.','wx.forecast':'תחזית לתאריכים שלכם.','wx.typical':'ממוצע אופייני לתאריכים האלה לפי השנה שעברה — תחזית אמיתית תופיע כשבועיים לפני הנסיעה.','wx.error':'נתוני מזג האוויר אינם זמינים כרגע.','wx.loading':'טוען מזג אוויר…',
@@ -841,6 +850,7 @@
       return (schedule || []).map(d => ({
         date: d.date || '',
         loop: !!d.loop,
+        travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
         stops: (d.stops || []).map(s => ({ p: s[0], n: s[1] || '' }))
       }));
     }
@@ -856,6 +866,7 @@
       trip.schedule = (trip.schedule||[]).map(d=>({
         date:d.date||'',
         loop: !!d.loop,
+        travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
         stops:(d.stops||[]).map(s => {
           if (Array.isArray(s)) return s;
           // המרה חזרה לאופן שבו האפליקציה מצפה לזה
@@ -1701,13 +1712,13 @@
     async function computeRoutes(){
       routeLines.forEach(l=>l.setMap(null)); routeLines = [];
       const trip = currentTrip();
-      const profile = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
+      const tripProfile = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
       let totalSeconds = 0, totalMeters = 0;
 
       // All days are independent, so fetch every day's route in parallel
       // instead of waiting for each one to finish before starting the next —
       // this was previously the slowest part of opening a multi-day trip.
-      const results = await Promise.all(schedule.map((_,di)=>fetchDayRoute(di, profile)));
+      const results = await Promise.all(schedule.map((day,di)=>fetchDayRoute(di, day.travelMode === 'driving' ? 'driving' : day.travelMode === 'foot' ? 'foot' : tripProfile)));
 
       results.forEach(({di, usable, data})=>{
         if(usable.length < 2){ setTravelTexts(di, null); return }
@@ -1748,6 +1759,8 @@
     const daysBox = document.getElementById('days');
     function render(){
       const placeNumbers = computePlaceNumbers();
+      const trip = currentTrip();
+      const tripMode = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
       daysBox.innerHTML = schedule.map((d,di)=>{
         const color = DAY_COLORS[di%DAY_COLORS.length];
         const stopsHtml = d.stops.length ? d.stops.map((s,i)=>{
@@ -1761,12 +1774,15 @@
           </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? `<div class="travel" data-day="${di}">${esc(t('travel.pending'))}</div>` : ''}`;
         }).join('') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
 
+        const effMode = d.travelMode || tripMode;
+        const modeAuto = !d.travelMode;
+        const modeTitle = t(effMode==='driving'?'mode.drive':'mode.walk') + (modeAuto ? ' · ' + t('day.modeAuto') : '');
         return `<article class="day">
           <div class="daytop">
             <span class="daynum" style="background:${color}22;border:1px solid ${color};color:${color}">${String(di+1).padStart(2,'0')}</span>
             <strong>${esc(t('day',{n:di+1}))}</strong>
             <span class="dd">${esc(dayDate(di))}</span>
-            <span class="day-tools">${d.stops.length>1?`<button class="icon-btn loop-day${d.loop?' active':''}" data-day="${di}" title="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}" aria-label="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}">${d.loop?'🔁':'↩️'}</button>`:''}${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}</span>
+            <span class="day-tools">${d.stops.length>1?`<button class="icon-btn mode-day${modeAuto?'':' active'}" data-day="${di}" title="${esc(modeTitle)}" aria-label="${esc(modeTitle)}">${effMode==='driving'?'🚗':'🚶'}</button>`:''}${d.stops.length>1?`<button class="icon-btn loop-day${d.loop?' active':''}" data-day="${di}" title="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}" aria-label="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}">${d.loop?'🔁':'↩️'}</button>`:''}${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}</span>
           </div>
           <div class="stops" data-day="${di}">${stopsHtml}</div>
         </article>`;
@@ -1783,6 +1799,11 @@
       daysBox.querySelectorAll('.stop-edit').forEach(bindStopEditor);
       daysBox.querySelectorAll('.opt-day').forEach(b=> b.onclick = ()=> optimiseDay(+b.dataset.day));
       daysBox.querySelectorAll('.loop-day').forEach(b=> b.onclick = ()=>{ const day = schedule[+b.dataset.day]; if(day){ day.loop = !day.loop; render(); } });
+      daysBox.querySelectorAll('.mode-day').forEach(b=> b.onclick = ()=>{
+        const day = schedule[+b.dataset.day]; if(!day) return;
+        day.travelMode = !day.travelMode ? 'foot' : day.travelMode==='foot' ? 'driving' : null;
+        render();
+      });
       daysBox.querySelectorAll('.move-day').forEach(sel=>{
         sel.onclick = e=>e.stopPropagation();
         sel.onchange = ()=> moveStop(sel.dataset.place, +sel.value);
@@ -1960,6 +1981,7 @@
     function updateOverlayBtn(){
       const b = document.getElementById('overlayDaysBtn'); if(!b) return;
       b.textContent = t(mapOverlayDays ? 'map.overlayOn' : 'map.overlayOff');
+      b.title = t(mapOverlayDays ? 'map.overlayOffHint' : 'map.overlayOnHint');
       b.classList.toggle('active', mapOverlayDays);
     }
     document.getElementById('overlayDaysBtn').onclick = ()=>{ mapOverlayDays = !mapOverlayDays; updateOverlayBtn(); redrawMap(); };
