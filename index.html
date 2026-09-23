@@ -111,6 +111,11 @@
     .transit-toggle{border:0;background:none;padding:0;font-size:12px;cursor:pointer;opacity:.4;line-height:1}
     .transit-toggle:hover{opacity:1}
     .travel.transit{color:#3f7ad9}
+    .loop-add{margin:2px 0 2px 38px;padding-inline-start:12px}
+    .loop-add select{border:1px dashed var(--line);background:#fff;border-radius:9px;padding:6px 8px;font-size:12px;color:var(--muted);max-width:100%;cursor:pointer}
+    html[dir="rtl"] .loop-add{margin:2px 38px 2px 0}
+    [data-theme="dark"] .loop-add select{background:#1a2622}
+    body.print-prep .mapwrap{width:670px;max-width:100%;height:280px!important;position:relative!important;inset:auto!important}
     .travel.transit .transit-toggle{opacity:1}
     html[dir="rtl"] .travel{margin:0 38px 0 0}
     .day-empty{color:var(--muted);font-size:12px;padding:12px 10px}
@@ -214,28 +219,34 @@
     }
     @media(max-width:420px){.hero h1{font-size:28px}}
     @media print{
-      .stop-edit,.transit-btn,.edit-stop{display:none!important}
+      @page{ size:A4; margin:12mm }
+      *{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
+      html,body{ height:auto!important; overflow:visible!important }
+      .stop-edit,.transit-btn,.edit-stop,.loop-add,.del-via{display:none!important}
       .map-resizer{display:none!important}
       .map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips,.transit-toggle{display:none!important}
-      .hero-swap,.hero-side,.thumb-wrap,.dest-swap,.sync-pill,.user-menu-wrap{display:none!important}
+      .hero-swap,.hero-side,.thumb-wrap,.dest-swap,.sync-pill,.user-menu-wrap,.toast{display:none!important}
       .map-label,.day-legend,.mode-switch{display:none!important}
       :root{ --ink:#15231f!important; --muted:#6a746e!important; --paper:#f6f4ef!important; --cream:#ebe8df!important; --line:#dcdcd2!important }
       body{background:#fff!important;color:#000!important}
-      .shell{max-width:none!important;padding:0 16px!important}
-      .hero{background:none!important;min-height:auto!important;padding:0 0 8px!important;border-radius:0!important}
+      /* Grid/multi-column containers are what made the printout get cut in
+         half across pages — lay everything out as plain blocks instead. */
+      .shell,.layout,.days,main{display:block!important;max-width:none!important;width:auto!important}
+      .shell{padding:0!important}
+      .layout{margin-top:14px!important}
+      .hero{background:none!important;min-height:auto!important;padding:0 0 8px!important;border-radius:0!important;overflow:visible!important}
       .hero h1{text-shadow:none!important;color:var(--ink)!important;font-size:24px!important;margin:4px 0!important}
       .hero p,.hero .eyebrow{text-shadow:none!important;color:var(--muted)!important;opacity:1!important}
       .stats{margin:12px 0 16px!important}
-      .mapwrap{width:100%!important;height:280px!important}
-      .map{width:100%!important}
-      .layout{grid-template-columns:1fr!important}
+      .mapwrap,.mapwrap.expanded{position:relative!important;inset:auto!important;width:100%!important;height:280px!important;box-shadow:none!important;border-radius:12px!important;transition:none!important}
+      .map{width:100%!important;height:100%!important}
       .sidebar{display:none!important}
-      .days{column-count:2;column-gap:24px}
+      .day{display:block!important;margin:0 0 10px!important;break-inside:avoid;page-break-inside:avoid}
+      .daytop{break-after:avoid;page-break-after:avoid}
       .stop-main{gap:8px!important}
       .stop-thumb{width:44px!important;height:44px!important;flex:0 0 44px!important}
       .hero,.stats,.mapwrap{break-inside:avoid;page-break-inside:avoid}
-      .day{break-inside:avoid;page-break-inside:avoid;margin-bottom:10px}
-      .stop{break-inside:avoid;page-break-inside:avoid}
+      .stop,.travel{break-inside:avoid;page-break-inside:avoid}
     }
 
     /* ---------- Night mode ---------- */
@@ -514,9 +525,9 @@
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
         'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details and ideas nearby.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','city.all':'🌐 All cities','city.add':'+ Add city','city.addPh':'City name…','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
-        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.modeAuto':'following trip default',
+        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.addVia':'➕ Return via another point…','day.removeVia':'Remove this return point','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
-        'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} (transit — no time estimate)','travel.transitNoDist':'🚌 Public transit','travel.transitToggle':'Mark this leg as public transit',
+        'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} straight-line (transit / ferry — no time estimate)','travel.transitNoDist':'🚌 Public transit / ferry','travel.transitToggle':'Mark this leg as public transit / ferry (straight-line distance)',
         'wx.title':'Weather','wx.needDate':'Set a start date and the forecast for your days will appear here.','wx.forecast':'Forecast for your dates.','wx.typical':'Typical for these dates, based on last year — a forecast appears about two weeks before you go.','wx.error':'Weather is unavailable right now.','wx.loading':'Loading weather…',
         'pack.title':'Packing list','pack.add':'+ Add item','pack.prompt':'What do you want to pack?','pack.suggested':'Suggested by the weather:',
         'pack.d1':'Walking shoes','pack.d2':'Portable charger','pack.d3':'Travel documents',
@@ -543,9 +554,9 @@
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
         'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים ולרעיונות בסביבה.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','city.all':'🌐 כל הערים','city.add':'+ הוספת עיר','city.addPh':'שם העיר…','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
-        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.modeAuto':'לפי ברירת המחדל של הטיול',
+        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.addVia':'➕ חזרה דרך נקודה נוספת…','day.removeVia':'הסר נקודה מדרך החזרה','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
-        'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} (תחבורה ציבורית — בלי הערכת זמן)','travel.transitNoDist':'🚌 תחבורה ציבורית','travel.transitToggle':'סימון הקטע כתחבורה ציבורית',
+        'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} מרחק אווירי (תחבורה ציבורית / מעבורת — בלי הערכת זמן)','travel.transitNoDist':'🚌 תחבורה ציבורית / מעבורת','travel.transitToggle':'סימון הקטע כתחבורה ציבורית / מעבורת (מרחק אווירי)',
         'wx.title':'מזג אוויר','wx.needDate':'בחרו תאריך התחלה והתחזית לימי הטיול תופיע כאן.','wx.forecast':'תחזית לתאריכים שלכם.','wx.typical':'ממוצע אופייני לתאריכים האלה לפי השנה שעברה — תחזית אמיתית תופיע כשבועיים לפני הנסיעה.','wx.error':'נתוני מזג האוויר אינם זמינים כרגע.','wx.loading':'טוען מזג אוויר…',
         'pack.title':'רשימת ציוד','pack.add':'+ הוספת פריט','pack.prompt':'מה להוסיף לרשימה?','pack.suggested':'מומלץ לפי מזג האוויר:',
         'pack.d1':'נעלי הליכה','pack.d2':'מטען נייד','pack.d3':'מסמכי נסיעה',
@@ -873,6 +884,7 @@
       return (schedule || []).map(d => ({
         date: d.date || '',
         loop: !!d.loop,
+        loopVia: Array.isArray(d.loopVia) ? d.loopVia.filter(x=>x!=null).map(String) : [],
         travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
         transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(n=>Number.isInteger(n)) : [],
         stops: (d.stops || []).map(s => ({ p: s[0], n: s[1] || '' }))
@@ -898,6 +910,7 @@
       trip.schedule = (trip.schedule||[]).map(d=>({
         date:d.date||'',
         loop: !!d.loop,
+        loopVia: Array.isArray(d.loopVia) ? d.loopVia.filter(x=>x!=null).map(String) : [],
         travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
         transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(n=>Number.isInteger(n)) : [],
         stops:(d.stops||[]).map(s => {
@@ -1089,7 +1102,7 @@
     // render()/redrawMap() would cause every time one place's image arrives.
     function updateStopThumb(id){
       const p = places[id]; if(!p) return;
-      document.querySelectorAll(`.stop[data-place="${id}"] .stop-main`).forEach(el=>{
+      document.querySelectorAll(`.stop:not(.stop-return)[data-place="${id}"] .stop-main`).forEach(el=>{
         el.querySelector(':scope > div:first-child, :scope > .stop-thumb-empty')?.remove();
         el.insertAdjacentHTML('afterbegin', stopThumbHtml(id, p));
       });
@@ -1425,6 +1438,21 @@
 
     /* ---------- Map ---------- */
     function coords(id){ const p = places[id]; return p && Number.isFinite(+p.lat) ? [+p.lat, +p.lng] : null }
+    // Loop days: after the last stop the route can pass through any number of
+    // "return points" (day.loopVia — ids of stops of that day, repeats allowed)
+    // and only then closes back onto the first stop.
+    function dayLoopVia(day){ return day && day.loop && Array.isArray(day.loopVia) ? day.loopVia : [] }
+    function cleanLoopVia(day){
+      if(!Array.isArray(day.loopVia)) day.loopVia = [];
+      const have = new Set(day.stops.map(s=>s[0]));
+      day.loopVia = day.loopVia.filter(id=>have.has(id) && places[id]);
+    }
+    // Every place a day's route passes through, in order (stops, return points,
+    // then the first stop again on a loop day). Leg N = path[N] -> path[N+1].
+    function dayPathIds(day){
+      const ids = day.stops.map(s=>s[0]);
+      return (day.loop && ids.length > 1) ? ids.concat(dayLoopVia(day), [ids[0]]) : ids;
+    }
     function dayForPlace(id){ return schedule.findIndex(d=>d.stops.some(s=>s[0]===id)) }
     function bucketOf(p){
       const c = (p.category||'').toLowerCase();
@@ -1787,13 +1815,8 @@
       return (m/1000).toFixed(1) + (lang==='he'?' ק״מ':' km');
     }
 
-    async function fetchDayRoute(di, profile){
-      const day = schedule[di];
-      const stops = day.stops;
-      let usable = stops.map(s=>coords(s[0])).filter(Boolean);
-      if(usable.length < 2) return { di, usable, data:null };
-      if(day.loop) usable = usable.concat([usable[0]]);
-
+    // One OSRM request for a run of consecutive road legs.
+    async function fetchRoutePiece(pts, profile){
       // router.project-osrm.org only actually serves the driving/car profile —
       // it silently accepts "foot" in the URL but returns car routes anyway.
       // Real pedestrian routing needs the separate routed-foot instance on
@@ -1806,19 +1829,49 @@
         : [
             { p:'driving', base:'https://router.project-osrm.org/route/v1/driving/' }
           ];
-
-      let data = null;
       for(const {p, base} of endpoints){
         try {
-          const url = base + usable.map(c=>c[1]+','+c[0]).join(';') + '?overview=full&geometries=geojson';
+          const url = base + pts.map(c=>c[1]+','+c[0]).join(';') + '?overview=full&geometries=geojson';
           const json = await fetch(url).then(r=>r.json());
-          if(json.code === 'Ok' && json.routes?.[0]){ data = { route:json.routes[0], profile:p }; break }
+          if(json.code === 'Ok' && json.routes?.[0]) return { route:json.routes[0], profile:p };
         } catch(e){ /* try next */ }
       }
-      return { di, usable, data };
+      return null;
     }
 
+    // Legs marked as transit / ferry are never sent to the road router (a bus
+    // or a ferry doesn't follow the walking/driving route, and a ferry has no
+    // road at all). They are kept out of the request entirely, so they show a
+    // straight-line distance no matter what the router says about the rest.
+    async function fetchDayRoute(di, profile){
+      const day = schedule[di];
+      const ids = dayPathIds(day);
+      const pts = ids.map(id=>coords(id));
+      const transit = Array.isArray(day.transitLegs) ? day.transitLegs : [];
+      const legInfo = [], jobs = [];
+      let run = null;
+      for(let i=0;i<ids.length-1;i++){
+        const a = pts[i], b = pts[i+1];
+        const info = { a, b, kind:'none' };
+        legInfo.push(info);
+        if(!a || !b){ run = null; continue }
+        if(transit.includes(i)){ info.kind = 'transit'; run = null; continue }
+        info.kind = 'road';
+        if(!run){ run = { pts:[a], legs:[], res:null }; jobs.push(run) }
+        run.pts.push(b); run.legs.push(info);
+      }
+      await Promise.all(jobs.map(async job=>{
+        job.res = await fetchRoutePiece(job.pts, profile);
+        if(job.res) job.res.route.legs.forEach((l,k)=>{
+          if(job.legs[k]) Object.assign(job.legs[k], { sec:l.duration, m:l.distance, profile:job.res.profile, ok:true });
+        });
+      }));
+      return { di, hasPath: ids.length > 1, legInfo, jobs };
+    }
+
+    let routeSeq = 0;
     async function computeRoutes(){
+      const seq = ++routeSeq;
       routeLines.forEach(l=>l.setMap(null)); routeLines = [];
       const trip = currentTrip();
       const tripProfile = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
@@ -1828,43 +1881,62 @@
       // instead of waiting for each one to finish before starting the next —
       // this was previously the slowest part of opening a multi-day trip.
       const results = await Promise.all(schedule.map((day,di)=>fetchDayRoute(di, day.travelMode === 'driving' ? 'driving' : day.travelMode === 'foot' ? 'foot' : tripProfile)));
+      // A newer computeRoutes() started while we were waiting — let it win,
+      // otherwise both would draw their lines and the map shows duplicates.
+      if(seq !== routeSeq) return;
 
-      results.forEach(({di, usable, data})=>{
-        if(usable.length < 2){ setTravelTexts(di, null); return }
+      results.forEach(({di, hasPath, legInfo, jobs})=>{
+        if(!hasPath){ setTravelTexts(di, null); return }
         const color = DAY_COLORS[di%DAY_COLORS.length];
         const showOnMap = mapOverlayDays || di === mapFocusDay;
-        const transitLegs = schedule[di] && Array.isArray(schedule[di].transitLegs) ? schedule[di].transitLegs : [];
-        if(data){
-          const path = data.route.geometry.coordinates.map(([lng,lat])=>({lat,lng}));
-          if(freeMap && showOnMap) routeLines.push(new google.maps.Polyline({ path, geodesic:true, strokeColor:color, strokeWeight:4, strokeOpacity:.8, map:freeMap }));
-          const legs = data.route.legs.map(l=>({ sec:l.duration, m:l.distance, profile:data.profile }));
-          legs.forEach((l,li)=>{ if(!transitLegs.includes(li)){ totalSeconds += l.sec; totalMeters += l.m } });
-          setTravelTexts(di, legs);
-        } else {
-          if(freeMap && showOnMap) routeLines.push(new google.maps.Polyline({ path:usable.map(c=>({lat:c[0],lng:c[1]})), geodesic:true, strokeColor:color, strokeWeight:3, strokeOpacity:.5, map:freeMap }));
-          setTravelTexts(di, null);
+        legInfo.forEach(l=>{ if(l.kind === 'road' && l.ok){ totalSeconds += l.sec; totalMeters += l.m } });
+        if(freeMap && showOnMap){
+          jobs.forEach(job=>{
+            if(job.res){
+              const path = job.res.route.geometry.coordinates.map(([lng,lat])=>({lat,lng}));
+              routeLines.push(new google.maps.Polyline({ path, geodesic:true, strokeColor:color, strokeWeight:4, strokeOpacity:.8, map:freeMap }));
+            } else {
+              routeLines.push(new google.maps.Polyline({ path:job.pts.map(c=>({lat:c[0],lng:c[1]})), geodesic:true, strokeColor:color, strokeWeight:3, strokeOpacity:.5, map:freeMap }));
+            }
+          });
+          // transit / ferry legs: dashed straight (aerial) line
+          legInfo.forEach(l=>{
+            if(l.kind !== 'transit') return;
+            routeLines.push(new google.maps.Polyline({
+              path:[{lat:l.a[0],lng:l.a[1]},{lat:l.b[0],lng:l.b[1]}], geodesic:true,
+              strokeColor:color, strokeOpacity:0,
+              icons:[{ icon:{ path:'M 0,-1 0,1', strokeOpacity:.9, strokeWeight:3, scale:3 }, offset:'0', repeat:'14px' }],
+              map:freeMap
+            }));
+          });
         }
+        setTravelTexts(di, legInfo);
       });
       document.getElementById('statTime').textContent = totalSeconds ? fmtDuration(totalSeconds) : '—';
       document.getElementById('statDistance').textContent = totalMeters ? fmtDistance(totalMeters) : '—';
     }
 
-    function setTravelTexts(di, legs){
-      const day = schedule[di];
+    // Fills in the small "time · distance" line under each stop. Transit legs
+    // are filled in right away (they only need coordinates, not the router);
+    // pass pending=true to leave road legs alone until routes come back.
+    function setTravelTexts(di, legInfo, pending){
+      const day = schedule[di]; if(!day) return;
+      const transit = Array.isArray(day.transitLegs) ? day.transitLegs : [];
+      const ids = dayPathIds(day);
       document.querySelectorAll(`.travel[data-day="${di}"]`).forEach(el=>{
         const li = +el.dataset.leg;
         const textEl = el.querySelector('.travel-text') || el;
-        const isTransit = day && Array.isArray(day.transitLegs) && day.transitLegs.includes(li);
-        el.classList.toggle('transit', !!isTransit);
+        const wasTransit = el.classList.contains('transit');
+        const isTransit = transit.includes(li);
+        el.classList.toggle('transit', isTransit);
         if(isTransit){
-          const a = day && coords(day.stops[li]?.[0]);
-          const bId = (day && day.loop && li === day.stops.length-1) ? day.stops[0]?.[0] : day?.stops[li+1]?.[0];
-          const b = coords(bId);
+          const a = coords(ids[li]), b = coords(ids[li+1]);
           textEl.textContent = a && b ? t('travel.transit', { dist:fmtDistance(distM(a[0],a[1],b[0],b[1])) }) : t('travel.transitNoDist');
           return;
         }
-        if(!legs || !legs[li]){ textEl.textContent = ''; return }
-        const leg = legs[li];
+        if(pending){ if(wasTransit) textEl.textContent = t('travel.pending'); return }
+        const leg = legInfo && legInfo[li];
+        if(!leg || !leg.ok){ textEl.textContent = ''; return }
         textEl.textContent = t(leg.profile === 'foot' ? 'travel.walk' : 'travel.drive', { time:fmtDuration(leg.sec), dist:fmtDistance(leg.m) });
       });
     }
@@ -1887,7 +1959,24 @@
       return map;
     }
     const daysBox = document.getElementById('days');
+    function loopReturnHtml(d, di, color, placeNumbers){
+      if(!d.loop || d.stops.length < 2) return '';
+      const startId = d.stops[0][0];
+      if(!places[startId]) return '';
+      const n = d.stops.length, via = dayLoopVia(d);
+      const row = (id, tools)=> `<div class="stop stop-return" data-place="${esc(id)}"><span class="handle" style="visibility:hidden">⠿</span><span class="stop-num" style="background:${color}">↩</span><div class="stop-main"><div class="stop-thumb stop-thumb-empty">↩️</div><div class="stop-copy"><strong>${esc(t('day.returnTo',{name:places[id].name}))}</strong></div></div>${tools}</div>`;
+      let html = '';
+      via.forEach((id,j)=>{
+        const tools = `<span class="stop-tools"><button type="button" class="icon-btn del-via" data-day="${di}" data-idx="${j}" title="${esc(t('day.removeVia'))}" aria-label="${esc(t('day.removeVia'))}">✕</button></span>`;
+        html += travelDivHtml(di, n-1+j) + row(id, tools);
+      });
+      const opts = d.stops.map(s=> places[s[0]] ? `<option value="${esc(s[0])}">${placeNumbers.get(s[0])||'•'}. ${esc(places[s[0]].name)}</option>` : '').join('');
+      html += `<div class="loop-add"><select class="loop-via-add" data-day="${di}" aria-label="${esc(t('day.addVia'))}"><option value="">${esc(t('day.addVia'))}</option>${opts}</select></div>`;
+      html += travelDivHtml(di, n-1+via.length) + row(startId, '');
+      return html;
+    }
     function render(){
+      schedule.forEach(cleanLoopVia);
       const placeNumbers = computePlaceNumbers();
       const trip = currentTrip();
       const tripMode = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
@@ -1902,7 +1991,7 @@
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
             <span class="stop-tools">${daySel}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? travelDivHtml(di, i) : ''}`;
-        }).join('') + (d.loop && d.stops.length>1 && places[d.stops[0][0]] ? travelDivHtml(di, d.stops.length-1) + `<div class="stop stop-return" data-place="${d.stops[0][0]}"><span class="handle" style="visibility:hidden">⠿</span><span class="stop-num" style="background:${color}">↩</span><div class="stop-main"><div class="stop-thumb stop-thumb-empty">↩️</div><div class="stop-copy"><strong>${esc(t('day.returnTo',{name:places[d.stops[0][0]].name}))}</strong></div></div></div>` : '') : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
+        }).join('') + loopReturnHtml(d, di, color, placeNumbers) : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
 
         const effMode = d.travelMode || tripMode;
         const modeAuto = !d.travelMode;
@@ -1918,6 +2007,7 @@
         </article>`;
       }).join('');
 
+      schedule.forEach((_,di)=>setTravelTexts(di, null, true));
       Object.entries(places).forEach(([id,p])=>{ if(!p.image && !p.imageLoading) enrichPlaceImage(id,p); });
       Object.entries(places).forEach(([id,p])=>{ if(p.gid && ideaDetailsCache[p.gid]===undefined && !hoursLoading.has(p.gid)) enrichPlaceHours(id,p); });
       document.getElementById('statPlaces').textContent = Object.keys(places).length;
@@ -1929,6 +2019,18 @@
       daysBox.querySelectorAll('.stop-edit').forEach(bindStopEditor);
       daysBox.querySelectorAll('.opt-day').forEach(b=> b.onclick = ()=> optimiseDay(+b.dataset.day));
       daysBox.querySelectorAll('.loop-day').forEach(b=> b.onclick = ()=>{ const day = schedule[+b.dataset.day]; if(day){ day.loop = !day.loop; render(); } });
+      // Changing the return points shifts the numbering of the return legs, so
+      // transit marks on those legs (index >= last stop) are cleared.
+      const dropReturnTransit = day=>{ if(Array.isArray(day.transitLegs)) day.transitLegs = day.transitLegs.filter(n=>n < day.stops.length-1) };
+      daysBox.querySelectorAll('.loop-via-add').forEach(sel=> sel.onchange = ()=>{
+        const day = schedule[+sel.dataset.day]; if(!day || !sel.value) return;
+        cleanLoopVia(day); dropReturnTransit(day); day.loopVia.push(sel.value); render();
+      });
+      daysBox.querySelectorAll('.del-via').forEach(b=> b.onclick = e=>{
+        e.stopPropagation();
+        const day = schedule[+b.dataset.day]; if(!day) return;
+        cleanLoopVia(day); dropReturnTransit(day); day.loopVia.splice(+b.dataset.idx, 1); render();
+      });
       daysBox.querySelectorAll('.transit-toggle').forEach(b=> b.onclick = e=>{
         e.stopPropagation();
         const day = schedule[+b.dataset.day]; if(!day) return;
@@ -1937,6 +2039,7 @@
         const at = day.transitLegs.indexOf(leg);
         at >= 0 ? day.transitLegs.splice(at,1) : day.transitLegs.push(leg);
         persist();
+        setTravelTexts(+b.dataset.day, null, true);   // aerial distance shows instantly
         computeRoutes();
       });
       daysBox.querySelectorAll('.mode-day').forEach(b=> b.onclick = ()=>{
@@ -1980,7 +2083,7 @@
     }
     function openStopEditor(id){
       closeStopEditor();
-      const stopEl = daysBox.querySelector(`.stop[data-place="${id}"]`); if(!stopEl || !places[id]) return;
+      const stopEl = daysBox.querySelector(`.stop:not(.stop-return)[data-place="${id}"]`); if(!stopEl || !places[id]) return;
       editingStop = id; stopDraft = null;
       stopEl.insertAdjacentHTML('afterend', stopEditorHtml(id));
       const ed = stopEl.nextElementSibling; bindStopEditor(ed);
@@ -2049,7 +2152,7 @@
     }
     function bindDrag(){
       let dragged;
-      document.querySelectorAll('.stop').forEach(el=>{
+      document.querySelectorAll('.stop:not(.stop-return)').forEach(el=>{
         el.addEventListener('dragstart',()=>{ dragged = el; el.style.opacity='.4' });
         el.addEventListener('dragend',()=>{ el.style.opacity='1' });
         // Dropping directly on another stop reorders within (or into) that
@@ -2127,22 +2230,44 @@
       } else if(!confirm(t('confirm.removeDay',{n:i+1}))) return;
       schedule.pop(); render(); loadWeather();
     };
-    document.getElementById('printBtn').onclick = ()=>window.print();
-    // Printing captures whatever the map happens to be showing, which is
-    // often zoomed out to the whole city rather than the trip's actual
-    // stops. Snap it tight to the places before printing, then restore
-    // whatever view the person had.
-    let preprintMapView = null;
-    window.addEventListener('beforeprint', ()=>{
+    // Printing captures whatever the map happens to be showing. The map
+    // container changes size in print layout and Google's tiles load
+    // asynchronously, so a print fired straight away caught a half-drawn
+    // (cut) map. Prepare it first: give it its print size, fit it to the
+    // places, wait for the tiles, and only then open the print dialog.
+    let preprintMapView = null, printing = false;
+    function fitMapForPrint(){
       if(!freeMap) return;
-      preprintMapView = { center:freeMap.getCenter(), zoom:freeMap.getZoom() };
+      if(!preprintMapView) preprintMapView = { center:freeMap.getCenter(), zoom:freeMap.getZoom() };
+      google.maps.event.trigger(freeMap,'resize');
       fitAllPlaces();
-    });
-    window.addEventListener('afterprint', ()=>{
-      if(!freeMap || !preprintMapView) return;
-      freeMap.setCenter(preprintMapView.center); freeMap.setZoom(preprintMapView.zoom);
-      preprintMapView = null;
-    });
+    }
+    function waitForMapTiles(maxMs){
+      return new Promise(resolve=>{
+        if(!freeMap) return resolve();
+        let done = false;
+        const fin = ()=>{ if(done) return; done = true; clearTimeout(cap); resolve() };
+        const cap = setTimeout(fin, maxMs);
+        google.maps.event.addListenerOnce(freeMap,'tilesloaded',()=>setTimeout(fin,300));
+      });
+    }
+    function endPrintPrep(){
+      document.body.classList.remove('print-prep');
+      if(freeMap && preprintMapView){
+        google.maps.event.trigger(freeMap,'resize');
+        freeMap.setCenter(preprintMapView.center); freeMap.setZoom(preprintMapView.zoom);
+      }
+      preprintMapView = null; printing = false;
+    }
+    document.getElementById('printBtn').onclick = async ()=>{
+      if(printing) return; printing = true;
+      document.body.classList.add('print-prep');
+      try{ fitMapForPrint(); await waitForMapTiles(1800) }catch(e){}
+      setTimeout(()=>{ if(printing) endPrintPrep() }, 60000);   // safety net if afterprint never fires
+      window.print();
+    };
+    window.addEventListener('beforeprint', ()=>{ try{ fitMapForPrint() }catch(e){} });
+    window.addEventListener('afterprint', endPrintPrep);
     document.getElementById('backHomeBtn').onclick = backToHome;
     document.getElementById('modeSwitch').addEventListener('click', e=>{
       const b = e.target.closest('.mode-opt'); if(!b) return;
@@ -2503,7 +2628,7 @@
     function updateStopName(id){
       const p = places[id]; if(!p) return;
       const di = dayForPlace(id);
-      document.querySelectorAll(`.stop[data-place="${id}"] .stop-copy`).forEach(el=>{ el.innerHTML = stopCopyHtml(p, id, di); });
+      document.querySelectorAll(`.stop:not(.stop-return)[data-place="${id}"] .stop-copy`).forEach(el=>{ el.innerHTML = stopCopyHtml(p, id, di); });
     }
     async function enrichPlaceNames(id, place){
       if(!place || place.namesLoading || (place.nameHe && place.nameEn)) return;
