@@ -652,17 +652,26 @@
     // A plain light-tile map sitting inside the dark UI at night looked out of
     // place, so swap in a dark tile style whenever data-theme="dark".
     const MAP_DARK_STYLE = [
-      { elementType:'geometry', stylers:[{ color:'#1a2622' }] },
-      { elementType:'labels.text.stroke', stylers:[{ color:'#1a2622' }] },
-      { elementType:'labels.text.fill', stylers:[{ color:'#8f9c95' }] },
-      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#2b3a34' }] },
-      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#22322c' }] },
-      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#213028' }] },
-      { featureType:'road', elementType:'geometry', stylers:[{ color:'#2b3a34' }] },
-      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#1a2622' }] },
-      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#33453e' }] },
-      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#22322c' }] },
-      { featureType:'water', elementType:'geometry', stylers:[{ color:'#12201b' }] }
+      { elementType:'geometry', stylers:[{ color:'#151515' }] },
+      { elementType:'labels.text.stroke', stylers:[{ color:'#151515' }] },
+      { elementType:'labels.text.fill', stylers:[{ color:'#9aa0a6' }] },
+      { elementType:'labels.icon', stylers:[{ visibility:'off' }] },
+      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#3c3c3c' }] },
+      { featureType:'administrative.land_parcel', stylers:[{ visibility:'off' }] },
+      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#242424' }] },
+      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#7a7a7a' }] },
+      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#0f2a1d' }] },
+      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#6fae87' }] },
+      { featureType:'road', elementType:'geometry', stylers:[{ color:'#383838' }] },
+      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#151515' }] },
+      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#8a8a8a' }] },
+      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#4e4e4e' }] },
+      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#1f1f1f' }] },
+      { featureType:'road.arterial', elementType:'geometry', stylers:[{ color:'#3a3a3a' }] },
+      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#26313d' }] },
+      { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#37475a' }] },
+      { featureType:'water', elementType:'geometry', stylers:[{ color:'#0c1620' }] },
+      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#4d6d85' }] }
     ];
     function applyMapTheme(){
       const styles = theme === 'dark' ? MAP_DARK_STYLE : [];
