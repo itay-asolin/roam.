@@ -1083,7 +1083,26 @@
       }catch(e){}
       return null;
     }
-    async function wikimediaImage(query, lat, lng, options={}){
+    // Duplicate stops of the same real place (e.g. the same station added at
+    // both ends of a day) used to search Wikimedia and download the photo
+    // twice, independently. This caches the *promise* per query — so a
+    // second lookup for an identical name, even one that starts while the
+    // first is still in flight, reuses that one result instead of repeating
+    // the whole search + download.
+    const wikiImageCache = new Map();
+    function wikimediaImage(query, lat, lng, options={}){
+      const cityMode=!!options.city;
+      const exclude=options.exclude||null;
+      // A manual "🔄 try another photo" click passes `exclude` because it
+      // deliberately wants a fresh, different result — that always bypasses
+      // the shared cache.
+      const cacheKey = exclude ? null : (cityMode?'city:':'place:')+query;
+      if(cacheKey && wikiImageCache.has(cacheKey)) return wikiImageCache.get(cacheKey);
+      const promise = wikimediaImageUncached(query, lat, lng, options);
+      if(cacheKey) wikiImageCache.set(cacheKey, promise);
+      return promise;
+    }
+    async function wikimediaImageUncached(query, lat, lng, options={}){
       const cityMode=!!options.city;
       const exclude=options.exclude||null;
       const imgWidth = cityMode ? 1800 : 1000;
