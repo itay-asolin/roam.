@@ -693,10 +693,40 @@
       { featureType:'poi.attraction', elementType:'labels.text.stroke', stylers:[{ color:'#171a1f' }] }
     ];
     function applyMapTheme(){
-      const styles = theme === 'dark' ? MAP_DARK_STYLE : [];
+      const styles = theme === 'dark' ? MAP_DARK_STYLE : MAP_LIGHT_STYLE;
       if(freeMap) freeMap.setOptions({ styles });
       if(worldMap) worldMap.setOptions({ styles });
     }
+    // A light, warm cream palette that matches the app's own paper/cream
+    // tones — Google's untouched default light style leans brownish/orange
+    // on land-use and highway colors, which clashed with the rest of the UI.
+    const MAP_LIGHT_STYLE = [
+      { elementType:'geometry', stylers:[{ color:'#f6f4ef' }] },
+      { elementType:'labels.text.fill', stylers:[{ color:'#6b6459' }] },
+      { elementType:'labels.text.stroke', stylers:[{ color:'#f6f4ef' }] },
+      { elementType:'labels.icon', stylers:[{ visibility:'off' }] },
+      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#cfc8b8' }] },
+      { featureType:'administrative.land_parcel', stylers:[{ visibility:'off' }] },
+      { featureType:'landscape', elementType:'geometry', stylers:[{ color:'#f0ece0' }] },
+      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#e9e3d4' }] },
+      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#8a8272' }] },
+      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#dde6d3' }] },
+      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#4f7a52' }] },
+      { featureType:'road', elementType:'geometry', stylers:[{ color:'#ffffff' }] },
+      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#e6ddc9' }] },
+      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#9a917f' }] },
+      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#f3dfae' }] },
+      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#e2c98a' }] },
+      { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{ color:'#a9803d' }] },
+      { featureType:'road.arterial', elementType:'geometry', stylers:[{ color:'#fbf8f1' }] },
+      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#ece6d8' }] },
+      { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#cbb98a' }] },
+      { featureType:'water', elementType:'geometry', stylers:[{ color:'#cfe1e3' }] },
+      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#5e93a0' }] },
+      { featureType:'poi.attraction', elementType:'labels.icon', stylers:[{ visibility:'on' }] },
+      { featureType:'poi.attraction', elementType:'labels.text.fill', stylers:[{ color:'#c17a3f' }] },
+      { featureType:'poi.attraction', elementType:'labels.text.stroke', stylers:[{ color:'#f6f4ef' }] }
+    ];
 
     /* ---------- Image lookup throttling ---------- */
     // Commons/Wikipedia respond with 429 (Too Many Requests) once too many
@@ -1752,7 +1782,7 @@
         center: trip?.center ? {lat:trip.center[0],lng:trip.center[1]} : {lat:20,lng:0},
         zoom: trip?.center ? 12 : 2,
         mapTypeControl:false, streetViewControl:false, fullscreenControl:false, clickableIcons:true,
-        styles: theme === 'dark' ? MAP_DARK_STYLE : []
+        styles: theme === 'dark' ? MAP_DARK_STYLE : MAP_LIGHT_STYLE
       });
       transitLayer = new google.maps.TransitLayer();
       if(transitLayerOn) transitLayer.setMap(freeMap);
@@ -1898,7 +1928,7 @@
       worldMap = new google.maps.Map(document.getElementById('worldMap'), {
         center:{lat:20,lng:0}, zoom:2,
         mapTypeControl:false, streetViewControl:false, fullscreenControl:false, clickableIcons:true,
-        styles: theme === 'dark' ? MAP_DARK_STYLE : []
+        styles: theme === 'dark' ? MAP_DARK_STYLE : MAP_LIGHT_STYLE
       });
       worldInfoWindow = new google.maps.InfoWindow();
       worldInfoWindow.addListener('domready', ()=>{
@@ -2348,14 +2378,26 @@
 
     // Commits a stop's final day + position (read straight off the DOM after
     // a live drag) back into the `schedule` model, then re-renders.
-    function commitStopOrder(id, toDay, orderIds){
-      const from = schedule.findIndex(d=>d.stops.some(s=>s[0]===id));
+    // `ids` is normally a single stop id, but a dragged "ride" row (two
+    // transit stops merged into one row — see stopsHtmlForDay) represents
+    // two underlying stops at once, so both must move together as a unit.
+    // `orderIds` must also list every stop currently in the target day,
+    // including the second half of any merged pair still sitting there —
+    // otherwise it silently gets dropped from the schedule (this used to
+    // happen on every drag in a day that had any bus/train pair in it).
+    function commitStopOrder(ids, toDay, orderIds){
       const target = schedule[toDay];
-      if(from < 0 || !target) return;
-      const stop = schedule[from].stops.find(s=>s[0]===id);
-      schedule[from].stops = schedule[from].stops.filter(s=>s[0]!==id);
+      if(!target) return;
+      const moved = [];
+      ids.forEach(id=>{
+        const from = schedule.findIndex(d=>d.stops.some(s=>s[0]===id));
+        if(from < 0) return;
+        const stop = schedule[from].stops.find(s=>s[0]===id);
+        schedule[from].stops = schedule[from].stops.filter(s=>s[0]!==id);
+        moved.push([id, stop]);
+      });
       const byId = new Map(target.stops.map(s=>[s[0], s]));
-      byId.set(id, stop);
+      moved.forEach(([id, stop])=> byId.set(id, stop));
       target.stops = orderIds.map(pid=>byId.get(pid)).filter(Boolean);
       render();
     }
@@ -2478,8 +2520,13 @@
       if(dndDragged && dndDragged.isConnected){
         const box = dndDragged.closest('.stops');
         if(box){
-          const orderIds = [...box.querySelectorAll(':scope > .stop:not(.stop-return)')].map(s=>s.dataset.place);
-          commitStopOrder(dndDragged.dataset.place, +box.dataset.day, orderIds);
+          const orderIds = [];
+          box.querySelectorAll(':scope > .stop:not(.stop-return)').forEach(s=>{
+            orderIds.push(s.dataset.place);
+            if(s.dataset.place2) orderIds.push(s.dataset.place2);
+          });
+          const draggedIds = dndDragged.dataset.place2 ? [dndDragged.dataset.place, dndDragged.dataset.place2] : [dndDragged.dataset.place];
+          commitStopOrder(draggedIds, +box.dataset.day, orderIds);
         }
       }
       endDrag();
