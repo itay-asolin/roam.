@@ -1815,7 +1815,13 @@
         if(!passesFilter(p)) return;
         const c = coords(id); if(!c) return;
         const di = dayForPlace(id);
-        if(!mapOverlayDays && di>=0 && di!==mapFocusDay) return;
+        // A place with no day at all isn't a stop anymore (e.g. a leftover
+        // from an old merge/duplicate) — drawing it would either give it a
+        // stray unlabeled pin of its own, or, worse, drag down a real stop
+        // it happens to share coordinates with to a flat gray fallback
+        // color instead of that stop's real route color.
+        if(di < 0) return;
+        if(!mapOverlayDays && di!==mapFocusDay) return;
         const key = c[0]+','+c[1];
         if(!groups.has(key)) groups.set(key, []);
         groups.get(key).push({ id, p, di, c });
