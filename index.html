@@ -283,7 +283,7 @@
 
     /* ---------- Night mode ---------- */
     :root[data-theme="dark"]{
-      --ink:#e9ece9; --muted:#93a098; --paper:#12201b; --cream:#1c2925; --line:#2b3a34; --moss:#4c8a71;
+      --ink:#eceeec; --muted:#96a099; --paper:#101211; --cream:#1a1c1b; --line:#2e302e; --moss:#4c8a71;
     }
     [data-theme="dark"] .btn.light,[data-theme="dark"] .sort-toggle .sort-btn.active,[data-theme="dark"] .dest-card,
     [data-theme="dark"] .days-step-btn,[data-theme="dark"] .map-toolbar button,[data-theme="dark"] .day,
@@ -296,34 +296,34 @@
     [data-theme="dark"] .idea-card select,[data-theme="dark"] .add-idea-btn.ghost,[data-theme="dark"] .day-chip,
     [data-theme="dark"] .sync-pill,[data-theme="dark"] .user-avatar,[data-theme="dark"] .user-menu,
     [data-theme="dark"] .sort-toggle,[data-theme="dark"] .chip,[data-theme="dark"] .map-search input,
-    [data-theme="dark"] .mode-switch{ background:#1a2622; }
-    [data-theme="dark"] .stop-edit{ background:#152019; }
-    [data-theme="dark"] .stop-thumb-empty,[data-theme="dark"] .tag{ background:#22322c; color:#a9b3ac; }
+    [data-theme="dark"] .mode-switch{ background:#1a1c1b; }
+    [data-theme="dark"] .stop-edit{ background:#161817; }
+    [data-theme="dark"] .stop-thumb-empty,[data-theme="dark"] .tag{ background:#242625; color:#a9b3ac; }
     [data-theme="dark"] .chip{ color:#bcd6c6; border-color:#33513f; }
     [data-theme="dark"] .handle{ color:#5c6b63; }
-    [data-theme="dark"] .add{ border-color:#3a4a43; }
+    [data-theme="dark"] .add{ border-color:#3a3c3a; }
     [data-theme="dark"] .stop .stop-note{ color:#a7b3ac; }
-    [data-theme="dark"] .sync-dot{ background:#3a4a43; }
-    [data-theme="dark"] .mapwrap,[data-theme="dark"] .dest-card-media.no-image{ background:linear-gradient(135deg,#22322c,#1a2622); }
-    [data-theme="dark"] .map-label{ background:#1a2622ee; }
-    [data-theme="dark"] .wheel-fade{ background:linear-gradient(#1a2622 0%,#1a262200 34%,#1a262200 66%,#1a2622 100%); }
-    [data-theme="dark"] .empty-state{ border-color:#3a4a43; }
+    [data-theme="dark"] .sync-dot{ background:#3a3c3a; }
+    [data-theme="dark"] .mapwrap,[data-theme="dark"] .dest-card-media.no-image{ background:linear-gradient(135deg,#242625,#1a1c1b); }
+    [data-theme="dark"] .map-label{ background:#1a1c1bee; }
+    [data-theme="dark"] .wheel-fade{ background:linear-gradient(#1a1c1b 0%,#1a1c1b00 34%,#1a1c1b00 66%,#1a1c1b 100%); }
+    [data-theme="dark"] .empty-state{ border-color:#3a3c3a; }
     [data-theme="dark"] input[type="date"]{ color-scheme:dark; }
     [data-theme="dark"] .idea-card .ok{ color:#7fce9c; } [data-theme="dark"] .idea-card .no{ color:#e2673f; }
     [data-theme="dark"] .idea-card .sum,[data-theme="dark"] .idea-card .hours{ color:var(--muted); }
-    [data-theme="dark"] .gm-style-iw-c{ background:#1a2622!important; }
+    [data-theme="dark"] .gm-style-iw-c{ background:#1a1c1b!important; }
     [data-theme="dark"] .gm-style-iw-d{ background:transparent!important; }
-    [data-theme="dark"] .gm-style-iw-t::after,[data-theme="dark"] .gm-style-iw-tc::after{ background:#1a2622!important; box-shadow:none!important; }
+    [data-theme="dark"] .gm-style-iw-t::after,[data-theme="dark"] .gm-style-iw-tc::after{ background:#1a1c1b!important; box-shadow:none!important; }
     [data-theme="dark"] .gm-ui-hover-effect{ filter:invert(1); opacity:.8; }
     /* .btn's fill normally tracks --ink, which flips to a near-white tone at
        night — leaving white text on a white button. Give it its own fixed dark
        fill instead so it stays legible without affecting .btn.light/.orange. */
-    [data-theme="dark"] .btn:not(.light):not(.orange){ background:#2f3f38; color:#e9ece9; }
+    [data-theme="dark"] .btn:not(.light):not(.orange){ background:#2e302e; color:#eceeec; }
     [data-theme="dark"] .hint{ background:#1c2b22; color:#a9d3b4; }
     [data-theme="dark"] .warn{ background:#2c211b; color:#e2a186; }
-    [data-theme="dark"] .wheel-band{ background:#22322c; border-color:#3a4a43; }
+    [data-theme="dark"] .wheel-band{ background:#242625; border-color:#3a3c3a; }
     [data-theme="dark"] .day-chip.active{ color:var(--ink); }
-    [data-theme="dark"] .city-chip{ background:#1a2622; }
+    [data-theme="dark"] .city-chip{ background:#1a1c1b; }
     [data-theme="dark"] .stop-hours{ color:#ff9169; }
     [data-theme="dark"] .stop-hours.closed{ color:#8a978f; }
     /* Photos (place thumbnails, POI cards, city covers) read as too bright and
@@ -332,7 +332,7 @@
        leave the photo itself untouched. */
     [data-theme="dark"] .stop-thumb,[data-theme="dark"] .idea-card img,
     [data-theme="dark"] .dest-card-media,[data-theme="dark"] .search-place-result img{
-      box-shadow:0 0 0 1px #3a4a43 inset;
+      box-shadow:0 0 0 1px #3a3c3a inset;
     }
   </style>
 </head>
@@ -652,26 +652,27 @@
     // A plain light-tile map sitting inside the dark UI at night looked out of
     // place, so swap in a dark tile style whenever data-theme="dark".
     const MAP_DARK_STYLE = [
-      { elementType:'geometry', stylers:[{ color:'#151515' }] },
-      { elementType:'labels.text.stroke', stylers:[{ color:'#151515' }] },
-      { elementType:'labels.text.fill', stylers:[{ color:'#9aa0a6' }] },
+      { elementType:'geometry', stylers:[{ color:'#171a1f' }] },
+      { elementType:'labels.text.stroke', stylers:[{ color:'#171a1f' }] },
+      { elementType:'labels.text.fill', stylers:[{ color:'#b8c2ce' }] },
       { elementType:'labels.icon', stylers:[{ visibility:'off' }] },
-      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#3c3c3c' }] },
+      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#57647a' }] },
       { featureType:'administrative.land_parcel', stylers:[{ visibility:'off' }] },
-      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#242424' }] },
-      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#7a7a7a' }] },
-      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#0f2a1d' }] },
-      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#6fae87' }] },
-      { featureType:'road', elementType:'geometry', stylers:[{ color:'#383838' }] },
-      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#151515' }] },
-      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#8a8a8a' }] },
-      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#4e4e4e' }] },
-      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#1f1f1f' }] },
-      { featureType:'road.arterial', elementType:'geometry', stylers:[{ color:'#3a3a3a' }] },
-      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#26313d' }] },
-      { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#37475a' }] },
-      { featureType:'water', elementType:'geometry', stylers:[{ color:'#0c1620' }] },
-      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#4d6d85' }] }
+      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#262b33' }] },
+      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#93a1b0' }] },
+      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#0e3826' }] },
+      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#6fce9c' }] },
+      { featureType:'road', elementType:'geometry', stylers:[{ color:'#3b4453' }] },
+      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#171a1f' }] },
+      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#9fabbc' }] },
+      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#caa254' }] },
+      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#262010' }] },
+      { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{ color:'#e6c988' }] },
+      { featureType:'road.arterial', elementType:'geometry', stylers:[{ color:'#454f60' }] },
+      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#2c3548' }] },
+      { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#4a5f82' }] },
+      { featureType:'water', elementType:'geometry', stylers:[{ color:'#0b2036' }] },
+      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#6f9fc4' }] }
     ];
     function applyMapTheme(){
       const styles = theme === 'dark' ? MAP_DARK_STYLE : [];
@@ -1656,7 +1657,7 @@
         rulerLine.setPath([rulerOrigin, cur]);
         if(!rulerLabel) rulerLabel = new google.maps.InfoWindow({ disableAutoPan:true });
         const rulerDark = theme === 'dark';
-        rulerLabel.setContent(`<div style="font:600 12.5px Rubik,sans-serif;padding:3px 7px;white-space:nowrap;border-radius:6px;background:${rulerDark?'#1a2622':'#fff'};color:${rulerDark?'#e9ece9':'#15231f'}">${esc(fmtDistance(distM(rulerOrigin.lat, rulerOrigin.lng, cur.lat, cur.lng)))}</div>`);
+        rulerLabel.setContent(`<div style="font:600 12.5px Rubik,sans-serif;padding:3px 7px;white-space:nowrap;border-radius:6px;background:${rulerDark?'#1a1c1b':'#fff'};color:${rulerDark?'#e9ece9':'#15231f'}">${esc(fmtDistance(distM(rulerOrigin.lat, rulerOrigin.lng, cur.lat, cur.lng)))}</div>`);
         rulerLabel.setPosition(cur);
         if(!rulerLabel.get('map')) rulerLabel.open(freeMap);
       });
