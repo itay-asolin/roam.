@@ -388,6 +388,7 @@
           <div class="map-search" id="mapSearchWrap"><input type="text" id="mapSearchInput" data-i18n-ph="map.searchPh"><div class="suggest" id="mapSearchResults" style="display:none"></div></div>
           <button id="mapViewBtn"></button>
           <button id="rulerBtn" data-i18n="map.ruler"></button>
+          <button id="transitLayerBtn" data-i18n="map.transit"></button>
           <button id="overlayDaysBtn"></button>
            <button id="mapExpandBtn" class="map-expand" data-i18n="map.expand"></button>
         </div>
@@ -523,9 +524,9 @@
         'world.title':'All destinations','world.sub':'Every planned trip on one map. Tap a pin to open it.','world.startHere':'🧳 Start a trip here',
         'trip.back':'← All destinations','trip.eyebrow':'Trip','trip.heroSub':'Search places, drop them into days, and the map keeps your city in view.','trip.start':'Start','trip.share':'Copy share link','trip.noDates':'No dates set',
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
-        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','city.all':'🌐 All cities','city.add':'+ Add city','city.addPh':'City name…','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
+        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.transit':'🚌 Transit','map.transitHint':'Show bus stops, metro & train lines on the map','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','city.all':'🌐 All cities','city.add':'+ Add city','city.addPh':'City name…','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
-        'days.title':'Day by day','days.sub':'Move a stop with the day menu, or drag it. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.moveTo':'Day {n}','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.addVia':'➕ Return via another point…','day.removeVia':'Remove this return point','day.modeAuto':'following trip default',
+        'days.title':'Day by day','days.sub':'Drag a stop to reorder it or move it to another day. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.addVia':'➕ Return via another point…','day.removeVia':'Remove this return point','day.addAgain':'➕ Add a stop again…','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
         'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} straight-line (transit / ferry — no time estimate)','travel.transitNoDist':'🚌 Public transit / ferry','travel.transitToggle':'Mark this leg as public transit / ferry (straight-line distance)',
         'wx.title':'Weather','wx.needDate':'Set a start date and the forecast for your days will appear here.','wx.forecast':'Forecast for your dates.','wx.typical':'Typical for these dates, based on last year — a forecast appears about two weeks before you go.','wx.error':'Weather is unavailable right now.','wx.loading':'Loading weather…',
@@ -552,9 +553,9 @@
         'world.title':'כל היעדים','world.sub':'כל הטיולים המתוכננים על מפה אחת. לחצו על סימון כדי לפתוח אותו.','world.startHere':'🧳 להתחיל טיול כאן',
         'trip.back':'→ כל היעדים','trip.eyebrow':'טיול','trip.heroSub':'חפשו מקומות, שבצו אותם לימים, והמפה תשמור על העיר שלכם בפריים.','trip.start':'תחילה','trip.share':'העתקת קישור שיתוף','trip.noDates':'לא נקבעו תאריכים',
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
-        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','city.all':'🌐 כל הערים','city.add':'+ הוספת עיר','city.addPh':'שם העיר…','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
+        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.transit':'🚌 תחבורה ציבורית','map.transitHint':'הצגת תחנות אוטובוס, קווי מטרו ורכבת על המפה','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','city.all':'🌐 כל הערים','city.add':'+ הוספת עיר','city.addPh':'שם העיר…','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
-        'days.title':'יום אחר יום','days.sub':'העבירו עצירה בעזרת תפריט היום, או בגרירה. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.moveTo':'יום {n}','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.addVia':'➕ חזרה דרך נקודה נוספת…','day.removeVia':'הסר נקודה מדרך החזרה','day.modeAuto':'לפי ברירת המחדל של הטיול',
+        'days.title':'יום אחר יום','days.sub':'גררו עצירה כדי לשנות את סדרה או להעביר אותה ליום אחר. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.addVia':'➕ חזרה דרך נקודה נוספת…','day.removeVia':'הסר נקודה מדרך החזרה','day.addAgain':'➕ הוספת עצירה קיימת שוב…','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
         'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} מרחק אווירי (תחבורה ציבורית / מעבורת — בלי הערכת זמן)','travel.transitNoDist':'🚌 תחבורה ציבורית / מעבורת','travel.transitToggle':'סימון הקטע כתחבורה ציבורית / מעבורת (מרחק אווירי)',
         'wx.title':'מזג אוויר','wx.needDate':'בחרו תאריך התחלה והתחזית לימי הטיול תופיע כאן.','wx.forecast':'תחזית לתאריכים שלכם.','wx.typical':'ממוצע אופייני לתאריכים האלה לפי השנה שעברה — תחזית אמיתית תופיע כשבועיים לפני הנסיעה.','wx.error':'נתוני מזג האוויר אינם זמינים כרגע.','wx.loading':'טוען מזג אוויר…',
@@ -1509,6 +1510,20 @@
       b.title = t(mapViewMode === 'fit' ? 'map.centerCity' : 'map.fit');
     }
 
+    /* ---------- Transit layer: Google's built-in bus stops / metro & train lines overlay ---------- */
+    let transitLayer=null, transitLayerOn = localStorage.getItem('roam-transit-layer') === '1';
+    function updateTransitBtn(){
+      const b = document.getElementById('transitLayerBtn'); if(!b) return;
+      b.classList.toggle('active', transitLayerOn);
+      b.title = t('map.transitHint');
+    }
+    function toggleTransitLayer(){
+      transitLayerOn = !transitLayerOn;
+      try{ localStorage.setItem('roam-transit-layer', transitLayerOn ? '1' : '0') }catch(e){}
+      if(transitLayer) transitLayer.setMap(transitLayerOn ? freeMap : null);
+      updateTransitBtn();
+    }
+
     /* ---------- Ruler: click a point, then move the mouse to measure ---------- */
     let rulerActive=false, rulerOrigin=null, rulerLine=null, rulerLabel=null, rulerClickListener=null, rulerMoveListener=null, rulerRightClickListener=null;
     function toggleRuler(){
@@ -1609,6 +1624,9 @@
         mapTypeControl:false, streetViewControl:false, fullscreenControl:false, clickableIcons:true,
         styles: theme === 'dark' ? MAP_DARK_STYLE : []
       });
+      transitLayer = new google.maps.TransitLayer();
+      if(transitLayerOn) transitLayer.setMap(freeMap);
+      updateTransitBtn();
       infoWindow = new google.maps.InfoWindow();
       infoWindow.addListener('domready', ()=>{
         const addBtn = document.querySelector('.gm-style-iw .poi-add-place');
@@ -1945,6 +1963,26 @@
       html += travelDivHtml(di, n-1+via.length) + row(startId, '');
       return html;
     }
+    // Lets a stop already on the trip be added again as a normal, freely
+    // draggable stop (e.g. to pass through the same place twice on the way
+    // out and on the way back) — simpler than the loop/"return via" feature,
+    // which only ever appends a special return-only entry at the end of a
+    // looped day.
+    function addAgainHtml(di, placeNumbers){
+      const opts = schedule.flatMap((d,dj)=> d.stops.map(s=>({s,dj})))
+        .filter(({s})=> places[s[0]])
+        .map(({s,dj})=> `<option value="${esc(s[0])}">${placeNumbers.get(s[0])||'•'}. ${esc(places[s[0]].name)}${schedule.length>1?' · '+esc(t('day',{n:dj+1})):''}</option>`)
+        .join('');
+      if(!opts) return '';
+      return `<div class="loop-add"><select class="add-again" data-day="${di}" aria-label="${esc(t('day.addAgain'))}"><option value="">${esc(t('day.addAgain'))}</option>${opts}</select></div>`;
+    }
+    function duplicatePlace(srcId, dayIndex){
+      const src = places[srcId]; if(!src || !schedule[dayIndex]) return;
+      const id = 'p'+Date.now()+Math.floor(Math.random()*1000);
+      places[id] = Object.assign({}, src, { notes:'', imageTriedPages:(src.imageTriedPages||[]).slice() });
+      schedule[dayIndex].stops.push([id,'']);
+      render();
+    }
     function render(){
       schedule.forEach(cleanLoopVia);
       const placeNumbers = computePlaceNumbers();
@@ -1954,14 +1992,14 @@
         const color = DAY_COLORS[di%DAY_COLORS.length];
         const stopsHtml = d.stops.length ? d.stops.map((s,i)=>{
           const p = places[s[0]]; if(!p) return '';
-          const daySel = schedule.length > 1 ? `<select class="move-day" data-place="${s[0]}">${schedule.map((_,j)=>`<option value="${j}" ${j===di?'selected':''}>${esc(t('day.moveTo',{n:j+1}))}</option>`).join('')}</select>` : '';
           return `<div class="stop" draggable="true" data-place="${s[0]}">
             <span class="handle">⠿</span>
             <span class="stop-num" style="background:${color}">${placeNumbers.get(s[0])||''}</span>
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
-            <span class="stop-tools">${daySel}<button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
+            <span class="stop-tools"><button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
           </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? travelDivHtml(di, i) : ''}`;
         }).join('') + loopReturnHtml(d, di, color, placeNumbers) : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
+        const addAgainRow = addAgainHtml(di, placeNumbers);
 
         const effMode = d.travelMode || tripMode;
         const modeAuto = !d.travelMode;
@@ -1973,7 +2011,7 @@
             <span class="dd">${esc(dayDate(di))}</span>
             <span class="day-tools">${d.stops.length>1 && schedule.length>1?`<button class="icon-btn mode-day${modeAuto?'':' active'}" data-day="${di}" title="${esc(modeTitle)}" aria-label="${esc(modeTitle)}">${effMode==='driving'?'🚗':'🚶'}</button>`:''}${d.stops.length>1?`<button class="icon-btn loop-day${d.loop?' active':''}" data-day="${di}" title="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}" aria-label="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}">${d.loop?'🔁':'↩️'}</button>`:''}${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}</span>
           </div>
-          <div class="stops" data-day="${di}">${stopsHtml}</div>
+          <div class="stops" data-day="${di}">${stopsHtml}${addAgainRow}</div>
         </article>`;
       }).join('');
 
@@ -1996,6 +2034,10 @@
         const day = schedule[+sel.dataset.day]; if(!day || !sel.value) return;
         cleanLoopVia(day); dropReturnTransit(day); day.loopVia.push(sel.value); render();
       });
+      daysBox.querySelectorAll('.add-again').forEach(sel=> sel.onchange = ()=>{
+        if(!sel.value) return;
+        duplicatePlace(sel.value, +sel.dataset.day);
+      });
       daysBox.querySelectorAll('.del-via').forEach(b=> b.onclick = e=>{
         e.stopPropagation();
         const day = schedule[+b.dataset.day]; if(!day) return;
@@ -2016,10 +2058,6 @@
         const day = schedule[+b.dataset.day]; if(!day) return;
         day.travelMode = !day.travelMode ? 'foot' : day.travelMode==='foot' ? 'driving' : null;
         render();
-      });
-      daysBox.querySelectorAll('.move-day').forEach(sel=>{
-        sel.onclick = e=>e.stopPropagation();
-        sel.onchange = ()=> moveStop(sel.dataset.place, +sel.value);
       });
       bindDrag();
       persist();
@@ -2254,6 +2292,8 @@
       else applyMapView(mapViewMode === 'fit' ? 'center' : 'fit');
     };
     document.getElementById('rulerBtn').onclick = toggleRuler;
+    document.getElementById('transitLayerBtn').onclick = toggleTransitLayer;
+    updateTransitBtn();
     function updateOverlayBtn(){
       const b = document.getElementById('overlayDaysBtn'); if(!b) return;
       b.textContent = t(mapOverlayDays ? 'map.overlayOn' : 'map.overlayOff');
