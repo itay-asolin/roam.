@@ -159,10 +159,17 @@
         .search-place-result{display:flex;align-items:center;gap:10px;width:100%}.search-place-result img{width:42px;height:42px;border-radius:8px;object-fit:cover;flex:0 0 auto;background:var(--cream)}
 .nearby-list{max-height:180px;overflow:auto;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}
     .nearby-list button{display:block;width:100%;text-align:start;border:0;background:none;padding:6px 0;color:var(--moss);font-size:12px}
-    .idea-card{font-family:var(--ui);width:min(420px,72vw);max-height:60vh;overflow-y:auto;overscroll-behavior:contain;padding-inline-end:6px;line-height:1.5;color:var(--ink);font-size:14px}
-    .gm-style-iw-c:has(.idea-card){max-height:none!important}
-    .gm-style-iw-d:has(.idea-card){max-height:none!important;overflow:visible!important}
-    .idea-card img{display:block;width:100%;height:190px;object-fit:cover;border-radius:12px;margin-bottom:10px;background:var(--cream)}
+    .idea-backdrop{position:absolute;inset:0;background:rgba(12,20,17,.38);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:15}
+    .idea-backdrop.open{opacity:1;pointer-events:auto}
+    .idea-sheet{position:absolute;inset-inline:0;bottom:0;max-height:66%;background:var(--paper);border-radius:20px 20px 0 0;box-shadow:0 -10px 34px rgba(12,20,17,.3);transform:translateY(105%);transition:transform .32s cubic-bezier(.32,.72,0,1);z-index:16;display:flex;flex-direction:column;overflow:hidden}
+    .idea-sheet.open{transform:translateY(0)}
+    .idea-sheet.dragging{transition:none}
+    .idea-sheet-handle{flex:none;padding:10px 0 6px;display:flex;justify-content:center;cursor:grab;touch-action:none}
+    .idea-sheet-handle span{width:36px;height:4px;border-radius:99px;background:var(--line)}
+    .idea-sheet-close{position:absolute;top:10px;inset-inline-end:12px;width:28px;height:28px;border-radius:50%;border:0;background:var(--cream);color:var(--ink);font-size:12px;display:grid;place-items:center;z-index:1}
+    .idea-sheet-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 18px 18px}
+    .idea-card{font-family:var(--ui);line-height:1.5;color:var(--ink);font-size:14px}
+    .idea-card img{display:block;width:100%;height:170px;object-fit:cover;border-radius:12px;margin-bottom:10px;background:var(--cream)}
     .idea-card h4{margin:0 0 3px;font-family:var(--display);font-weight:400;font-size:21px;line-height:1.25}
     .idea-card .meta{font-size:13px;color:var(--muted)}
     .idea-card .row{font-size:13.5px;margin-top:8px}
@@ -174,8 +181,8 @@
     .idea-card .idea-edit{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);display:grid;gap:8px}
     .idea-card .idea-edit input,.idea-card .idea-edit textarea{width:100%;font:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;resize:vertical}
     .idea-card .idea-edit input{font-weight:500}
-    .idea-card .add-row{display:flex;gap:8px;margin-top:12px}
-    .idea-card select{flex:1;min-width:0;font-size:13.5px;padding:9px;border:1px solid var(--line);border-radius:9px;background:#fff}
+    .idea-card .add-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .idea-card select{flex:1;min-width:120px;font-size:13.5px;padding:9px;border:1px solid var(--line);border-radius:9px;background:#fff}
     .idea-card .add-idea-btn{border:0;background:var(--moss);color:#fff;border-radius:9px;padding:9px 16px;font-size:13.5px;white-space:nowrap}
     .idea-card .add-idea-btn.ghost{background:#fff;color:var(--moss);border:1px solid var(--line)}
     .stop .stop-note{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line;margin-top:2px;color:#4c5a52}
@@ -223,7 +230,7 @@
       @page{ size:A4; margin:12mm }
       *{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
       html,body{ height:auto!important; overflow:visible!important }
-      .stop-edit,.transit-btn,.edit-stop{display:none!important}
+      .stop-edit,.transit-btn,.edit-stop,.idea-sheet,.idea-backdrop{display:none!important}
       .map-resizer{display:none!important}
       .map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips,.transit-toggle{display:none!important}
       .hero-swap,.hero-side,.thumb-wrap,.dest-swap,.sync-pill,.user-menu-wrap,.toast{display:none!important}
@@ -391,6 +398,12 @@
         </div>
         <div class="map-label" id="mapLabel" data-i18n="map.loading"></div>
         <div class="map" id="map"></div>
+        <div class="idea-backdrop" id="ideaBackdrop"></div>
+        <div class="idea-sheet" id="ideaSheet">
+          <div class="idea-sheet-handle" id="ideaSheetHandle"><span></span></div>
+          <button type="button" class="idea-sheet-close" id="ideaSheetClose">✕</button>
+          <div class="idea-sheet-body" id="ideaSheetBody"></div>
+        </div>
       </section>
       <div class="map-resizer" id="mapResizer" role="separator" aria-orientation="horizontal" tabindex="0"><span data-i18n="map.resize"></span></div>
       <div class="city-legend" id="cityLegend" style="display:none"></div>
@@ -608,7 +621,7 @@
     }
     let worldMap = null, worldMarkers = [], worldInfoWindow = null;
     let pendingPoiPlace = null;
-    let ideaWindow = null, ideaCurrent = null;
+    let ideaCurrent = null;
     let editingStop = null, stopDraft = null, changePlaceId = null;
     let firebaseApp=null, firebaseAuth=null, firestore=null, firebaseUser=null, firebaseUnsub=null, firebaseReady=false, cloudSaveTimer=null, suppressCloudSave=false;
     const DAY_COLORS = ['#e2673f','#5f81c4','#8768b5','#3f9182','#d4a03f','#8a6d59','#c2678c','#6a8f52','#5a8aa4','#96784d'];
@@ -2163,7 +2176,7 @@
     // NOTE: there are two .mapwrap elements (world map first, trip map second); the old
     // document.querySelector('.mapwrap') hit the hidden world-map one, so "expand" did nothing.
     function tripMapWrap(){ return document.getElementById('map').closest('.mapwrap') }
-    function afterMapResize(){ if(freeMap) google.maps.event.trigger(freeMap,'resize'); sizeIdeaCard() }
+    function afterMapResize(){ if(freeMap) google.maps.event.trigger(freeMap,'resize') }
     document.getElementById('mapExpandBtn').onclick=()=>{
       const wrap=tripMapWrap(); if(!wrap) return;
       wrap.classList.toggle('expanded');
@@ -2171,7 +2184,6 @@
       b.textContent=wrap.classList.contains('expanded') ? (lang==='he'?'⛶ הקטנת המפה':'⛶ Exit map') : t('map.expand');
       setTimeout(afterMapResize,50);
     };
-    window.addEventListener('resize', ()=>sizeIdeaCard());
 
     // Drag the bar under a map to stretch it (mouse, touch, or ArrowUp/ArrowDown); double-click resets.
     function setupMapResizer(bar, wrap, key, onResize){
@@ -2677,7 +2689,11 @@
       const p = places[id];
       return { tripId:id, id:p.gid||'', name:lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name), nameEn:p.nameEn||p.name, title:p.title||'', note:isAutoNote(p.notes) ? '' : p.notes, lat:+p.lat, lng:+p.lng, category:p.category||'place', typeLabel:t('filter.'+bucketOf(p)), image:p.image||'', imagePage:p.imagePage||'', imageAuthor:p.imageAuthor||'', imageLicense:p.imageLicense||'', imageLicenseUrl:p.imageLicenseUrl||'' };
     }
-    function closeIdea(){ ideaCurrent = null; if(ideaWindow) ideaWindow.close() }
+    const ideaSheet = document.getElementById('ideaSheet'), ideaBackdrop = document.getElementById('ideaBackdrop'), ideaSheetBody = document.getElementById('ideaSheetBody');
+    function closeIdea(){
+      ideaCurrent = null;
+      ideaSheet.classList.remove('open'); ideaBackdrop.classList.remove('open');
+    }
     // Opens the same details bubble (rating/hours/website) used for map pins,
     // but from a click on the stop itself in the day list — no need to find
     // and click its pin on the map first.
@@ -2686,20 +2702,6 @@
       openIdea(ideaFromTrip(id));
       if(freeMap) freeMap.panTo({ lat:+p.lat, lng:+p.lng });
       document.getElementById('map')?.scrollIntoView({ behavior:'smooth', block:'center' });
-    }
-    // The card fits its content; it only scrolls once it would be taller than the map, so stretching the map gives it more room.
-    function sizeIdeaCard(){
-      const el = ideaCurrent && ideaCurrent._el, m = document.getElementById('map'); if(!el || !m) return;
-      el.style.width = Math.max(240, Math.min(440, m.clientWidth - 80)) + 'px';
-      el.style.maxHeight = Math.max(200, m.clientHeight - 110) + 'px';
-    }
-    let ideaGrowRaf = 0;
-    function growIdea(s){
-      cancelAnimationFrame(ideaGrowRaf);
-      ideaGrowRaf = requestAnimationFrame(()=>{
-        if(ideaCurrent !== s || !ideaWindow) return;
-        if(s._anchor) ideaWindow.open({map:freeMap, anchor:s._anchor}); else ideaWindow.open({map:freeMap});
-      });
     }
     function fillIdeaTop(s){
       const el = s._el; if(!el) return;
@@ -2723,7 +2725,7 @@
         ${hours.length ? `<details class="hours"><summary>${esc(t('nearby.hours'))}</summary>${hours.map(h=>`<div>${esc(h)}</div>`).join('')}</details>` : ''}
         <div class="links">${web ? `<a href="${esc(web)}" target="_blank" rel="noopener">${esc(t('nearby.website'))}</a>` : ''}<a href="${esc(s.tripId && places[s.tripId] ? transitUrlForPlace(s.tripId) : transitUrl(s.lat, s.lng, s.id, null))}" target="_blank" rel="noopener">🚌 ${esc(t('nearby.transit'))}</a><a href="${esc(gmaps)}" target="_blank" rel="noopener">${esc(t('nearby.gmaps'))}</a></div>`;
       const im = el.querySelector('.idea-top img');
-      if(im){ im.onload = ()=>growIdea(s); im.onerror = ()=>{ im.style.display = 'none' } }
+      if(im) im.onerror = ()=>{ im.style.display = 'none' };
     }
     function ideaCard(s){
       const el = document.createElement('div');
@@ -2759,20 +2761,20 @@
       s._el = el; fillIdeaTop(s);
       return el;
     }
-    // Shared details window: suggestion pins, trip pins and clicks on any place of the base map.
+    // Shared details sheet: suggestion pins, trip pins and clicks on any place
+    // of the base map all slide the same card up from the bottom of the map,
+    // over half of it, instead of a small bubble anchored to the pin.
     function openIdea(s, marker){
-      ideaCurrent = s; s._anchor = marker || null;
-      if(infoWindow) infoWindow.close();
-      if(!ideaWindow){ ideaWindow = new google.maps.InfoWindow({ maxWidth:640 }); ideaWindow.addListener('closeclick', ()=>{ ideaCurrent = null }) }
+      ideaCurrent = s;
       if(s.id && s.details === undefined && ideaDetailsCache[s.id]) s.details = ideaDetailsCache[s.id];
-      ideaWindow.setContent(ideaCard(s));
-      sizeIdeaCard();
-      if(marker) ideaWindow.open({map:freeMap, anchor:marker});
-      else { ideaWindow.setPosition({lat:s.lat,lng:s.lng}); ideaWindow.open({map:freeMap}) }
+      ideaSheetBody.innerHTML = '';
+      ideaSheetBody.appendChild(ideaCard(s));
+      ideaSheetBody.scrollTop = 0;
+      ideaSheet.classList.add('open'); ideaBackdrop.classList.add('open');
       loadIdeaExtras(s);
     }
     async function loadIdeaExtras(s){
-      const refresh = ()=>{ if(ideaCurrent === s){ fillIdeaTop(s); growIdea(s) } };
+      const refresh = ()=>{ if(ideaCurrent === s) fillIdeaTop(s) };
       if(!s.imageTried){
         s.imageTried = true;
         if(!s.image){
@@ -2809,6 +2811,26 @@
     document.getElementById('placeSearch').addEventListener('keydown', e=>{ if(e.key==='Enter') searchPlaces() });
     document.getElementById('closeBtn').onclick = ()=>{ modal.classList.remove('open'); changePlaceId = null; };
     document.querySelectorAll('.modal').forEach(m=> m.addEventListener('click', e=>{ if(e.target===m) m.classList.remove('open') }));
+    document.getElementById('ideaSheetClose').onclick = closeIdea;
+    ideaBackdrop.onclick = closeIdea;
+    (function(){
+      const handle = document.getElementById('ideaSheetHandle');
+      let startY = 0, dy = 0, dragging = false;
+      const onMove = e=>{
+        dy = Math.max(0, e.clientY - startY);
+        ideaSheet.style.transform = `translateY(${dy}px)`;
+      };
+      const onUp = ()=>{
+        if(!dragging) return;
+        dragging = false; ideaSheet.classList.remove('dragging'); ideaSheet.style.transform = '';
+        document.removeEventListener('pointermove', onMove); document.removeEventListener('pointerup', onUp);
+        if(dy > ideaSheet.clientHeight * 0.25) closeIdea();
+      };
+      handle.addEventListener('pointerdown', e=>{
+        dragging = true; startY = e.clientY; dy = 0; ideaSheet.classList.add('dragging');
+        document.addEventListener('pointermove', onMove); document.addEventListener('pointerup', onUp);
+      });
+    })();
     // Escape: unwind whatever's frontmost — ruler mode, the details bubble,
     // an open stop editor, a modal, the account menu, then the expanded map —
     // one press always backs out of something rather than doing nothing.
@@ -2922,6 +2944,7 @@
       document.getElementById('langBtn').textContent = t('lang.switch');
       document.getElementById('exportBtn').textContent = t('export');
       document.getElementById('importFileBtn').textContent = t('import');
+      { const c=document.getElementById('ideaSheetClose'); if(c){ c.title = t('close'); c.setAttribute('aria-label', t('close')) } }
       updateAuthButton();
       updateOverlayBtn();
       updateMapViewBtn();
