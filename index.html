@@ -71,15 +71,18 @@
     .mapwrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#d9e0d6;height:410px;position:relative;z-index:0;transition:height .2s,position .2s}.mapwrap.expanded{position:fixed;inset:14px;z-index:50;height:auto;border-radius:18px;box-shadow:0 20px 60px #15231f55}.mapwrap.expanded .map{height:100%}
     .map{width:100%;height:100%}
     .map-label{position:absolute;bottom:16px;inset-inline-start:18px;background:#fffdf9ee;padding:10px 13px;border-radius:9px;font-size:12px;box-shadow:0 5px 20px #17201c15;z-index:1;max-width:70%;line-height:1.45}
-    .map-toolbar{position:absolute;z-index:7;top:13px;inset-inline-start:13px;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 26px)}
-    .map-toolbar button{border:0;background:#fff;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:500;box-shadow:0 2px 8px #17201c1f}.map-expand{margin-inline-start:auto}
+    .map-toolbar{position:absolute;z-index:7;top:13px;inset-inline-start:13px;inset-inline-end:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .map-toolbar button{border:0;background:#fff;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:500;box-shadow:0 2px 8px #17201c1f;flex:0 0 auto}
     .map-toolbar button.active{background:var(--moss);color:#fff}
+    .map-toolbar button.icon-only{width:36px;height:36px;padding:0;border-radius:50%;font-size:16px;line-height:1;display:grid;place-items:center}
+    .map-expand{margin-inline-start:auto}
     .mode-switch{display:inline-flex;border:1px solid var(--line);border-radius:99px;padding:3px;gap:2px;background:#fff}
     .mode-opt{border:0;background:transparent;border-radius:99px;padding:8px 13px;font-size:13px;font-weight:500;cursor:pointer;color:var(--muted)}
     .mode-opt.active{background:var(--moss);color:#fff}
-    .map-search{position:relative}
-    .map-search input{border:0;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:500;box-shadow:0 2px 8px #17201c1f;min-width:160px;font-family:inherit}
+    .map-search{position:relative;flex:1 1 130px;min-width:0}
+    .map-search input{border:0;border-radius:9px;padding:9px 11px;font-size:12px;font-weight:500;box-shadow:0 2px 8px #17201c1f;width:100%;min-width:0;font-family:inherit}
     .map-search .suggest{top:calc(100% + 4px)}
+    @media (max-width:640px){ .map-search{flex-basis:100%} }
     .layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:26px;margin-top:38px}
     .days{display:grid;gap:15px}.day{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
     .daytop{display:flex;align-items:center;gap:10px;padding:13px 15px;border-bottom:1px solid var(--line);flex-wrap:wrap}
@@ -89,6 +92,7 @@
     .icon-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:12px;color:var(--muted)}.icon-btn:hover{background:var(--cream);color:var(--ink)}
     .stops{padding:10px;min-height:52px}
     .stop{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
+    .stop.dragging{opacity:.45;background:var(--cream)}
     .stop-return{cursor:pointer;opacity:.85}
     .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px}
     .stop-num{flex:0 0 20px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#fff}
@@ -391,10 +395,10 @@
       <section class="mapwrap">
         <div class="map-toolbar">
           <div class="map-search" id="mapSearchWrap"><input type="text" id="mapSearchInput" data-i18n-ph="map.searchPh"><div class="suggest" id="mapSearchResults" style="display:none"></div></div>
-          <button id="mapViewBtn"></button>
-          <button id="rulerBtn" data-i18n="map.ruler"></button>
-          <button id="transitLayerBtn" data-i18n="map.transit"></button>
-           <button id="mapExpandBtn" class="map-expand" data-i18n="map.expand"></button>
+          <button id="mapViewBtn" class="icon-only"></button>
+          <button id="rulerBtn" class="icon-only" data-i18n="map.ruler"></button>
+          <button id="transitLayerBtn" class="icon-only" data-i18n="map.transit"></button>
+          <button id="mapExpandBtn" class="icon-only map-expand" data-i18n="map.expand"></button>
         </div>
         <div class="map-label" id="mapLabel" data-i18n="map.loading"></div>
         <div class="map" id="map"></div>
@@ -1507,8 +1511,10 @@
     }
     function updateMapViewBtn(){
       const b = document.getElementById('mapViewBtn'); if(!b) return;
-      b.textContent = t(mapViewMode === 'fit' ? 'map.fit' : 'map.centerCity');
-      b.title = t(mapViewMode === 'fit' ? 'map.centerCity' : 'map.fit');
+      const full = t(mapViewMode === 'fit' ? 'map.fit' : 'map.centerCity');
+      b.textContent = iconOf(full);
+      b.title = full;
+      b.setAttribute('aria-label', full);
     }
 
     /* ---------- Transit layer: Google's built-in bus stops / metro & train lines overlay ---------- */
@@ -2110,6 +2116,19 @@
       return transitUrl(+p.lat, +p.lng, p.gid, pp ? { lat:pp[0], lng:pp[1], gid:places[pid].gid } : null);
     }
 
+    // Commits a stop's final day + position (read straight off the DOM after
+    // a live drag) back into the `schedule` model, then re-renders.
+    function commitStopOrder(id, toDay, orderIds){
+      const from = schedule.findIndex(d=>d.stops.some(s=>s[0]===id));
+      const target = schedule[toDay];
+      if(from < 0 || !target) return;
+      const stop = schedule[from].stops.find(s=>s[0]===id);
+      schedule[from].stops = schedule[from].stops.filter(s=>s[0]!==id);
+      const byId = new Map(target.stops.map(s=>[s[0], s]));
+      byId.set(id, stop);
+      target.stops = orderIds.map(pid=>byId.get(pid)).filter(Boolean);
+      render();
+    }
     function moveStop(id, toDay){
       const from = schedule.findIndex(d=>d.stops.some(s=>s[0]===id));
       if(from < 0 || from === toDay) return;
@@ -2118,45 +2137,68 @@
       schedule[toDay].stops.push(stop);
       render();
     }
-    // Drag-and-drop reorder: drops onto a specific stop insert the dragged
-    // stop right before it (same day or a different one), instead of only
-    // being able to move a stop across days like moveStop() does.
-    function moveStopTo(id, toDay, beforeId){
-      if(id === beforeId) return;
-      const from = schedule.findIndex(d=>d.stops.some(s=>s[0]===id));
-      const target = schedule[toDay];
-      if(from < 0 || !target) return;
-      const stop = schedule[from].stops.find(s=>s[0]===id);
-      schedule[from].stops = schedule[from].stops.filter(s=>s[0]!==id);
-      let idx = beforeId ? target.stops.findIndex(s=>s[0]===beforeId) : -1;
-      if(idx < 0) idx = target.stops.length;
-      target.stops.splice(idx, 0, stop);
-      render();
-    }
     function removePlace(id){
       schedule.forEach(d=> d.stops = d.stops.filter(s=>s[0]!==id));
       delete places[id]; if(editingStop===id) editingStop = null;
       render();
     }
+    // FLIP-animates the stops inside `container` around whatever DOM change
+    // `mutate` makes, so a reordered stop visibly slides into its new spot
+    // instead of just snapping there.
+    function flipStops(container, mutate){
+      const before = new Map();
+      container.querySelectorAll(':scope > .stop:not(.stop-return)').forEach(el=> before.set(el, el.getBoundingClientRect()));
+      mutate();
+      before.forEach((prev, el)=>{
+        if(!el.isConnected) return;
+        const now = el.getBoundingClientRect();
+        const dx = prev.left - now.left, dy = prev.top - now.top;
+        if(!dx && !dy) return;
+        el.style.transition = 'none';
+        el.style.transform = `translate(${dx}px,${dy}px)`;
+        requestAnimationFrame(()=>{
+          el.style.transition = 'transform .22s cubic-bezier(.22,.68,.36,1)';
+          el.style.transform = '';
+        });
+        el.addEventListener('transitionend', ()=>{ el.style.transition=''; el.style.transform='' }, { once:true });
+      });
+    }
+    // Live drag-and-drop reorder: the dragged stop actually moves within the
+    // list as you drag over other stops (siblings slide out of the way),
+    // rather than only snapping into place on drop.
     function bindDrag(){
-      let dragged;
+      let dragged = null;
       document.querySelectorAll('.stop:not(.stop-return)').forEach(el=>{
-        el.addEventListener('dragstart',()=>{ dragged = el; el.style.opacity='.4' });
-        el.addEventListener('dragend',()=>{ el.style.opacity='1' });
-        // Dropping directly on another stop reorders within (or into) that
-        // stop's day, placing the dragged stop right before it. Without
-        // this, dropping back into the same day's list did nothing.
-        el.addEventListener('dragover', e=>{ e.preventDefault(); e.stopPropagation() });
-        el.addEventListener('drop', e=>{
+        el.addEventListener('dragstart', e=>{
+          dragged = el;
+          e.dataTransfer.effectAllowed = 'move';
+          try{ e.dataTransfer.setData('text/plain', el.dataset.place) }catch(_){}
+          requestAnimationFrame(()=> el.classList.add('dragging'));
+        });
+        el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); dragged = null });
+        el.addEventListener('dragover', e=>{
           e.preventDefault(); e.stopPropagation();
           if(!dragged || dragged === el) return;
           const box = el.closest('.stops'); if(!box) return;
-          moveStopTo(dragged.dataset.place, +box.dataset.day, el.dataset.place);
+          const rect = el.getBoundingClientRect();
+          const before = (e.clientY - rect.top) < rect.height / 2;
+          const target = before ? el : el.nextSibling;
+          if(target === dragged || (target && target.previousSibling === dragged && !before)) return;
+          flipStops(box, ()=> box.insertBefore(dragged, before ? el : el.nextSibling));
         });
       });
       document.querySelectorAll('.stops').forEach(box=>{
-        box.addEventListener('dragover', e=>e.preventDefault());
-        box.addEventListener('drop', ()=>{ if(dragged) moveStop(dragged.dataset.place, +box.dataset.day) });
+        box.addEventListener('dragover', e=>{
+          e.preventDefault();
+          if(!dragged || dragged.closest('.stops') === box) return;
+          flipStops(box, ()=> box.appendChild(dragged));
+        });
+        box.addEventListener('drop', e=>{
+          e.preventDefault();
+          if(!dragged) return;
+          const orderIds = [...box.querySelectorAll(':scope > .stop:not(.stop-return)')].map(s=>s.dataset.place);
+          commitStopOrder(dragged.dataset.place, +box.dataset.day, orderIds);
+        });
       });
     }
     function optimiseDay(di){
@@ -2181,7 +2223,8 @@
       const wrap=tripMapWrap(); if(!wrap) return;
       wrap.classList.toggle('expanded');
       const b=document.getElementById('mapExpandBtn');
-      b.textContent=wrap.classList.contains('expanded') ? (lang==='he'?'⛶ הקטנת המפה':'⛶ Exit map') : t('map.expand');
+      const full=wrap.classList.contains('expanded') ? (lang==='he'?'⛶ הקטנת המפה':'⛶ Exit map') : t('map.expand');
+      b.textContent=iconOf(full); b.title=full; b.setAttribute('aria-label', full);
       setTimeout(afterMapResize,50);
     };
 
@@ -2934,11 +2977,19 @@
     }
 
     /* ---------- Language wiring ---------- */
+    // Icon-only toolbar buttons store "EMOJI label" strings; this pulls out
+    // just the leading emoji for display while the full text becomes the
+    // button's tooltip/aria-label.
+    function iconOf(str){ const i = str.indexOf(' '); return i > 0 ? str.slice(0, i) : str; }
     function applyLang(){
       document.documentElement.lang = lang;
       document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
       localStorage.setItem('roam-lang', lang);
-      document.querySelectorAll('[data-i18n]').forEach(el=> el.textContent = t(el.dataset.i18n));
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const full = t(el.dataset.i18n);
+        if(el.classList.contains('icon-only')){ el.textContent = iconOf(full); el.title = full; el.setAttribute('aria-label', full) }
+        else el.textContent = full;
+      });
       document.querySelectorAll('[data-i18n-ph]').forEach(el=> el.placeholder = t(el.dataset.i18nPh));
       setDays(selectedTripDays);
       document.getElementById('langBtn').textContent = t('lang.switch');
