@@ -127,6 +127,16 @@
     .travel.transit{color:#3f7ad9}
     body.print-prep .mapwrap{width:670px;max-width:100%;height:280px!important;position:relative!important;inset:auto!important}
     .travel.transit .transit-toggle{opacity:1}
+    .transit-time-input{display:none;width:38px;font:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:#fff;margin-inline-start:2px;color:var(--ink)}
+    .travel.transit .transit-time-input{display:inline-block}
+    /* Two bus/train stops back-to-back are one public-transit hop, not two
+       stops — shown merged on one line with an arrow between the names,
+       so the list doesn't waste a whole row (plus its own travel line) on
+       a leg that's just "get on here, get off there". */
+    .stop-pair .stop-copy{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px}
+    .stop-pair .pair-arrow{opacity:.5;font-size:12px}
+    .pair-time{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+    .pair-time input{width:38px;font:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
     html[dir="rtl"] .travel{margin:0 38px 0 0}
     .day-empty{color:var(--muted);font-size:12px;padding:12px 10px}
     .sidebar{display:grid;gap:16px;align-content:start}
@@ -279,6 +289,7 @@
     [data-theme="dark"] .days-step-btn,[data-theme="dark"] .map-toolbar button,[data-theme="dark"] .day,
     [data-theme="dark"] .icon-btn,[data-theme="dark"] .thumb-swap,[data-theme="dark"] .stop-edit input,
     [data-theme="dark"] .stop-edit textarea,[data-theme="dark"] .stop-tools select,[data-theme="dark"] .card,
+    [data-theme="dark"] .transit-time-input,[data-theme="dark"] .pair-time input,
     [data-theme="dark"] .filter,[data-theme="dark"] .modal input,[data-theme="dark"] .modal select,
     [data-theme="dark"] .wheel-step,[data-theme="dark"] .wheel,[data-theme="dark"] .suggest,
     [data-theme="dark"] .idea-card .idea-edit input,[data-theme="dark"] .idea-card .idea-edit textarea,
@@ -551,7 +562,7 @@
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
         'days.title':'Day by day','days.sub':'Drag a stop to reorder it or move it to another day. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
-        'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} straight-line (transit / ferry — no time estimate)','travel.transitNoDist':'🚌 Public transit / ferry','travel.transitToggle':'Mark this leg as public transit / ferry (straight-line distance)',
+        'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} straight-line (transit / ferry — no time estimate)','travel.transitNoDist':'🚌 Public transit / ferry','travel.transitToggle':'Mark this leg as public transit / ferry (straight-line distance)','travel.transitTime':'🚌 {time} · {dist}','travel.transitTimeNoDist':'🚌 {time}','travel.minutesPh':'min','travel.min':'min',
         'wx.title':'Weather','wx.needDate':'Set a start date and the forecast for your days will appear here.','wx.forecast':'Forecast for your dates.','wx.typical':'Typical for these dates, based on last year — a forecast appears about two weeks before you go.','wx.error':'Weather is unavailable right now.','wx.loading':'Loading weather…',
         'pack.title':'Packing list','pack.add':'+ Add item','pack.prompt':'What do you want to pack?','pack.suggested':'Suggested by the weather:',
         'pack.d1':'Walking shoes','pack.d2':'Portable charger','pack.d3':'Travel documents',
@@ -580,7 +591,7 @@
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
         'days.title':'יום אחר יום','days.sub':'גררו עצירה כדי לשנות את סדרה או להעביר אותה ליום אחר. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
-        'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} מרחק אווירי (תחבורה ציבורית / מעבורת — בלי הערכת זמן)','travel.transitNoDist':'🚌 תחבורה ציבורית / מעבורת','travel.transitToggle':'סימון הקטע כתחבורה ציבורית / מעבורת (מרחק אווירי)',
+        'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} מרחק אווירי (תחבורה ציבורית / מעבורת — בלי הערכת זמן)','travel.transitNoDist':'🚌 תחבורה ציבורית / מעבורת','travel.transitToggle':'סימון הקטע כתחבורה ציבורית / מעבורת (מרחק אווירי)','travel.transitTime':'🚌 {time} · {dist}','travel.transitTimeNoDist':'🚌 {time}','travel.minutesPh':'דק׳','travel.min':'דק׳',
         'wx.title':'מזג אוויר','wx.needDate':'בחרו תאריך התחלה והתחזית לימי הטיול תופיע כאן.','wx.forecast':'תחזית לתאריכים שלכם.','wx.typical':'ממוצע אופייני לתאריכים האלה לפי השנה שעברה — תחזית אמיתית תופיע כשבועיים לפני הנסיעה.','wx.error':'נתוני מזג האוויר אינם זמינים כרגע.','wx.loading':'טוען מזג אוויר…',
         'pack.title':'רשימת ציוד','pack.add':'+ הוספת פריט','pack.prompt':'מה להוסיף לרשימה?','pack.suggested':'מומלץ לפי מזג האוויר:',
         'pack.d1':'נעלי הליכה','pack.d2':'מטען נייד','pack.d3':'מסמכי נסיעה',
@@ -914,6 +925,15 @@
     }
     function toast(msg){ const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), 2600) }
 
+    // Keeps only well-formed pair→minutes entries (manual public-transit
+    // time estimates), whether loaded from a fresh object or from Firestore.
+    function cleanTransitTimes(obj){
+      const out = {};
+      if(obj && typeof obj === 'object') Object.entries(obj).forEach(([k,v])=>{
+        if(typeof k === 'string' && Number.isFinite(+v) && +v >= 0) out[k] = Math.round(+v);
+      });
+      return out;
+    }
     function prepareScheduleForCloud(schedule) {
       return (schedule || []).map(d => ({
         date: d.date || '',
@@ -921,6 +941,7 @@
         loopVia: Array.isArray(d.loopVia) ? d.loopVia.filter(x=>x!=null).map(String) : [],
         travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
         transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(v=>typeof v==='string') : [],
+        transitTimes: cleanTransitTimes(d.transitTimes),
         stops: (d.stops || []).map(s => ({ p: s[0], n: s[1] || '' }))
       }));
     }
@@ -947,6 +968,7 @@
         loopVia: Array.isArray(d.loopVia) ? d.loopVia.filter(x=>x!=null).map(String) : [],
         travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
         transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(v=>typeof v==='string') : [],
+        transitTimes: cleanTransitTimes(d.transitTimes),
         stops:(d.stops||[]).map(s => {
           if (Array.isArray(s)) return s;
           // המרה חזרה לאופן שבו האפליקציה מצפה לזה
@@ -1502,6 +1524,25 @@
     // silently jumping to whichever pair of stops now sits at that index.
     function legPairKey(a, b){ return a + '→' + b }
     function dayForPlace(id){ return schedule.findIndex(d=>d.stops.some(s=>s[0]===id)) }
+    // A leg counts as public transit either because the user toggled it (🚌
+    // button) or because both ends are themselves transit stops (bus/train
+    // stations added as waypoints) — that pairing is transit by definition,
+    // no toggle needed.
+    function legIsTransit(day, aId, bId){
+      const pair = legPairKey(aId, bId);
+      if(Array.isArray(day.transitLegs) && day.transitLegs.includes(pair)) return true;
+      const a = places[aId], b = places[bId];
+      return !!(a && b && isTransitStop(a) && isTransitStop(b));
+    }
+    function getTransitMinutes(day, pair){
+      const v = day.transitTimes && day.transitTimes[pair];
+      return Number.isFinite(+v) ? +v : null;
+    }
+    function setTransitMinutes(day, pair, val){
+      if(!day.transitTimes) day.transitTimes = {};
+      if(val === '' || val == null || !Number.isFinite(+val) || +val < 0) delete day.transitTimes[pair];
+      else day.transitTimes[pair] = Math.round(+val);
+    }
     function bucketOf(p){
       const c = (p.category||'').toLowerCase();
       if(/restaurant|cafe|coffee|bar|bakery|food|meal|pub|ice_cream|dessert|winery/.test(c)) return 'food';
@@ -1923,7 +1964,6 @@
       const day = schedule[di];
       const ids = dayPathIds(day);
       const pts = ids.map(id=>coords(id));
-      const transit = Array.isArray(day.transitLegs) ? day.transitLegs : [];
       const legInfo = [], jobs = [];
       let run = null;
       for(let i=0;i<ids.length-1;i++){
@@ -1931,7 +1971,7 @@
         const info = { a, b, kind:'none' };
         legInfo.push(info);
         if(!a || !b){ run = null; continue }
-        if(transit.includes(legPairKey(ids[i], ids[i+1]))){ info.kind = 'transit'; run = null; continue }
+        if(legIsTransit(day, ids[i], ids[i+1])){ info.kind = 'transit'; run = null; continue }
         info.kind = 'road';
         if(!run){ run = { pts:[a], legs:[], res:null }; jobs.push(run) }
         run.pts.push(b); run.legs.push(info);
@@ -1997,17 +2037,22 @@
     // pass pending=true to leave road legs alone until routes come back.
     function setTravelTexts(di, legInfo, pending){
       const day = schedule[di]; if(!day) return;
-      const transit = Array.isArray(day.transitLegs) ? day.transitLegs : [];
       const ids = dayPathIds(day);
       document.querySelectorAll(`.travel[data-day="${di}"]`).forEach(el=>{
         const li = +el.dataset.leg;
         const textEl = el.querySelector('.travel-text') || el;
         const wasTransit = el.classList.contains('transit');
-        const isTransit = transit.includes(el.dataset.pair);
+        const isTransit = legIsTransit(day, ids[li], ids[li+1]);
         el.classList.toggle('transit', isTransit);
         if(isTransit){
           const a = coords(ids[li]), b = coords(ids[li+1]);
-          textEl.textContent = a && b ? t('travel.transit', { dist:fmtDistance(distM(a[0],a[1],b[0],b[1])) }) : t('travel.transitNoDist');
+          const mins = getTransitMinutes(day, el.dataset.pair);
+          const dist = a && b ? fmtDistance(distM(a[0],a[1],b[0],b[1])) : '';
+          textEl.textContent = mins != null
+            ? (dist ? t('travel.transitTime', { time:fmtDuration(mins*60), dist }) : t('travel.transitTimeNoDist', { time:fmtDuration(mins*60) }))
+            : (dist ? t('travel.transit', { dist }) : t('travel.transitNoDist'));
+          const inp = el.querySelector('.transit-time-input');
+          if(inp && document.activeElement !== inp) inp.value = mins != null ? mins : '';
           return;
         }
         if(pending){ if(wasTransit) textEl.textContent = t('travel.pending'); return }
@@ -2025,7 +2070,7 @@
     // estimate for a leg you're actually taking a bus for.
     function travelDivHtml(di, leg, fromId, toId){
       const pair = legPairKey(fromId, toId);
-      return `<div class="travel" data-day="${di}" data-leg="${leg}" data-pair="${esc(pair)}"><button type="button" class="transit-toggle" data-day="${di}" data-leg="${leg}" data-pair="${esc(pair)}" title="${esc(t('travel.transitToggle'))}" aria-label="${esc(t('travel.transitToggle'))}">🚌</button><span class="travel-text">${esc(t('travel.pending'))}</span></div>`;
+      return `<div class="travel" data-day="${di}" data-leg="${leg}" data-pair="${esc(pair)}"><button type="button" class="transit-toggle" data-day="${di}" data-leg="${leg}" data-pair="${esc(pair)}" title="${esc(t('travel.transitToggle'))}" aria-label="${esc(t('travel.transitToggle'))}">🚌</button><span class="travel-text">${esc(t('travel.pending'))}</span><input type="number" min="0" inputmode="numeric" class="transit-time-input" data-day="${di}" data-pair="${esc(pair)}" placeholder="${esc(t('travel.minutesPh'))}" onclick="event.stopPropagation()"></div>`;
     }
     // Sequential number for each stop across the whole trip (day 1's stops,
     // then day 2's, etc.) — shared by the map pins and the itinerary list so
@@ -2055,21 +2100,43 @@
       schedule[dayIndex].stops.push([id,'']);
       render();
     }
+    // Builds one day's stop list. Two transit stops (bus/train stations
+    // added as waypoints) back to back get merged into a single compact
+    // row — name → name, with its own time field — instead of two nearly-
+    // empty rows plus a travel line between them.
+    function stopsHtmlForDay(d, di, color, placeNumbers){
+      if(!d.stops.length) return `<div class="day-empty">${esc(t('day.empty'))}</div>`;
+      let html = '';
+      for(let i=0; i<d.stops.length; i++){
+        const s = d.stops[i], p = places[s[0]]; if(!p) continue;
+        const next = d.stops[i+1], pNext = next ? places[next[0]] : null;
+        if(pNext && isTransitStop(p) && isTransitStop(pNext)){
+          const pair = legPairKey(s[0], next[0]);
+          const mins = getTransitMinutes(d, pair);
+          html += `<div class="stop transit stop-pair" data-place="${esc(s[0])}">
+            <span class="handle">⠿</span>
+            <span class="stop-num" style="background:${color}"></span>
+            <div class="stop-main"><div class="stop-copy"><b>${esc(p.name)}</b><span class="pair-arrow">${lang==='he'?'←':'→'}</span><b>${esc(pNext.name)}</b><span class="pair-time"><input type="number" min="0" inputmode="numeric" class="transit-time-input" data-day="${di}" data-pair="${esc(pair)}" value="${mins!=null?mins:''}" placeholder="${esc(t('travel.minutesPh'))}" onclick="event.stopPropagation()">${esc(t('travel.min'))}</span></div></div>
+            <span class="stop-tools"><button class="icon-btn del-stop" data-place="${esc(s[0])}" title="${esc(t('day.removeStop'))}">✕</button><button class="icon-btn del-stop" data-place="${esc(next[0])}" title="${esc(t('day.removeStop'))}">✕</button></span>
+          </div>${i+2 < d.stops.length ? travelDivHtml(di, i+1, next[0], d.stops[i+2][0]) : ''}`;
+          i++; continue;
+        }
+        html += `<div class="stop${isTransitStop(p)?' transit':''}" data-place="${s[0]}">
+            <span class="handle">⠿</span>
+            <span class="stop-num" style="background:${color}">${placeNumbers.get(s[0])||''}</span>
+            <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
+            <span class="stop-tools"><button class="icon-btn dup-stop" data-place="${s[0]}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
+          </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? travelDivHtml(di, i, s[0], d.stops[i+1][0]) : ''}`;
+      }
+      return html + loopReturnHtml(d, di, color, placeNumbers);
+    }
     function render(){
       const placeNumbers = computePlaceNumbers();
       const trip = currentTrip();
       const tripMode = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
       daysBox.innerHTML = schedule.map((d,di)=>{
         const color = DAY_COLORS[di%DAY_COLORS.length];
-        const stopsHtml = d.stops.length ? d.stops.map((s,i)=>{
-          const p = places[s[0]]; if(!p) return '';
-          return `<div class="stop${isTransitStop(p)?' transit':''}" data-place="${s[0]}">
-            <span class="handle">⠿</span>
-            <span class="stop-num" style="background:${color}">${placeNumbers.get(s[0])||''}</span>
-            <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
-            <span class="stop-tools"><button class="icon-btn dup-stop" data-place="${s[0]}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
-          </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? travelDivHtml(di, i, s[0], d.stops[i+1][0]) : ''}`;
-        }).join('') + loopReturnHtml(d, di, color, placeNumbers) : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
+        const stopsHtml = stopsHtmlForDay(d, di, color, placeNumbers);
 
         const effMode = d.travelMode || tripMode;
         const modeAuto = !d.travelMode;
@@ -2107,6 +2174,18 @@
         persist();
         setTravelTexts(+b.dataset.day, null, true);   // aerial distance shows instantly
         computeRoutes();
+      });
+      // Manual public-transit time (no free transit-routing API, so the user
+      // types it in themselves). Only touches this one field + its text —
+      // never a full render(), so typing doesn't lose focus or the cursor.
+      daysBox.querySelectorAll('.transit-time-input').forEach(inp=>{
+        inp.onclick = e=> e.stopPropagation();
+        inp.oninput = e=>{
+          const day = schedule[+inp.dataset.day]; if(!day) return;
+          setTransitMinutes(day, inp.dataset.pair, inp.value);
+          persist();
+          setTravelTexts(+inp.dataset.day, null, true);
+        };
       });
       daysBox.querySelectorAll('.mode-day').forEach(b=> b.onclick = ()=>{
         const day = schedule[+b.dataset.day]; if(!day) return;
