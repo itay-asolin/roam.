@@ -672,7 +672,14 @@
       { featureType:'transit', elementType:'geometry', stylers:[{ color:'#2c3548' }] },
       { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#4a5f82' }] },
       { featureType:'water', elementType:'geometry', stylers:[{ color:'#0b2036' }] },
-      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#6f9fc4' }] }
+      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#6f9fc4' }] },
+      // Google flags notable landmarks (museums, monuments, major sights) as
+      // poi.attraction with their own icon; the blanket labels.icon:off
+      // above hides those along with ordinary POI clutter, so bring just
+      // this category back and warm it up to stand out.
+      { featureType:'poi.attraction', elementType:'labels.icon', stylers:[{ visibility:'on' }] },
+      { featureType:'poi.attraction', elementType:'labels.text.fill', stylers:[{ color:'#f0c987' }] },
+      { featureType:'poi.attraction', elementType:'labels.text.stroke', stylers:[{ color:'#171a1f' }] }
     ];
     function applyMapTheme(){
       const styles = theme === 'dark' ? MAP_DARK_STYLE : [];
@@ -3282,7 +3289,15 @@
       if(currentTripId){ renderTripHeader(); render(); renderPacking(); loadWeather() }
       if(worldMap) redrawWorldMap();
     }
-    document.getElementById('langBtn').onclick = ()=>{ lang = lang === 'he' ? 'en' : 'he'; applyLang() };
+    document.getElementById('langBtn').onclick = ()=>{
+      // Google Maps bakes its own street/place-name language into the
+      // script at load time (see loadMaps below) and can't re-language
+      // live, so switching the app's language reloads the page — that's
+      // the only way to also flip the map's own labels to match.
+      lang = lang === 'he' ? 'en' : 'he';
+      localStorage.setItem('roam-lang', lang);
+      location.reload();
+    };
 
     /* ---------- Night mode toggle ---------- */
     let theme = localStorage.getItem('roam-theme') || ((window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light');
@@ -3302,7 +3317,9 @@
       const key = CONFIG.mapsScriptKey || CONFIG.googleKey;
       if(!key){ mapsOk = false; window._resolveGoogleMaps(); setTimeout(()=>window.mapLoadFailed('nokey'),0); return }
       const s = document.createElement('script');
-      s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&libraries=places,geometry&loading=async&callback=initGoogleMaps';
+      // language/region tie the map's own street & place-name labels to the
+      // app's he/en toggle above — Google Maps only reads this at load time.
+      s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&libraries=places,geometry&loading=async&language=' + (lang==='he'?'he':'en') + '&region=' + (lang==='he'?'IL':'US') + '&callback=initGoogleMaps';
       s.async = true; s.defer = true;
       s.onerror = ()=>{ mapsOk = false; window._resolveGoogleMaps(); window.mapLoadFailed() };
       document.head.appendChild(s);
