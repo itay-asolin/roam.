@@ -133,10 +133,20 @@
        stops — shown merged on one line with an arrow between the names,
        so the list doesn't waste a whole row (plus its own travel line) on
        a leg that's just "get on here, get off there". */
-    .stop-pair .stop-copy{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px}
-    .stop-pair .pair-arrow{opacity:.5;font-size:12px}
+    .stop.transit.stop-pair{padding:14px 16px;opacity:1;border-radius:14px}
+    .stop-pair .stop-num{visibility:hidden}
+    .pair-main{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
+    .pair-side{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 0}
+    .stop-pair .pair-main .pair-side b{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pair-end{justify-content:flex-end}
+    .pair-end b{order:2}.pair-end .pair-tools{order:1}
+    .pair-tools{gap:3px;flex:0 0 auto}
+    .pair-tools .icon-btn{padding:5px 7px;font-size:11px}
+    .pair-mid{display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;padding:0 4px}
+    .stop-pair .pair-arrow{opacity:.55;font-size:15px;line-height:1}
     .pair-time{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
     .pair-time input{width:38px;font:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+    @media (max-width:560px){ .pair-main{flex-wrap:wrap} .pair-side{flex-basis:100%} .pair-mid{order:3;flex-basis:100%;flex-direction:row} }
     html[dir="rtl"] .travel{margin:0 38px 0 0}
     .day-empty{color:var(--muted);font-size:12px;padding:12px 10px}
     .sidebar{display:grid;gap:16px;align-content:start}
@@ -652,27 +662,28 @@
     // A plain light-tile map sitting inside the dark UI at night looked out of
     // place, so swap in a dark tile style whenever data-theme="dark".
     const MAP_DARK_STYLE = [
-      { elementType:'geometry', stylers:[{ color:'#171a1f' }] },
-      { elementType:'labels.text.stroke', stylers:[{ color:'#171a1f' }] },
-      { elementType:'labels.text.fill', stylers:[{ color:'#b8c2ce' }] },
+      { elementType:'geometry', stylers:[{ color:'#0d1016' }] },
+      { elementType:'labels.text.stroke', stylers:[{ color:'#0d1016' }] },
+      { elementType:'labels.text.fill', stylers:[{ color:'#aab6c4' }] },
       { elementType:'labels.icon', stylers:[{ visibility:'off' }] },
-      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#57647a' }] },
+      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#4a5568' }] },
       { featureType:'administrative.land_parcel', stylers:[{ visibility:'off' }] },
-      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#262b33' }] },
-      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#93a1b0' }] },
-      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#0e3826' }] },
-      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#6fce9c' }] },
-      { featureType:'road', elementType:'geometry', stylers:[{ color:'#3b4453' }] },
-      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#171a1f' }] },
-      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#9fabbc' }] },
+      { featureType:'landscape', elementType:'geometry', stylers:[{ color:'#12171f' }] },
+      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#141922' }] },
+      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#7f8ea0' }] },
+      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#08201a' }] },
+      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#5fbf93' }] },
+      { featureType:'road', elementType:'geometry', stylers:[{ color:'#262e3a' }] },
+      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#0d1016' }] },
+      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#8b97a8' }] },
       { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#caa254' }] },
-      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#262010' }] },
+      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#1a1608' }] },
       { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{ color:'#e6c988' }] },
-      { featureType:'road.arterial', elementType:'geometry', stylers:[{ color:'#454f60' }] },
-      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#2c3548' }] },
-      { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#4a5f82' }] },
-      { featureType:'water', elementType:'geometry', stylers:[{ color:'#0b2036' }] },
-      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#6f9fc4' }] },
+      { featureType:'road.arterial', elementType:'geometry', stylers:[{ color:'#333d4c' }] },
+      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#1b212c' }] },
+      { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#3a4a63' }] },
+      { featureType:'water', elementType:'geometry', stylers:[{ color:'#050b13' }] },
+      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#5f8bb0' }] },
       // Google flags notable landmarks (museums, monuments, major sights) as
       // poi.attraction with their own icon; the blanket labels.icon:off
       // above hides those along with ordinary POI clutter, so bring just
@@ -2167,11 +2178,23 @@
           const ownA = lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name);
           const ownB = lang==='he' ? (pNext.nameHe||pNext.name) : (pNext.nameEn||pNext.name);
           const nameA = p.title || ownA, nameB = pNext.title || ownB;
-          html += `<div class="stop transit stop-pair" data-place="${esc(s[0])}" data-place2="${esc(next[0])}">
+          html += `<div class="stop transit stop-pair" data-place="${esc(s[0])}" data-place2="${esc(next[0])}" style="background:${color}14">
             <span class="handle">⠿</span>
             <span class="stop-num" style="background:${color}"></span>
-            <div class="stop-main"><div class="stop-copy"><b>${esc(nameA)}</b><span class="pair-arrow">${lang==='he'?'←':'→'}</span><b>${esc(nameB)}</b><span class="pair-time"><input type="number" min="0" inputmode="numeric" class="transit-time-input" data-day="${di}" data-pair="${esc(pair)}" value="${mins!=null?mins:''}" placeholder="${esc(t('travel.minutesPh'))}" onclick="event.stopPropagation()">${esc(t('travel.min'))}</span></div></div>
-            <span class="stop-tools"><button class="icon-btn dup-stop" data-place="${esc(s[0])}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${esc(s[0])}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${esc(s[0])}" title="${esc(t('day.removeStop'))}">✕</button><button class="icon-btn dup-stop" data-place="${esc(next[0])}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${esc(next[0])}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${esc(next[0])}" title="${esc(t('day.removeStop'))}">✕</button></span>
+            <div class="pair-main">
+              <div class="pair-side pair-start" data-place="${esc(s[0])}">
+                <b>${esc(nameA)}</b>
+                <span class="stop-tools pair-tools"><button class="icon-btn dup-stop" data-place="${esc(s[0])}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${esc(s[0])}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${esc(s[0])}" title="${esc(t('day.removeStop'))}">✕</button></span>
+              </div>
+              <div class="pair-mid">
+                <span class="pair-arrow">${lang==='he'?'←':'→'}</span>
+                <span class="pair-time"><input type="number" min="0" inputmode="numeric" class="transit-time-input" data-day="${di}" data-pair="${esc(pair)}" value="${mins!=null?mins:''}" placeholder="${esc(t('travel.minutesPh'))}" onclick="event.stopPropagation()">${esc(t('travel.min'))}</span>
+              </div>
+              <div class="pair-side pair-end" data-place="${esc(next[0])}">
+                <span class="stop-tools pair-tools"><button class="icon-btn dup-stop" data-place="${esc(next[0])}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${esc(next[0])}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${esc(next[0])}" title="${esc(t('day.removeStop'))}">✕</button></span>
+                <b>${esc(nameB)}</b>
+              </div>
+            </div>
           </div>${(editingStop===s[0]||editingStop===next[0]) ? stopEditorHtml(editingStop) : ''}${i+2 < d.stops.length ? travelDivHtml(di, i+1, next[0], d.stops[i+2][0]) : ''}`;
           i++; continue;
         }
@@ -2215,6 +2238,7 @@
       daysBox.querySelectorAll('.dup-stop').forEach(b=> b.onclick = e=>{ e.stopPropagation(); duplicatePlace(b.dataset.place, +b.dataset.day) });
       daysBox.querySelectorAll('.edit-stop').forEach(b=> b.onclick = e=>{ e.stopPropagation(); editingStop===b.dataset.place ? closeStopEditor() : openStopEditor(b.dataset.place) });
       daysBox.querySelectorAll('.stop-main').forEach(el=> el.onclick = ()=> showStopHours(el.closest('.stop').dataset.place));
+      daysBox.querySelectorAll('.pair-side').forEach(el=> el.onclick = ()=> showStopHours(el.dataset.place));
       daysBox.querySelectorAll('.stop-edit').forEach(bindStopEditor);
       daysBox.querySelectorAll('.opt-day').forEach(b=> b.onclick = ()=> optimiseDay(+b.dataset.day));
       daysBox.querySelectorAll('.dup-day').forEach(b=> b.onclick = ()=> duplicateDay(+b.dataset.day, false));
