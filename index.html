@@ -111,10 +111,6 @@
     .transit-toggle{border:0;background:none;padding:0;font-size:12px;cursor:pointer;opacity:.4;line-height:1}
     .transit-toggle:hover{opacity:1}
     .travel.transit{color:#3f7ad9}
-    .loop-add{margin:2px 0 2px 38px;padding-inline-start:12px}
-    .loop-add select{border:1px dashed var(--line);background:#fff;border-radius:9px;padding:6px 8px;font-size:12px;color:var(--muted);max-width:100%;cursor:pointer}
-    html[dir="rtl"] .loop-add{margin:2px 38px 2px 0}
-    [data-theme="dark"] .loop-add select{background:#1a2622}
     body.print-prep .mapwrap{width:670px;max-width:100%;height:280px!important;position:relative!important;inset:auto!important}
     .travel.transit .transit-toggle{opacity:1}
     html[dir="rtl"] .travel{margin:0 38px 0 0}
@@ -227,7 +223,7 @@
       @page{ size:A4; margin:12mm }
       *{ -webkit-print-color-adjust:exact; print-color-adjust:exact }
       html,body{ height:auto!important; overflow:visible!important }
-      .stop-edit,.transit-btn,.edit-stop,.loop-add,.del-via{display:none!important}
+      .stop-edit,.transit-btn,.edit-stop{display:none!important}
       .map-resizer{display:none!important}
       .map-toolbar,.fab,.filters,.day-tools,.stop-tools,.head-tools,.section-head .btn,#backHomeBtn,.add,.chips,.transit-toggle{display:none!important}
       .hero-swap,.hero-side,.thumb-wrap,.dest-swap,.sync-pill,.user-menu-wrap,.toast{display:none!important}
@@ -527,7 +523,7 @@
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
         'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.transit':'🚌 Transit','map.transitHint':'Show bus stops, metro & train lines on the map','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','city.all':'🌐 All cities','city.add':'+ Add city','city.addPh':'City name…','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
-        'days.title':'Day by day','days.sub':'Drag a stop to reorder it or move it to another day. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.addVia':'➕ Return via another point…','day.removeVia':'Remove this return point','day.modeAuto':'following trip default',
+        'days.title':'Day by day','days.sub':'Drag a stop to reorder it or move it to another day. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
         'travel.walk':'{time} walk · {dist}','travel.drive':'{time} drive · {dist}','travel.far':'Long hop · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} straight-line (transit / ferry — no time estimate)','travel.transitNoDist':'🚌 Public transit / ferry','travel.transitToggle':'Mark this leg as public transit / ferry (straight-line distance)',
         'wx.title':'Weather','wx.needDate':'Set a start date and the forecast for your days will appear here.','wx.forecast':'Forecast for your dates.','wx.typical':'Typical for these dates, based on last year — a forecast appears about two weeks before you go.','wx.error':'Weather is unavailable right now.','wx.loading':'Loading weather…',
@@ -556,7 +552,7 @@
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
         'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.transit':'🚌 תחבורה ציבורית','map.transitHint':'הצגת תחנות אוטובוס, קווי מטרו ורכבת על המפה','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','city.all':'🌐 כל הערים','city.add':'+ הוספת עיר','city.addPh':'שם העיר…','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
-        'days.title':'יום אחר יום','days.sub':'גררו עצירה כדי לשנות את סדרה או להעביר אותה ליום אחר. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.addVia':'➕ חזרה דרך נקודה נוספת…','day.removeVia':'הסר נקודה מדרך החזרה','day.modeAuto':'לפי ברירת המחדל של הטיול',
+        'days.title':'יום אחר יום','days.sub':'גררו עצירה כדי לשנות את סדרה או להעביר אותה ליום אחר. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
         'travel.walk':'{time} הליכה · {dist}','travel.drive':'{time} נסיעה · {dist}','travel.far':'מרחק גדול · {dist}','travel.pending':'…','travel.transit':'🚌 {dist} מרחק אווירי (תחבורה ציבורית / מעבורת — בלי הערכת זמן)','travel.transitNoDist':'🚌 תחבורה ציבורית / מעבורת','travel.transitToggle':'סימון הקטע כתחבורה ציבורית / מעבורת (מרחק אווירי)',
         'wx.title':'מזג אוויר','wx.needDate':'בחרו תאריך התחלה והתחזית לימי הטיול תופיע כאן.','wx.forecast':'תחזית לתאריכים שלכם.','wx.typical':'ממוצע אופייני לתאריכים האלה לפי השנה שעברה — תחזית אמיתית תופיע כשבועיים לפני הנסיעה.','wx.error':'נתוני מזג האוויר אינם זמינים כרגע.','wx.loading':'טוען מזג אוויר…',
@@ -1434,20 +1430,11 @@
 
     /* ---------- Map ---------- */
     function coords(id){ const p = places[id]; return p && Number.isFinite(+p.lat) ? [+p.lat, +p.lng] : null }
-    // Loop days: after the last stop the route can pass through any number of
-    // "return points" (day.loopVia — ids of stops of that day, repeats allowed)
-    // and only then closes back onto the first stop.
-    function dayLoopVia(day){ return day && day.loop && Array.isArray(day.loopVia) ? day.loopVia : [] }
-    function cleanLoopVia(day){
-      if(!Array.isArray(day.loopVia)) day.loopVia = [];
-      const have = new Set(day.stops.map(s=>s[0]));
-      day.loopVia = day.loopVia.filter(id=>have.has(id) && places[id]);
-    }
-    // Every place a day's route passes through, in order (stops, return points,
-    // then the first stop again on a loop day). Leg N = path[N] -> path[N+1].
+    // Every place a day's route passes through, in order (stops, then the
+    // first stop again on a loop day). Leg N = path[N] -> path[N+1].
     function dayPathIds(day){
       const ids = day.stops.map(s=>s[0]);
-      return (day.loop && ids.length > 1) ? ids.concat(dayLoopVia(day), [ids[0]]) : ids;
+      return (day.loop && ids.length > 1) ? ids.concat([ids[0]]) : ids;
     }
     function dayForPlace(id){ return schedule.findIndex(d=>d.stops.some(s=>s[0]===id)) }
     function bucketOf(p){
@@ -1965,17 +1952,9 @@
       if(!d.loop || d.stops.length < 2) return '';
       const startId = d.stops[0][0];
       if(!places[startId]) return '';
-      const n = d.stops.length, via = dayLoopVia(d);
-      const row = (id, tools)=> `<div class="stop stop-return" data-place="${esc(id)}"><span class="handle" style="visibility:hidden">⠿</span><span class="stop-num" style="background:${color}">↩</span><div class="stop-main"><div class="stop-thumb stop-thumb-empty">↩️</div><div class="stop-copy"><strong>${esc(t('day.returnTo',{name:places[id].name}))}</strong></div></div>${tools}</div>`;
-      let html = '';
-      via.forEach((id,j)=>{
-        const tools = `<span class="stop-tools"><button type="button" class="icon-btn del-via" data-day="${di}" data-idx="${j}" title="${esc(t('day.removeVia'))}" aria-label="${esc(t('day.removeVia'))}">✕</button></span>`;
-        html += travelDivHtml(di, n-1+j) + row(id, tools);
-      });
-      const opts = d.stops.map(s=> places[s[0]] ? `<option value="${esc(s[0])}">${placeNumbers.get(s[0])||'•'}. ${esc(places[s[0]].name)}</option>` : '').join('');
-      html += `<div class="loop-add"><select class="loop-via-add" data-day="${di}" aria-label="${esc(t('day.addVia'))}"><option value="">${esc(t('day.addVia'))}</option>${opts}</select></div>`;
-      html += travelDivHtml(di, n-1+via.length) + row(startId, '');
-      return html;
+      const n = d.stops.length;
+      const row = `<div class="stop stop-return" data-place="${esc(startId)}"><span class="handle" style="visibility:hidden">⠿</span><span class="stop-num" style="background:${color}">↩</span><div class="stop-main"><div class="stop-thumb stop-thumb-empty">↩️</div><div class="stop-copy"><strong>${esc(t('day.returnTo',{name:places[startId].name}))}</strong></div></div></div>`;
+      return travelDivHtml(di, n-1) + row;
     }
     // Lets a stop already on the trip be added again as a normal, freely
     // draggable stop (e.g. to pass through the same place twice on the way
@@ -1989,7 +1968,6 @@
       render();
     }
     function render(){
-      schedule.forEach(cleanLoopVia);
       const placeNumbers = computePlaceNumbers();
       const trip = currentTrip();
       const tripMode = trip && trip.travelMode === 'driving' ? 'driving' : 'foot';
@@ -2032,18 +2010,6 @@
       daysBox.querySelectorAll('.stop-edit').forEach(bindStopEditor);
       daysBox.querySelectorAll('.opt-day').forEach(b=> b.onclick = ()=> optimiseDay(+b.dataset.day));
       daysBox.querySelectorAll('.loop-day').forEach(b=> b.onclick = ()=>{ const day = schedule[+b.dataset.day]; if(day){ day.loop = !day.loop; render(); } });
-      // Changing the return points shifts the numbering of the return legs, so
-      // transit marks on those legs (index >= last stop) are cleared.
-      const dropReturnTransit = day=>{ if(Array.isArray(day.transitLegs)) day.transitLegs = day.transitLegs.filter(n=>n < day.stops.length-1) };
-      daysBox.querySelectorAll('.loop-via-add').forEach(sel=> sel.onchange = ()=>{
-        const day = schedule[+sel.dataset.day]; if(!day || !sel.value) return;
-        cleanLoopVia(day); dropReturnTransit(day); day.loopVia.push(sel.value); render();
-      });
-      daysBox.querySelectorAll('.del-via').forEach(b=> b.onclick = e=>{
-        e.stopPropagation();
-        const day = schedule[+b.dataset.day]; if(!day) return;
-        cleanLoopVia(day); dropReturnTransit(day); day.loopVia.splice(+b.dataset.idx, 1); render();
-      });
       daysBox.querySelectorAll('.transit-toggle').forEach(b=> b.onclick = e=>{
         e.stopPropagation();
         const day = schedule[+b.dataset.day]; if(!day) return;
