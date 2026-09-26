@@ -901,7 +901,7 @@
         loop: !!d.loop,
         loopVia: Array.isArray(d.loopVia) ? d.loopVia.filter(x=>x!=null).map(String) : [],
         travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
-        transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(n=>Number.isInteger(n)) : [],
+        transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(v=>typeof v==='string') : [],
         stops: (d.stops || []).map(s => ({ p: s[0], n: s[1] || '' }))
       }));
     }
@@ -927,7 +927,7 @@
         loop: !!d.loop,
         loopVia: Array.isArray(d.loopVia) ? d.loopVia.filter(x=>x!=null).map(String) : [],
         travelMode: d.travelMode==='driving' ? 'driving' : d.travelMode==='foot' ? 'foot' : null,
-        transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(n=>Number.isInteger(n)) : [],
+        transitLegs: Array.isArray(d.transitLegs) ? d.transitLegs.filter(v=>typeof v==='string') : [],
         stops:(d.stops||[]).map(s => {
           if (Array.isArray(s)) return s;
           // המרה חזרה לאופן שבו האפליקציה מצפה לזה
@@ -1453,6 +1453,11 @@
       const ids = day.stops.map(s=>s[0]);
       return (day.loop && ids.length > 1) ? ids.concat([ids[0]]) : ids;
     }
+    // Identifies a leg by the two places it connects rather than by its
+    // position in the day — so a transit toggle stays attached to "airport
+    // to hotel" even after the stops around it get reordered, instead of
+    // silently jumping to whichever pair of stops now sits at that index.
+    function legPairKey(a, b){ return a + '→' + b }
     function dayForPlace(id){ return schedule.findIndex(d=>d.stops.some(s=>s[0]===id)) }
     function bucketOf(p){
       const c = (p.category||'').toLowerCase();
@@ -1863,7 +1868,7 @@
         const info = { a, b, kind:'none' };
         legInfo.push(info);
         if(!a || !b){ run = null; continue }
-        if(transit.includes(i)){ info.kind = 'transit'; run = null; continue }
+        if(transit.includes(legPairKey(ids[i], ids[i+1]))){ info.kind = 'transit'; run = null; continue }
         info.kind = 'road';
         if(!run){ run = { pts:[a], legs:[], res:null }; jobs.push(run) }
         run.pts.push(b); run.legs.push(info);
@@ -1935,7 +1940,7 @@
         const li = +el.dataset.leg;
         const textEl = el.querySelector('.travel-text') || el;
         const wasTransit = el.classList.contains('transit');
-        const isTransit = transit.includes(li);
+        const isTransit = transit.includes(el.dataset.pair);
         el.classList.toggle('transit', isTransit);
         if(isTransit){
           const a = coords(ids[li]), b = coords(ids[li+1]);
@@ -1955,8 +1960,9 @@
     // — there's no free transit-routing API, so it just shows the straight-
     // line distance with no time, rather than a real (and wrong) walk/drive
     // estimate for a leg you're actually taking a bus for.
-    function travelDivHtml(di, leg){
-      return `<div class="travel" data-day="${di}" data-leg="${leg}"><button type="button" class="transit-toggle" data-day="${di}" data-leg="${leg}" title="${esc(t('travel.transitToggle'))}" aria-label="${esc(t('travel.transitToggle'))}">🚌</button><span class="travel-text">${esc(t('travel.pending'))}</span></div>`;
+    function travelDivHtml(di, leg, fromId, toId){
+      const pair = legPairKey(fromId, toId);
+      return `<div class="travel" data-day="${di}" data-leg="${leg}" data-pair="${esc(pair)}"><button type="button" class="transit-toggle" data-day="${di}" data-leg="${leg}" data-pair="${esc(pair)}" title="${esc(t('travel.transitToggle'))}" aria-label="${esc(t('travel.transitToggle'))}">🚌</button><span class="travel-text">${esc(t('travel.pending'))}</span></div>`;
     }
     // Sequential number for each stop across the whole trip (day 1's stops,
     // then day 2's, etc.) — shared by the map pins and the itinerary list so
@@ -1973,7 +1979,7 @@
       if(!places[startId]) return '';
       const n = d.stops.length;
       const row = `<div class="stop stop-return" data-place="${esc(startId)}"><span class="handle" style="visibility:hidden">⠿</span><span class="stop-num" style="background:${color}">↩</span><div class="stop-main"><div class="stop-thumb stop-thumb-empty">↩️</div><div class="stop-copy"><strong>${esc(t('day.returnTo',{name:places[startId].name}))}</strong></div></div></div>`;
-      return travelDivHtml(di, n-1) + row;
+      return travelDivHtml(di, n-1, d.stops[n-1][0], startId) + row;
     }
     // Lets a stop already on the trip be added again as a normal, freely
     // draggable stop (e.g. to pass through the same place twice on the way
@@ -1999,7 +2005,7 @@
             <span class="stop-num" style="background:${color}">${placeNumbers.get(s[0])||''}</span>
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
             <span class="stop-tools"><button class="icon-btn dup-stop" data-place="${s[0]}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${s[0]}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${s[0]}" title="${esc(t('day.removeStop'))}">✕</button></span>
-          </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? travelDivHtml(di, i) : ''}`;
+          </div>${editingStop===s[0] ? stopEditorHtml(s[0]) : ''}${i < d.stops.length-1 ? travelDivHtml(di, i, s[0], d.stops[i+1][0]) : ''}`;
         }).join('') + loopReturnHtml(d, di, color, placeNumbers) : `<div class="day-empty">${esc(t('day.empty'))}</div>`;
 
         const effMode = d.travelMode || tripMode;
@@ -2032,10 +2038,10 @@
       daysBox.querySelectorAll('.transit-toggle').forEach(b=> b.onclick = e=>{
         e.stopPropagation();
         const day = schedule[+b.dataset.day]; if(!day) return;
-        const leg = +b.dataset.leg;
+        const pair = b.dataset.pair;
         if(!Array.isArray(day.transitLegs)) day.transitLegs = [];
-        const at = day.transitLegs.indexOf(leg);
-        at >= 0 ? day.transitLegs.splice(at,1) : day.transitLegs.push(leg);
+        const at = day.transitLegs.indexOf(pair);
+        at >= 0 ? day.transitLegs.splice(at,1) : day.transitLegs.push(pair);
         persist();
         setTravelTexts(+b.dataset.day, null, true);   // aerial distance shows instantly
         computeRoutes();
@@ -2142,13 +2148,18 @@
       delete places[id]; if(editingStop===id) editingStop = null;
       render();
     }
-    // FLIP-animates the stops inside `container` around whatever DOM change
-    // `mutate` makes, so a reordered stop visibly slides into its new spot
-    // instead of just snapping there.
-    function flipStops(container, mutate){
-      const before = new Map();
-      container.querySelectorAll(':scope > .stop:not(.stop-return)').forEach(el=> before.set(el, el.getBoundingClientRect()));
-      mutate();
+    // FLIP-animates stops around a DOM change: captureStopRects() before the
+    // change, then playStopFlip() after, so reordered stops visibly slide
+    // into their new spot instead of just snapping there. Split into two
+    // steps (rather than one combined helper) so a change spanning two
+    // containers — moving a stop from one day into another — can capture
+    // both "before" snapshots first and animate both afterwards.
+    function captureStopRects(container){
+      const map = new Map();
+      container.querySelectorAll(':scope > .stop:not(.stop-return)').forEach(el=> map.set(el, el.getBoundingClientRect()));
+      return map;
+    }
+    function playStopFlip(before){
       before.forEach((prev, el)=>{
         if(!el.isConnected) return;
         const now = el.getBoundingClientRect();
@@ -2166,39 +2177,86 @@
     // Live drag-and-drop reorder: the dragged stop actually moves within the
     // list as you drag over other stops (siblings slide out of the way),
     // rather than only snapping into place on drop.
+    // A blank 1x1 image replaces the browser's own drag preview, so the only
+    // thing visible while dragging is the real stop sliding into its live
+    // candidate slot — not a native ghost duplicate on top of it.
+    const dragGhost = new Image();
+    dragGhost.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+    const DAY_SWITCH_PX = 70; // how far sideways switches to the previous/next day
+    // `daysBox` itself survives every render() (only its innerHTML is
+    // rebuilt), so its own dragover/drop listeners are bound exactly once
+    // here and driven by this shared state — binding them fresh inside
+    // bindDrag() on every render would pile up duplicate listeners on the
+    // same element and make dragging progressively jankier over time.
+    let dndDragged = null, dndBaseX = 0, dndPending = null;
+    function dndProcess(e){
+      dndPending = null;
+      if(!dndDragged || !dndDragged.isConnected) return;
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const overStop = el && el.closest('.stop:not(.stop-return)');
+      const box = (overStop && overStop.closest('.stops')) || el?.closest('.stops');
+      const srcBox = dndDragged.closest('.stops');
+      if(overStop && overStop !== dndDragged && box){
+        const rect = overStop.getBoundingClientRect();
+        const before = (e.clientY - rect.top) < rect.height / 2;
+        const ref = before ? overStop : overStop.nextSibling;
+        if(ref !== dndDragged && dndDragged.nextSibling !== ref){
+          const beforeSrc = box === srcBox ? null : captureStopRects(srcBox);
+          const beforeDst = captureStopRects(box);
+          box.insertBefore(dndDragged, ref);
+          if(beforeSrc) playStopFlip(beforeSrc);
+          playStopFlip(beforeDst);
+        }
+      } else if(box && srcBox !== box){
+        const beforeSrc = captureStopRects(srcBox);
+        const beforeDst = captureStopRects(box);
+        box.appendChild(dndDragged);
+        playStopFlip(beforeSrc);
+        playStopFlip(beforeDst);
+      }
+      // Sideways flick: crossing the threshold bumps the stop to the
+      // previous/next day's list (if one exists) without needing to drag
+      // all the way down/up to it.
+      const dx = e.clientX - dndBaseX;
+      if(Math.abs(dx) >= DAY_SWITCH_PX){
+        const curBox = dndDragged.closest('.stops');
+        if(curBox){
+          const dir = (dx > 0) === (document.documentElement.dir !== 'rtl') ? 1 : -1;
+          const curDay = +curBox.dataset.day;
+          const nextBox = daysBox.querySelector(`.stops[data-day="${curDay + dir}"]`);
+          if(nextBox && nextBox !== curBox){
+            const beforeCur = captureStopRects(curBox);
+            const beforeNext = captureStopRects(nextBox);
+            dir > 0 ? nextBox.insertBefore(dndDragged, nextBox.firstChild) : nextBox.appendChild(dndDragged);
+            playStopFlip(beforeCur);
+            playStopFlip(beforeNext);
+          }
+        }
+        dndBaseX = e.clientX;
+      }
+    }
+    daysBox.addEventListener('dragover', e=>{
+      e.preventDefault();
+      if(!dndDragged) return;
+      if(dndPending == null) dndPending = requestAnimationFrame(()=> dndProcess(e));
+    });
+    daysBox.addEventListener('drop', e=>{
+      e.preventDefault();
+      if(!dndDragged) return;
+      const box = e.target.closest('.stops'); if(!box) return;
+      const orderIds = [...box.querySelectorAll(':scope > .stop:not(.stop-return)')].map(s=>s.dataset.place);
+      commitStopOrder(dndDragged.dataset.place, +box.dataset.day, orderIds);
+    });
     function bindDrag(){
-      let dragged = null;
       document.querySelectorAll('.stop:not(.stop-return)').forEach(el=>{
         el.addEventListener('dragstart', e=>{
-          dragged = el;
+          dndDragged = el; dndBaseX = e.clientX;
           e.dataTransfer.effectAllowed = 'move';
+          try{ e.dataTransfer.setDragImage(dragGhost, 0, 0) }catch(_){}
           try{ e.dataTransfer.setData('text/plain', el.dataset.place) }catch(_){}
           requestAnimationFrame(()=> el.classList.add('dragging'));
         });
-        el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); dragged = null });
-        el.addEventListener('dragover', e=>{
-          e.preventDefault(); e.stopPropagation();
-          if(!dragged || dragged === el) return;
-          const box = el.closest('.stops'); if(!box) return;
-          const rect = el.getBoundingClientRect();
-          const before = (e.clientY - rect.top) < rect.height / 2;
-          const target = before ? el : el.nextSibling;
-          if(target === dragged || (target && target.previousSibling === dragged && !before)) return;
-          flipStops(box, ()=> box.insertBefore(dragged, before ? el : el.nextSibling));
-        });
-      });
-      document.querySelectorAll('.stops').forEach(box=>{
-        box.addEventListener('dragover', e=>{
-          e.preventDefault();
-          if(!dragged || dragged.closest('.stops') === box) return;
-          flipStops(box, ()=> box.appendChild(dragged));
-        });
-        box.addEventListener('drop', e=>{
-          e.preventDefault();
-          if(!dragged) return;
-          const orderIds = [...box.querySelectorAll(':scope > .stop:not(.stop-return)')].map(s=>s.dataset.place);
-          commitStopOrder(dragged.dataset.place, +box.dataset.day, orderIds);
-        });
+        el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); dndDragged = null; dndPending = null });
       });
     }
     function optimiseDay(di){
