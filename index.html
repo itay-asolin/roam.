@@ -91,10 +91,11 @@
     .day-tools{margin-inline-start:auto;display:flex;gap:6px;flex-wrap:wrap}
     .icon-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font-size:12px;color:var(--muted)}.icon-btn:hover{background:var(--cream);color:var(--ink)}
     .stops{padding:10px;min-height:52px}
-    .stop{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px;cursor:grab}
+    .stop{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:center;border-radius:11px;padding:10px}
     .stop.dragging{opacity:.45;background:var(--cream)}
     .stop-return{cursor:pointer;opacity:.85}
-    .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px}
+    .stop:hover{background:var(--cream)}.handle{color:#b3b9b3;font-size:17px;cursor:grab;touch-action:none;user-select:none;padding:4px;margin:-4px}
+    .handle:active{cursor:grabbing}
     .stop-num{flex:0 0 20px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#fff}
     .stop-main{display:flex;align-items:center;gap:12px;min-width:0;cursor:pointer}.stop-thumb{width:72px;height:72px;object-fit:cover;border-radius:11px;flex:0 0 72px;background:var(--cream)}.stop-thumb-empty{display:grid;place-items:center;background:#f1efe8;color:#8a938b;font-size:24px}.stop-copy{min-width:0}.stop b{font-size:13.5px;font-weight:500;display:block}.stop small{color:var(--muted);font-size:11.5px}
     /* A transit waypoint (bus/train stop) is a means of getting somewhere,
@@ -546,7 +547,7 @@
         'world.title':'All destinations','world.sub':'Every planned trip on one map. Tap a pin to open it.','world.startHere':'🧳 Start a trip here',
         'trip.back':'← All destinations','trip.eyebrow':'Trip','trip.heroSub':'Search places, drop them into days, and the map keeps your city in view.','trip.start':'Start','trip.share':'Copy share link','trip.noDates':'No dates set',
         'stat.places':'saved places','stat.days':'days planned','stat.time':'moving time','stat.distance':'distance','stat.walkTime':'walking time','stat.driveTime':'driving time','stat.walkDist':'walking distance','stat.driveDist':'driving distance',
-        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.transit':'🚌 Transit','map.transitHint':'Show bus stops, metro & train lines on the map','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','city.all':'🌐 All cities','city.add':'+ Add city','city.addPh':'City name…','map.searchPh':'Search the map…','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
+        'map.title':'Your trip map','map.expand':'⛶ Expand map','map.sub':'Tap a pin for details.','map.centerCity':'◎ Centre on city','map.fit':'⤢ Fit all places','map.nearby':'⌕ Nearby ideas','map.addPlace':'+ Add place','map.addThisPlace':'+ Add to trip','map.ruler':'📏 Ruler','map.transit':'🚌 Transit','map.transitHint':'Show bus stops, metro & train lines on the map','map.overlayOn':'🗂️ All days','map.overlayOff':'🗺️ 1 day','map.overlayOffHint':'Show one day at a time','map.overlayOnHint':'Show every day together','city.all':'🌐 All cities','city.add':'+ Add city','city.addPh':'City name…','map.searchPh':'Search the map…','map.customPoint':'Dropped pin','map.loading':'Loading the map…','map.failed':'The map could not load. Check the API key, its referrer restrictions and billing.','map.authFailed':'Google rejected the key. Enable Maps JavaScript API + Places API and allow this domain in the key restrictions.','map.noKey':'No Google key is set. Open the CONFIG block at the top of this file to add one — search and places still work through OpenStreetMap.',
         'filter.all':'All','filter.sight':'Sights','filter.food':'Food','filter.activity':'Activities',
         'days.title':'Day by day','days.sub':'Drag a stop to reorder it or move it to another day. Saved automatically.','days.remove':'− Remove day','days.add':'+ Add day','days.print':'Print','day':'Day {n}','day.optimize':'✦ Optimise','day.empty':'No stops yet. Use “Add place”.','day.removeStop':'Remove','day.loopOn':'🔁 Loop route: on','day.loopOff':'↩️ Loop route: off','day.returnTo':'Back to {name}','day.modeAuto':'following trip default',
         'mode.walk':'🚶 Walking','mode.drive':'🚗 Driving',
@@ -575,7 +576,7 @@
         'world.title':'כל היעדים','world.sub':'כל הטיולים המתוכננים על מפה אחת. לחצו על סימון כדי לפתוח אותו.','world.startHere':'🧳 להתחיל טיול כאן',
         'trip.back':'→ כל היעדים','trip.eyebrow':'טיול','trip.heroSub':'חפשו מקומות, שבצו אותם לימים, והמפה תשמור על העיר שלכם בפריים.','trip.start':'תחילה','trip.share':'העתקת קישור שיתוף','trip.noDates':'לא נקבעו תאריכים',
         'stat.places':'מקומות שמורים','stat.days':'ימים מתוכננים','stat.time':'זמן תנועה','stat.distance':'מרחק','stat.walkTime':'זמן הליכה','stat.driveTime':'זמן נסיעה','stat.walkDist':'מרחק הליכה','stat.driveDist':'מרחק נסיעה',
-        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.transit':'🚌 תחבורה ציבורית','map.transitHint':'הצגת תחנות אוטובוס, קווי מטרו ורכבת על המפה','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','city.all':'🌐 כל הערים','city.add':'+ הוספת עיר','city.addPh':'שם העיר…','map.searchPh':'חיפוש במפה…','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
+        'map.title':'מפת הטיול','map.expand':'⛶ הגדלת המפה','map.sub':'לחצו על סימון לפרטים.','map.centerCity':'◎ מרכוז על העיר','map.fit':'⤢ התאמה לכל המקומות','map.nearby':'⌕ רעיונות בסביבה','map.addPlace':'+ הוספת מקום','map.addThisPlace':'+ הוספה לטיול','map.ruler':'📏 סרגל מרחקים','map.transit':'🚌 תחבורה ציבורית','map.transitHint':'הצגת תחנות אוטובוס, קווי מטרו ורכבת על המפה','map.overlayOn':'🗂️ כל הימים','map.overlayOff':'🗺️ יום אחד','map.overlayOffHint':'הצגת יום אחד בכל פעם','map.overlayOnHint':'הצגת כל הימים יחד','city.all':'🌐 כל הערים','city.add':'+ הוספת עיר','city.addPh':'שם העיר…','map.searchPh':'חיפוש במפה…','map.customPoint':'סימון חופשי','map.loading':'טוען את המפה…','map.failed':'המפה לא נטענה. בדקו את המפתח, ההגבלות והחיוב.','map.authFailed':'Google דחה את המפתח. הפעילו Maps JavaScript API ו־Places API ואשרו את הדומיין בהגבלות.','map.noKey':'לא הוגדר מפתח Google. פתחו את בלוק CONFIG בראש הקובץ כדי להוסיף — החיפוש ימשיך לעבוד דרך OpenStreetMap.',
         'filter.all':'הכול','filter.sight':'אתרים','filter.food':'אוכל','filter.activity':'פעילויות',
         'days.title':'יום אחר יום','days.sub':'גררו עצירה כדי לשנות את סדרה או להעביר אותה ליום אחר. נשמר אוטומטית.','days.remove':'− הסרת יום','days.add':'+ הוספת יום','days.print':'הדפסה','day':'יום {n}','day.optimize':'✦ סידור חכם','day.empty':'אין עדיין עצירות. לחצו על ״הוספת מקום״.','day.removeStop':'הסרה','day.loopOn':'🔁 מסלול מעגלי: פעיל','day.loopOff':'↩️ מסלול מעגלי: כבוי','day.returnTo':'חזרה אל {name}','day.modeAuto':'לפי ברירת המחדל של הטיול',
         'mode.walk':'🚶 הליכה','mode.drive':'🚗 נסיעה',
@@ -1699,15 +1700,23 @@
       freeMap.addListener('zoom_changed', ()=>{ if(!mapViewGuard) mapViewDirty = true });
       freeMap.addListener('click', e=>{
         if(rulerActive) return;
-        if(!e.placeId) return;
-        e.stop();
-        fetchPlaceDetails(freeMap, e.placeId).then(place=>{
-          if(!place || !place.geometry) return;
-          const lat = place.geometry.location.lat(), lng = place.geometry.location.lng();
-          const types = (place.types||[]).filter(x=>x!=='point_of_interest' && x!=='establishment');
-          const x = { id:e.placeId, name:place.name||'', lat, lng, category:(types[0]||'place').replace(/_/g,' '), address:place.formatted_address||'', image:place.photos?.[0]?.getUrl({maxWidth:800})||'' };
-          openIdea(x, null);
-        });
+        if(e.placeId){
+          e.stop();
+          fetchPlaceDetails(freeMap, e.placeId).then(place=>{
+            if(!place || !place.geometry) return;
+            const lat = place.geometry.location.lat(), lng = place.geometry.location.lng();
+            const types = (place.types||[]).filter(x=>x!=='point_of_interest' && x!=='establishment');
+            const x = { id:e.placeId, name:place.name||'', lat, lng, category:(types[0]||'place').replace(/_/g,' '), address:place.formatted_address||'', image:place.photos?.[0]?.getUrl({maxWidth:800})||'' };
+            openIdea(x, null);
+          });
+          return;
+        }
+        // Most of the map isn't a labeled Google POI icon, so most clicks
+        // never carried a placeId and used to just do nothing — open the
+        // same add-to-trip card for the exact spot clicked instead, with a
+        // generic name the user can override via the title field.
+        if(!e.latLng) return;
+        openIdea({ id:'', name:t('map.customPoint'), lat:e.latLng.lat(), lng:e.latLng.lng(), category:'place' }, null);
       });
       applyMapView('center'); redrawMap();
     }
@@ -2023,7 +2032,7 @@
     // the same number identifies the same stop in both places.
     function computePlaceNumbers(){
       const map = new Map(); let n = 1;
-      schedule.forEach(d=>d.stops.forEach(s=>{ if(places[s[0]]) map.set(s[0], n++) }));
+      schedule.forEach(d=>d.stops.forEach(s=>{ const p = places[s[0]]; if(p && !isTransitStop(p)) map.set(s[0], n++) }));
       return map;
     }
     const daysBox = document.getElementById('days');
@@ -2054,7 +2063,7 @@
         const color = DAY_COLORS[di%DAY_COLORS.length];
         const stopsHtml = d.stops.length ? d.stops.map((s,i)=>{
           const p = places[s[0]]; if(!p) return '';
-          return `<div class="stop${isTransitStop(p)?' transit':''}" draggable="true" data-place="${s[0]}">
+          return `<div class="stop${isTransitStop(p)?' transit':''}" data-place="${s[0]}">
             <span class="handle">⠿</span>
             <span class="stop-num" style="background:${color}">${placeNumbers.get(s[0])||''}</span>
             <div class="stop-main">${stopThumbHtml(s[0], p)}<div class="stop-copy">${stopCopyHtml(p, s[0], di)}</div></div>
@@ -2229,30 +2238,31 @@
     }
     // Live drag-and-drop reorder: the dragged stop actually moves within the
     // list as you drag over other stops (siblings slide out of the way),
-    // rather than only snapping into place on drop.
-    // A blank 1x1 image replaces the browser's own drag preview, so the only
-    // thing visible while dragging is the real stop sliding into its live
-    // candidate slot — not a native ghost duplicate on top of it.
-    const dragGhost = new Image();
-    dragGhost.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+    // rather than only snapping into place on release.
+    // Built on Pointer Events (not native HTML5 drag-and-drop): native DnD
+    // is mouse-only on phones (no touch support at all, so dragging simply
+    // didn't work there) and, on desktop, reparenting the dragged node
+    // mid-drag — which is what makes the live reorder possible — could
+    // make the browser lose track of the drag session and get stuck with
+    // no way to drop. Pointer events fire the same way for mouse, touch and
+    // pen, and moving the node mid-gesture has no such side effect.
     const DAY_SWITCH_PX = 70; // how far sideways switches to the previous/next day
     // `daysBox` itself survives every render() (only its innerHTML is
-    // rebuilt), so its own dragover/drop listeners are bound exactly once
-    // here and driven by this shared state — binding them fresh inside
-    // bindDrag() on every render would pile up duplicate listeners on the
-    // same element and make dragging progressively jankier over time.
-    let dndDragged = null, dndBaseX = 0, dndPending = null;
-    function dndProcess(e){
+    // rebuilt); the pointermove/pointerup listeners are added to `document`
+    // only for the duration of an active drag (added on pointerdown, removed
+    // in endDrag()), so nothing piles up across renders.
+    let dndDragged = null, dndBaseX = 0, dndPending = null, dndPointerId = null;
+    function dndProcess(x, y){
       dndPending = null;
       if(!dndDragged || !dndDragged.isConnected) return;
       try{
-        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const el = document.elementFromPoint(x, y);
         const overStop = el && el.closest('.stop:not(.stop-return)');
         const box = (overStop && overStop.closest('.stops')) || el?.closest('.stops');
         const srcBox = dndDragged.closest('.stops');
         if(overStop && overStop !== dndDragged && box){
           const rect = overStop.getBoundingClientRect();
-          const before = (e.clientY - rect.top) < rect.height / 2;
+          const before = (y - rect.top) < rect.height / 2;
           const ref = before ? overStop : overStop.nextSibling;
           if(ref !== dndDragged && dndDragged.nextSibling !== ref){
             const beforeSrc = box === srcBox ? null : captureStopRects(srcBox);
@@ -2271,7 +2281,7 @@
         // Sideways flick: crossing the threshold bumps the stop to the
         // previous/next day's list (if one exists) without needing to drag
         // all the way down/up to it.
-        const dx = e.clientX - dndBaseX;
+        const dx = x - dndBaseX;
         if(Math.abs(dx) >= DAY_SWITCH_PX){
           const curBox = dndDragged.closest('.stops');
           if(curBox){
@@ -2286,47 +2296,44 @@
               playStopFlip(beforeNext);
             }
           }
-          dndBaseX = e.clientX;
+          dndBaseX = x;
         }
       }catch(_){ /* never let a bad frame leave the drag permanently stuck */ }
     }
-    // Reordering constantly reparents the dragged node into new siblings'
-    // positions mid-drag, so the browser fires a fresh `dragenter` on each
-    // new spot. Without cancelling those too (not just `dragover`), some
-    // browsers stop treating the area as a valid drop target after the
-    // first reparent, which is what made drags feel like they got stuck.
-    daysBox.addEventListener('dragenter', e=> e.preventDefault());
-    daysBox.addEventListener('dragover', e=>{
-      e.preventDefault();
-      if(!dndDragged) return;
-      if(dndPending == null) dndPending = requestAnimationFrame(()=> dndProcess(e));
-    });
+    function onDragPointerMove(e){
+      if(e.pointerId !== dndPointerId) return;
+      if(dndPending == null) dndPending = requestAnimationFrame(()=> dndProcess(e.clientX, e.clientY));
+    }
     function endDrag(){
       if(dndDragged) dndDragged.classList.remove('dragging');
-      dndDragged = null; dndPending = null;
+      dndDragged = null; dndPending = null; dndPointerId = null;
+      document.removeEventListener('pointermove', onDragPointerMove);
+      document.removeEventListener('pointerup', onDragPointerUp);
+      document.removeEventListener('pointercancel', onDragPointerUp);
     }
-    daysBox.addEventListener('drop', e=>{
-      e.preventDefault();
-      if(!dndDragged) return;
-      const box = e.target.closest('.stops');
-      if(!box){ endDrag(); return }
-      const orderIds = [...box.querySelectorAll(':scope > .stop:not(.stop-return)')].map(s=>s.dataset.place);
-      commitStopOrder(dndDragged.dataset.place, +box.dataset.day, orderIds);
-      // commitStopOrder() re-renders (rebuilding daysBox's children), which
-      // can race the browser's own dragend on the now-detached source node —
-      // clear state here too so a missed dragend can't leave the next drag stuck.
+    function onDragPointerUp(e){
+      if(e.pointerId !== dndPointerId) return;
+      if(dndDragged && dndDragged.isConnected){
+        const box = dndDragged.closest('.stops');
+        if(box){
+          const orderIds = [...box.querySelectorAll(':scope > .stop:not(.stop-return)')].map(s=>s.dataset.place);
+          commitStopOrder(dndDragged.dataset.place, +box.dataset.day, orderIds);
+        }
+      }
       endDrag();
-    });
+    }
     function bindDrag(){
-      document.querySelectorAll('.stop:not(.stop-return)').forEach(el=>{
-        el.addEventListener('dragstart', e=>{
-          dndDragged = el; dndBaseX = e.clientX;
-          e.dataTransfer.effectAllowed = 'move';
-          try{ e.dataTransfer.setDragImage(dragGhost, 0, 0) }catch(_){}
-          try{ e.dataTransfer.setData('text/plain', el.dataset.place) }catch(_){}
-          requestAnimationFrame(()=> el.classList.add('dragging'));
+      document.querySelectorAll('.stop:not(.stop-return) > .handle').forEach(handle=>{
+        handle.addEventListener('pointerdown', e=>{
+          if(!e.isPrimary) return;
+          const el = handle.closest('.stop'); if(!el) return;
+          e.preventDefault();
+          dndDragged = el; dndBaseX = e.clientX; dndPointerId = e.pointerId;
+          el.classList.add('dragging');
+          document.addEventListener('pointermove', onDragPointerMove);
+          document.addEventListener('pointerup', onDragPointerUp);
+          document.addEventListener('pointercancel', onDragPointerUp);
         });
-        el.addEventListener('dragend', endDrag);
       });
     }
     function optimiseDay(di){
