@@ -39,7 +39,7 @@
     .datefield{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.14);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.28);border-radius:99px;font-size:13px}
     .datefield input{background:none;border:0;color:#fff;font-size:13px;width:140px}
     .datefield input::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.8}
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:22px 0 32px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:22px 0 32px}
     .stat{background:var(--paper);padding:16px 18px}.stat b{display:block;font-size:22px}.stat span{color:var(--muted);font-size:12px}
     .section-head{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 16px}
     .section-head h2{font-size:26px;margin:0}.section-head p{margin:0;color:var(--muted);font-size:13px}
@@ -387,7 +387,6 @@
         </div>
       </section>
       <div class="stats">
-        <div class="stat"><b id="statPlaces">0</b><span data-i18n="stat.places"></span></div>
         <div class="stat"><b id="statDays">1</b><span data-i18n="stat.days"></span></div>
         <div class="stat"><b id="statTime">—</b><span id="statTimeLabel" data-i18n="stat.time"></span></div>
         <div class="stat"><b id="statDistance">—</b><span id="statDistanceLabel" data-i18n="stat.distance"></span></div>
@@ -1019,7 +1018,12 @@
       const d = new Date(startDate + 'T00:00:00');
       if(isNaN(d)) return null;
       d.setDate(d.getDate() + i);
-      return d.toISOString().slice(0,10);
+      // NOTE: was d.toISOString().slice(0,10) — toISOString() converts to UTC,
+      // which rolls local midnight back to the previous day in any timezone
+      // ahead of UTC (e.g. Israel), silently shifting every weather request
+      // back by one day. Build the date string from local components instead.
+      const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
     }
 
     /* ---------- Places API (direct or via proxy) ---------- */
@@ -2075,7 +2079,6 @@
       schedule.forEach((_,di)=>setTravelTexts(di, null, true));
       Object.entries(places).forEach(([id,p])=>{ if(!p.image && !p.imageLoading) enrichPlaceImage(id,p); });
       Object.entries(places).forEach(([id,p])=>{ if(p.gid && ideaDetailsCache[p.gid]===undefined && !hoursLoading.has(p.gid)) enrichPlaceHours(id,p); });
-      document.getElementById('statPlaces').textContent = Object.keys(places).length;
       document.getElementById('statDays').textContent = schedule.length;
 
       daysBox.querySelectorAll('.del-stop').forEach(b=> b.onclick = e=>{ e.stopPropagation(); removePlace(b.dataset.place) });
@@ -2242,60 +2245,77 @@
     function dndProcess(e){
       dndPending = null;
       if(!dndDragged || !dndDragged.isConnected) return;
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      const overStop = el && el.closest('.stop:not(.stop-return)');
-      const box = (overStop && overStop.closest('.stops')) || el?.closest('.stops');
-      const srcBox = dndDragged.closest('.stops');
-      if(overStop && overStop !== dndDragged && box){
-        const rect = overStop.getBoundingClientRect();
-        const before = (e.clientY - rect.top) < rect.height / 2;
-        const ref = before ? overStop : overStop.nextSibling;
-        if(ref !== dndDragged && dndDragged.nextSibling !== ref){
-          const beforeSrc = box === srcBox ? null : captureStopRects(srcBox);
+      try{
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const overStop = el && el.closest('.stop:not(.stop-return)');
+        const box = (overStop && overStop.closest('.stops')) || el?.closest('.stops');
+        const srcBox = dndDragged.closest('.stops');
+        if(overStop && overStop !== dndDragged && box){
+          const rect = overStop.getBoundingClientRect();
+          const before = (e.clientY - rect.top) < rect.height / 2;
+          const ref = before ? overStop : overStop.nextSibling;
+          if(ref !== dndDragged && dndDragged.nextSibling !== ref){
+            const beforeSrc = box === srcBox ? null : captureStopRects(srcBox);
+            const beforeDst = captureStopRects(box);
+            box.insertBefore(dndDragged, ref);
+            if(beforeSrc) playStopFlip(beforeSrc);
+            playStopFlip(beforeDst);
+          }
+        } else if(box && srcBox !== box){
+          const beforeSrc = captureStopRects(srcBox);
           const beforeDst = captureStopRects(box);
-          box.insertBefore(dndDragged, ref);
-          if(beforeSrc) playStopFlip(beforeSrc);
+          box.appendChild(dndDragged);
+          playStopFlip(beforeSrc);
           playStopFlip(beforeDst);
         }
-      } else if(box && srcBox !== box){
-        const beforeSrc = captureStopRects(srcBox);
-        const beforeDst = captureStopRects(box);
-        box.appendChild(dndDragged);
-        playStopFlip(beforeSrc);
-        playStopFlip(beforeDst);
-      }
-      // Sideways flick: crossing the threshold bumps the stop to the
-      // previous/next day's list (if one exists) without needing to drag
-      // all the way down/up to it.
-      const dx = e.clientX - dndBaseX;
-      if(Math.abs(dx) >= DAY_SWITCH_PX){
-        const curBox = dndDragged.closest('.stops');
-        if(curBox){
-          const dir = (dx > 0) === (document.documentElement.dir !== 'rtl') ? 1 : -1;
-          const curDay = +curBox.dataset.day;
-          const nextBox = daysBox.querySelector(`.stops[data-day="${curDay + dir}"]`);
-          if(nextBox && nextBox !== curBox){
-            const beforeCur = captureStopRects(curBox);
-            const beforeNext = captureStopRects(nextBox);
-            dir > 0 ? nextBox.insertBefore(dndDragged, nextBox.firstChild) : nextBox.appendChild(dndDragged);
-            playStopFlip(beforeCur);
-            playStopFlip(beforeNext);
+        // Sideways flick: crossing the threshold bumps the stop to the
+        // previous/next day's list (if one exists) without needing to drag
+        // all the way down/up to it.
+        const dx = e.clientX - dndBaseX;
+        if(Math.abs(dx) >= DAY_SWITCH_PX){
+          const curBox = dndDragged.closest('.stops');
+          if(curBox){
+            const dir = (dx > 0) === (document.documentElement.dir !== 'rtl') ? 1 : -1;
+            const curDay = +curBox.dataset.day;
+            const nextBox = daysBox.querySelector(`.stops[data-day="${curDay + dir}"]`);
+            if(nextBox && nextBox !== curBox){
+              const beforeCur = captureStopRects(curBox);
+              const beforeNext = captureStopRects(nextBox);
+              dir > 0 ? nextBox.insertBefore(dndDragged, nextBox.firstChild) : nextBox.appendChild(dndDragged);
+              playStopFlip(beforeCur);
+              playStopFlip(beforeNext);
+            }
           }
+          dndBaseX = e.clientX;
         }
-        dndBaseX = e.clientX;
-      }
+      }catch(_){ /* never let a bad frame leave the drag permanently stuck */ }
     }
+    // Reordering constantly reparents the dragged node into new siblings'
+    // positions mid-drag, so the browser fires a fresh `dragenter` on each
+    // new spot. Without cancelling those too (not just `dragover`), some
+    // browsers stop treating the area as a valid drop target after the
+    // first reparent, which is what made drags feel like they got stuck.
+    daysBox.addEventListener('dragenter', e=> e.preventDefault());
     daysBox.addEventListener('dragover', e=>{
       e.preventDefault();
       if(!dndDragged) return;
       if(dndPending == null) dndPending = requestAnimationFrame(()=> dndProcess(e));
     });
+    function endDrag(){
+      if(dndDragged) dndDragged.classList.remove('dragging');
+      dndDragged = null; dndPending = null;
+    }
     daysBox.addEventListener('drop', e=>{
       e.preventDefault();
       if(!dndDragged) return;
-      const box = e.target.closest('.stops'); if(!box) return;
+      const box = e.target.closest('.stops');
+      if(!box){ endDrag(); return }
       const orderIds = [...box.querySelectorAll(':scope > .stop:not(.stop-return)')].map(s=>s.dataset.place);
       commitStopOrder(dndDragged.dataset.place, +box.dataset.day, orderIds);
+      // commitStopOrder() re-renders (rebuilding daysBox's children), which
+      // can race the browser's own dragend on the now-detached source node —
+      // clear state here too so a missed dragend can't leave the next drag stuck.
+      endDrag();
     });
     function bindDrag(){
       document.querySelectorAll('.stop:not(.stop-return)').forEach(el=>{
@@ -2306,7 +2326,7 @@
           try{ e.dataTransfer.setData('text/plain', el.dataset.place) }catch(_){}
           requestAnimationFrame(()=> el.classList.add('dragging'));
         });
-        el.addEventListener('dragend', ()=>{ el.classList.remove('dragging'); dndDragged = null; dndPending = null });
+        el.addEventListener('dragend', endDrag);
       });
     }
     function optimiseDay(di){
