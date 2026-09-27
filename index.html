@@ -137,16 +137,18 @@
     .stop-pair .stop-num{visibility:hidden}
     .pair-main{display:flex;align-items:center;gap:14px;flex:1;min-width:0}
     .pair-side{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 0}
+    .pair-label{display:flex;flex-direction:column;justify-content:center;min-width:0;line-height:1.25}
     .stop-pair .pair-main .pair-side b{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .pair-label small{font-size:11px;font-weight:400;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .pair-end{justify-content:flex-end}
-    .pair-end b{order:2}.pair-end .pair-tools{order:1}
+    .pair-end .pair-label{order:2}.pair-end .pair-tools{order:1}
     .pair-tools{gap:3px;flex:0 0 auto}
     .pair-tools .icon-btn{padding:5px 7px;font-size:11px}
     .pair-mid{display:flex;flex-direction:column;align-items:center;gap:3px;flex:0 0 auto;padding:0 4px}
     .pair-swap-btn{padding:4px 6px;font-size:12px;border-radius:8px}
     .stop-pair .pair-arrow{opacity:.55;font-size:15px;line-height:1}
     .pair-time{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
-    .pair-time input{width:38px;font:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+    .pair-time input{display:inline-block;width:38px;font:inherit;font-size:11px;padding:2px 4px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
     @media (max-width:560px){ .pair-main{flex-wrap:wrap} .pair-side{flex-basis:100%} .pair-mid{order:3;flex-basis:100%;flex-direction:row} }
     html[dir="rtl"] .travel{margin:0 38px 0 0}
     .day-empty{color:var(--muted);font-size:12px;padding:12px 10px}
@@ -662,72 +664,37 @@
     const DAY_COLORS = ['#e2673f','#5f81c4','#8768b5','#3f9182','#d4a03f','#8a6d59','#c2678c','#6a8f52','#5a8aa4','#96784d'];
     // A plain light-tile map sitting inside the dark UI at night looked out of
     // place, so swap in a dark tile style whenever data-theme="dark".
+    // The well-known "Google Maps Night" style — this is the same palette
+    // Google's own Maps JavaScript API documentation ships as its dark-mode
+    // example, and it's what the real Google Maps app's night theme looks
+    // like (the phone screenshot).
     const MAP_DARK_STYLE = [
-      { elementType:'geometry', stylers:[{ color:'#0d1016' }] },
-      { elementType:'labels.text.stroke', stylers:[{ color:'#0d1016' }] },
-      { elementType:'labels.text.fill', stylers:[{ color:'#aab6c4' }] },
-      { elementType:'labels.icon', stylers:[{ visibility:'off' }] },
-      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#4a5568' }] },
-      { featureType:'administrative.land_parcel', stylers:[{ visibility:'off' }] },
-      { featureType:'landscape', elementType:'geometry', stylers:[{ color:'#12171f' }] },
-      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#141922' }] },
-      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#7f8ea0' }] },
-      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#08201a' }] },
-      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#5fbf93' }] },
-      { featureType:'road', elementType:'geometry', stylers:[{ color:'#262e3a' }] },
-      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#0d1016' }] },
-      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#8b97a8' }] },
-      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#caa254' }] },
-      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#1a1608' }] },
-      { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{ color:'#e6c988' }] },
-      { featureType:'road.arterial', elementType:'geometry', stylers:[{ color:'#333d4c' }] },
-      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#1b212c' }] },
-      { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#3a4a63' }] },
-      { featureType:'water', elementType:'geometry', stylers:[{ color:'#050b13' }] },
-      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#5f8bb0' }] },
-      // Google flags notable landmarks (museums, monuments, major sights) as
-      // poi.attraction with their own icon; the blanket labels.icon:off
-      // above hides those along with ordinary POI clutter, so bring just
-      // this category back and warm it up to stand out.
-      { featureType:'poi.attraction', elementType:'labels.icon', stylers:[{ visibility:'on' }] },
-      { featureType:'poi.attraction', elementType:'labels.text.fill', stylers:[{ color:'#f0c987' }] },
-      { featureType:'poi.attraction', elementType:'labels.text.stroke', stylers:[{ color:'#171a1f' }] }
+      { elementType:'geometry', stylers:[{ color:'#242f3e' }] },
+      { elementType:'labels.text.stroke', stylers:[{ color:'#242f3e' }] },
+      { elementType:'labels.text.fill', stylers:[{ color:'#746855' }] },
+      { featureType:'administrative.locality', elementType:'labels.text.fill', stylers:[{ color:'#d59563' }] },
+      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#d59563' }] },
+      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#263c3f' }] },
+      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#6b9a76' }] },
+      { featureType:'road', elementType:'geometry', stylers:[{ color:'#38414e' }] },
+      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#212a37' }] },
+      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#9ca5b3' }] },
+      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#746855' }] },
+      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#1f2835' }] },
+      { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{ color:'#f3d19c' }] },
+      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#2f3948' }] },
+      { featureType:'transit.station', elementType:'labels.text.fill', stylers:[{ color:'#d59563' }] },
+      { featureType:'water', elementType:'geometry', stylers:[{ color:'#17263c' }] },
+      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#515c6d' }] },
+      { featureType:'water', elementType:'labels.text.stroke', stylers:[{ color:'#17263c' }] }
     ];
     function applyMapTheme(){
       const styles = theme === 'dark' ? MAP_DARK_STYLE : MAP_LIGHT_STYLE;
       if(freeMap) freeMap.setOptions({ styles });
       if(worldMap) worldMap.setOptions({ styles });
     }
-    // A light, warm cream palette that matches the app's own paper/cream
-    // tones — Google's untouched default light style leans brownish/orange
-    // on land-use and highway colors, which clashed with the rest of the UI.
-    const MAP_LIGHT_STYLE = [
-      { elementType:'geometry', stylers:[{ color:'#f6f4ef' }] },
-      { elementType:'labels.text.fill', stylers:[{ color:'#6b6459' }] },
-      { elementType:'labels.text.stroke', stylers:[{ color:'#f6f4ef' }] },
-      { elementType:'labels.icon', stylers:[{ visibility:'off' }] },
-      { featureType:'administrative', elementType:'geometry', stylers:[{ color:'#cfc8b8' }] },
-      { featureType:'administrative.land_parcel', stylers:[{ visibility:'off' }] },
-      { featureType:'landscape', elementType:'geometry', stylers:[{ color:'#f0ece0' }] },
-      { featureType:'poi', elementType:'geometry', stylers:[{ color:'#e9e3d4' }] },
-      { featureType:'poi', elementType:'labels.text.fill', stylers:[{ color:'#8a8272' }] },
-      { featureType:'poi.park', elementType:'geometry', stylers:[{ color:'#dde6d3' }] },
-      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{ color:'#4f7a52' }] },
-      { featureType:'road', elementType:'geometry', stylers:[{ color:'#ffffff' }] },
-      { featureType:'road', elementType:'geometry.stroke', stylers:[{ color:'#e6ddc9' }] },
-      { featureType:'road', elementType:'labels.text.fill', stylers:[{ color:'#9a917f' }] },
-      { featureType:'road.highway', elementType:'geometry', stylers:[{ color:'#f3dfae' }] },
-      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{ color:'#e2c98a' }] },
-      { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{ color:'#a9803d' }] },
-      { featureType:'road.arterial', elementType:'geometry', stylers:[{ color:'#fbf8f1' }] },
-      { featureType:'transit', elementType:'geometry', stylers:[{ color:'#ece6d8' }] },
-      { featureType:'transit.line', elementType:'geometry', stylers:[{ color:'#cbb98a' }] },
-      { featureType:'water', elementType:'geometry', stylers:[{ color:'#cfe1e3' }] },
-      { featureType:'water', elementType:'labels.text.fill', stylers:[{ color:'#5e93a0' }] },
-      { featureType:'poi.attraction', elementType:'labels.icon', stylers:[{ visibility:'on' }] },
-      { featureType:'poi.attraction', elementType:'labels.text.fill', stylers:[{ color:'#c17a3f' }] },
-      { featureType:'poi.attraction', elementType:'labels.text.stroke', stylers:[{ color:'#f6f4ef' }] }
-    ];
+    // Google Maps' own real default light appearance — no custom overrides.
+    const MAP_LIGHT_STYLE = [];
 
     /* ---------- Image lookup throttling ---------- */
     // Commons/Wikipedia respond with 429 (Too Many Requests) once too many
@@ -2225,13 +2192,16 @@
           const mins = getTransitMinutes(d, pair);
           const ownA = lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name);
           const ownB = lang==='he' ? (pNext.nameHe||pNext.name) : (pNext.nameEn||pNext.name);
-          const nameA = p.title || ownA, nameB = pNext.title || ownB;
+          const otherA = lang==='he' ? p.nameEn : p.nameHe;
+          const otherB = lang==='he' ? pNext.nameEn : pNext.nameHe;
+          const nameA = p.title || ownA, subA = p.title ? ownA : otherA;
+          const nameB = pNext.title || ownB, subB = pNext.title ? ownB : otherB;
           html += `<div class="stop transit stop-pair" data-place="${esc(s[0])}" data-place2="${esc(next[0])}" style="background:${color}14">
             <span class="handle">⠿</span>
             <span class="stop-num" style="background:${color}"></span>
             <div class="pair-main">
               <div class="pair-side pair-start" data-place="${esc(s[0])}">
-                <b>${esc(nameA)}</b>
+                <div class="pair-label"><b>${esc(nameA)}</b>${subA?`<small>${esc(subA)}</small>`:''}</div>
                 <span class="stop-tools pair-tools"><button class="icon-btn dup-stop" data-place="${esc(s[0])}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${esc(s[0])}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${esc(s[0])}" title="${esc(t('day.removeStop'))}">✕</button></span>
               </div>
               <div class="pair-mid">
@@ -2241,7 +2211,7 @@
               </div>
               <div class="pair-side pair-end" data-place="${esc(next[0])}">
                 <span class="stop-tools pair-tools"><button class="icon-btn dup-stop" data-place="${esc(next[0])}" data-day="${di}" title="${esc(t('stop.duplicate'))}" aria-label="${esc(t('stop.duplicate'))}">⧉</button><button class="icon-btn edit-stop" data-place="${esc(next[0])}" title="${esc(t('stop.edit'))}" aria-label="${esc(t('stop.edit'))}">✎</button><button class="icon-btn del-stop" data-place="${esc(next[0])}" title="${esc(t('day.removeStop'))}">✕</button></span>
-                <b>${esc(nameB)}</b>
+                <div class="pair-label"><b>${esc(nameB)}</b>${subB?`<small>${esc(subB)}</small>`:''}</div>
               </div>
             </div>
           </div>${(editingStop===s[0]||editingStop===next[0]) ? stopEditorHtml(editingStop) : ''}${i+2 < d.stops.length ? travelDivHtml(di, i+1, next[0], d.stops[i+2][0]) : ''}`;
@@ -2272,7 +2242,7 @@
             <span class="daynum" style="background:${color}22;border:1px solid ${color};color:${color}">${String(di+1).padStart(2,'0')}</span>
             <strong>${esc(t('day',{n:di+1}))}</strong>
             <span class="dd">${esc(dayDate(di))}</span>
-            <span class="day-tools">${d.stops.length>1 && schedule.length>1?`<button class="icon-btn mode-day${modeAuto?'':' active'}" data-day="${di}" title="${esc(modeTitle)}" aria-label="${esc(modeTitle)}">${effMode==='driving'?'🚗':'🚶'}</button>`:''}${d.stops.length>1?`<button class="icon-btn loop-day${d.loop?' active':''}" data-day="${di}" title="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}" aria-label="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}">${d.loop?'🔁':'↩️'}</button>`:''}${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}${d.stops.length>1?`<button class="icon-btn dup-day" data-day="${di}" title="${esc(t('day.duplicate'))}" aria-label="${esc(t('day.duplicate'))}">⧉</button><button class="icon-btn dup-day-rev" data-day="${di}" title="${esc(t('day.duplicateReverse'))}" aria-label="${esc(t('day.duplicateReverse'))}">🔃⧉</button>`:''}</span>
+            <span class="day-tools">${d.stops.length>1 && schedule.length>1?`<button class="icon-btn mode-day${modeAuto?'':' active'}" data-day="${di}" title="${esc(modeTitle)}" aria-label="${esc(modeTitle)}">${effMode==='driving'?'🚗':'🚶'}</button>`:''}${d.stops.length>1?`<button class="icon-btn loop-day${d.loop?' active':''}" data-day="${di}" title="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}" aria-label="${esc(t(d.loop?'day.loopOn':'day.loopOff'))}">${d.loop?'🔁':'↩️'}</button>`:''}${d.stops.length>2?`<button class="icon-btn opt-day" data-day="${di}">${esc(t('day.optimize'))}</button>`:''}</span>
           </div>
           <div class="stops" data-day="${di}">${stopsHtml}</div>
         </article>`;
@@ -2291,8 +2261,6 @@
       daysBox.querySelectorAll('.pair-side').forEach(el=> el.onclick = ()=> showStopHours(el.dataset.place));
       daysBox.querySelectorAll('.stop-edit').forEach(bindStopEditor);
       daysBox.querySelectorAll('.opt-day').forEach(b=> b.onclick = ()=> optimiseDay(+b.dataset.day));
-      daysBox.querySelectorAll('.dup-day').forEach(b=> b.onclick = ()=> duplicateDay(+b.dataset.day, false));
-      daysBox.querySelectorAll('.dup-day-rev').forEach(b=> b.onclick = ()=> duplicateDay(+b.dataset.day, true));
       daysBox.querySelectorAll('.loop-day').forEach(b=> b.onclick = ()=>{ const day = schedule[+b.dataset.day]; if(day){ day.loop = !day.loop; render(); } });
       daysBox.querySelectorAll('.transit-toggle').forEach(b=> b.onclick = e=>{
         e.stopPropagation();
@@ -3045,14 +3013,15 @@
       const p = places[id]; if(!p) return;
       const di = dayForPlace(id);
       document.querySelectorAll(`.stop:not(.stop-return):not(.stop-pair)[data-place="${id}"] .stop-copy`).forEach(el=>{ el.innerHTML = stopCopyHtml(p, id, di); });
-      // A stop-pair's .stop-copy holds both names plus the arrow and the
-      // shared time field — rewriting the whole thing like a normal stop
-      // would wipe those, so just swap the one <b> that changed.
-      document.querySelectorAll(`.stop-pair[data-place="${id}"], .stop-pair[data-place2="${id}"]`).forEach(el=>{
-        const own = lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name);
-        const bEls = el.querySelectorAll('.stop-copy b');
-        const target = el.dataset.place===id ? bEls[0] : bEls[1];
-        if(target) target.textContent = p.title || own;
+      // A stop-pair row carries its own .pair-side[data-place] on each half,
+      // so the changed one can be found directly instead of guessing by
+      // position — rewriting the whole pair row like a normal stop would
+      // wipe the arrow, swap button and shared time field.
+      const own = lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name);
+      const other = lang==='he' ? p.nameEn : p.nameHe;
+      const main = p.title || own, sub = p.title ? own : other;
+      document.querySelectorAll(`.pair-side[data-place="${id}"] .pair-label`).forEach(el=>{
+        el.innerHTML = `<b>${esc(main)}</b>${sub?`<small>${esc(sub)}</small>`:''}`;
       });
     }
     async function enrichPlaceNames(id, place){
