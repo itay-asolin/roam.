@@ -347,6 +347,22 @@
     [data-theme="dark"] .dest-card-media,[data-theme="dark"] .search-place-result img{
       box-shadow:0 0 0 1px #3a3c3a inset;
     }
+
+    .lm-rows{display:grid;gap:8px;margin:12px 0}
+    .lm-row{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+    .lm-row.done{opacity:.6}.lm-row.fail{border-color:#b23b2f}
+    .lm-top{display:flex;align-items:center;gap:8px}
+    .lm-top input{flex:1;padding:7px 10px!important}
+    .lm-x{border:0;background:none;color:var(--muted);font-size:16px;padding:4px 8px}
+    .lm-days{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+    .lm-chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:5px 11px;font-size:12px;color:var(--muted)}
+    .lm-chip.on{background:var(--moss);border-color:var(--moss);color:#fff;font-weight:600}
+    .lm-bulk{background:var(--cream);border-radius:12px;padding:10px 12px;display:grid;gap:8px;margin-top:10px}
+    .lm-bulk small,.lm-status{font-size:12px;color:var(--muted)}
+    #listText,#exportText{width:100%;min-height:150px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;resize:vertical;line-height:1.6}
+    .lm-link{background:none;border:0;color:var(--muted);text-decoration:underline;font-size:12px;padding:6px}
+    [data-theme="dark"] .lm-row,[data-theme="dark"] .lm-chip,[data-theme="dark"] #listText,[data-theme="dark"] #exportText{background:#1a1c1b}
+    [data-theme="dark"] .lm-chip.on{background:var(--orange);border-color:var(--orange);color:#fff}
   </style>
 </head>
 <body>
@@ -533,6 +549,40 @@
     <div class="modal-actions"><button class="btn light" id="closeBtn" data-i18n="close"></button></div>
   </div></div>
 
+  <div class="modal" id="listModal"><div class="modal-box" style="width:min(680px,100%)">
+    <h2 id="lmTitle"></h2>
+    <p id="lmSub"></p>
+    <div id="lmStep1">
+      <textarea id="listText"></textarea>
+      <div class="modal-actions">
+        <button class="btn light" id="lmFileBtn" type="button"></button>
+        <button class="btn light" id="lmCancel1" type="button"></button>
+        <button class="btn orange" id="lmParse" type="button"></button>
+      </div>
+    </div>
+    <div id="lmStep2" style="display:none">
+      <div class="lm-bulk"><small id="lmBulkLabel"></small><div class="lm-days" id="lmBulk"></div></div>
+      <div class="lm-rows" id="lmRows"></div>
+      <div class="lm-status" id="lmStatus"></div>
+      <div class="modal-actions">
+        <button class="btn light" id="lmBack" type="button"></button>
+        <button class="btn orange" id="lmAdd" type="button"></button>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="modal" id="exportModal"><div class="modal-box" style="width:min(620px,100%)">
+    <h2 id="exTitle"></h2>
+    <p id="exSub"></p>
+    <textarea id="exportText" readonly></textarea>
+    <div class="modal-actions">
+      <button class="lm-link" id="exJson" type="button"></button>
+      <button class="btn light" id="exClose" type="button"></button>
+      <button class="btn light" id="exTxt" type="button"></button>
+      <button class="btn orange" id="exCopy" type="button"></button>
+    </div>
+  </div></div>
+
   <script>
   /* ============================================================
      CONFIG — the only place with keys/endpoints.
@@ -593,7 +643,7 @@
       he:{
         'auth.title':'חשבון','auth.profile':'חשבון','auth.profileLocal':'מצב מקומי — הנתונים נשארים בדפדפן הזה.','auth.profileSynced':'מחובר — הטיולים מסתנכרנים בין המכשירים שלך.','auth.open':'התחברות','auth.close':'סגירה','auth.sub':'התחברו כדי לסנכרן טיולים בין מכשירים ולעבוד יחד בזמן אמת.','auth.email':'אימייל','auth.password':'סיסמה','auth.login':'התחברות','auth.register':'יצירת חשבון','auth.google':'המשך עם Google','auth.logout':'התנתקות','auth.logged':'מחובר','auth.local':'מצב מקומי','auth.need':'כדי לשתף טיול צריך להתחבר.','auth.ok':'אתם מחוברים.','auth.bad':'ההתחברות נכשלה.','auth.offline':'אין חיבור — השינויים נשמרים מקומית ויסתנכרנו כשתחזרו לרשת.',
         'share.title':'שיתוף הטיול','share.sub':'ניצור עותק בענן שאפשר לערוך או לצפות בו יחד.','share.role':'הרשאה למשתתפים חדשים','share.editor':'עורך — יכול לשנות את הטיול','share.viewer':'צופה — לקריאה בלבד','share.ready':'בחרו הרשאה וצרו קישור שיתוף.','share.create':'יצירת קישור שיתוף','share.created':'הקישור הועתק. אפשר לשלוח אותו למשתתפים.','share.existing':'הטיול כבר משותף.','share.opened':'פותח טיול משותף…','share.owner':'בעלים','share.editorRole':'עורך','share.viewerRole':'צופה','share.members':'משתתפים','share.copy':'העתקת קישור','share.leave':'יציאה מהטיול המשותף','share.ownerOnly':'רק בעל הטיול יכול לנהל את השיתוף.','share.loginFirst':'יש להתחבר כדי ליצור או לפתוח טיול משותף.','share.syncing':'מסנכרן…','share.synced':'מסונכרן','share.offline':'לא מקוון — נשמר מקומית',
-        'lang.switch':'English','export':'גיבוי','import':'ייבוא','cancel':'ביטול','close':'סגירה',
+        'lang.switch':'English','export':'ייצוא','import':'ייבוא','cancel':'ביטול','close':'סגירה',
         'home.eyebrow':'הטיולים שלך','home.title':'לאן נוסעים?','home.sub':'פתחו יעד שמור כדי להמשיך לתכנן, או התחילו חדש.','home.new':'+ יעד חדש','home.mapView':'🗺 מפת יעדים','home.listTitle':'היעדים שלך','home.listSub':'הכול נשמר בדפדפן הזה.','home.empty':'עדיין אין יעדים — צרו את הטיול הראשון כדי להתחיל.',
         'card.open':'פתיחה','card.delete':'מחיקה','card.noDates':'ללא תאריכים','card.places':'{n} מקומות','card.days':'{n} ימים','card.day':'יום אחד',
         'sort.az':'א–ת','sort.date':'תאריך',
@@ -3044,7 +3094,7 @@
     }
 
     function addPlace(x, dayIndex, note){
-      const id='p'+Date.now()+Math.floor(Math.random()*1000);
+      let id; do{ id='p'+Date.now()+Math.floor(Math.random()*100000) }while(places['p'+id.slice(1)] && places[id]);
       places[id]={gid:x.gid||'',title:x.title||'',name:x.name,nameHe:x.nameHe||'',nameEn:x.nameEn||'',image:x.image||'',imagePage:x.imagePage||'',imageAuthor:x.imageAuthor||'',imageLicense:x.imageLicense||'',imageLicenseUrl:x.imageLicenseUrl||'',lat:x.lat,lng:x.lng,category:x.category,notes:note||''};
       schedule[dayIndex].stops.push([id,'']);
       render();
@@ -3243,15 +3293,21 @@
     function b64encode(obj){ return btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(obj)))) }
     function b64decode(str){ return JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(str), c=>c.charCodeAt(0)))) }
 
-    document.getElementById('exportBtn').onclick = ()=>{
+    /* ---------- Paste-a-list import / text export ---------- */
+    const L = (he,en)=> lang==='he' ? he : en;
+    const DAY_RE = /^[#*\s\-–—]*(?:day|יום)\s*(\d{1,2})\b.*$/i;
+    let lmItems = [];   // {name, days:Set}
+    let lmDayCount = 1;
+
+    function downloadJsonBackup(){
       const blob = new Blob([JSON.stringify({ app:'roam', version:2, exported:new Date().toISOString(), trips }, null, 2)], {type:'application/json'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'roam-backup-' + new Date().toISOString().slice(0,10) + '.json';
       a.click(); URL.revokeObjectURL(a.href);
       toast(t('toast.exported'));
-    };
-    document.getElementById('importFileBtn').onclick = ()=>document.getElementById('importFile').click();
+    }
+    function pickBackupFile(){ document.getElementById('importFile').click() }
     document.getElementById('importFile').onchange = async e=>{
       const file = e.target.files[0]; if(!file) return;
       try {
@@ -3261,9 +3317,172 @@
         if(!confirm(t('confirm.importFile',{n:incoming.length}))) return;
         incoming.forEach(tr=>{ tr.id = 'trip' + Date.now() + Math.floor(Math.random()*1000); trips.push(normaliseTrip(tr)) });
         saveTrips(); renderHome(); toast(t('toast.imported'));
+        document.getElementById('listModal').classList.remove('open');
       } catch(err){ toast(t('toast.badFile')) }
       e.target.value = '';
     };
+
+    function lmClean(line){
+      return line.replace(/^\s*(?:[-•·*▪◦✓✔☐☑]|\d{1,3}[.)])\s*/, '').trim();
+    }
+    // Text -> [{name, days:Set}]. "Day N" / "יום N" header lines pre-assign days;
+    // a place listed under several headers (or several times) gets all of them.
+    function lmParseText(text){
+      const map = new Map(); let cur = null, maxDay = 0;
+      text.split(/\r?\n/).forEach(raw=>{
+        const line = raw.trim(); if(!line) return;
+        const m = line.match(DAY_RE);
+        if(m){ cur = +m[1]-1; maxDay = Math.max(maxDay, cur+1); return }
+        const name = lmClean(line); if(!name) return;
+        const key = name.toLowerCase();
+        if(!map.has(key)) map.set(key, { name, days:new Set() });
+        if(cur!=null) map.get(key).days.add(cur);
+      });
+      return { items:[...map.values()], maxDay };
+    }
+    function lmChips(selected, attr){
+      return Array.from({length:lmDayCount},(_,i)=>`<button type="button" class="lm-chip${selected.has(i)?' on':''}" ${attr}="${i}">${i+1}</button>`).join('')
+        + `<button type="button" class="lm-chip" ${attr}="+">＋</button>`;
+    }
+    function lmRender(){
+      document.getElementById('lmRows').innerHTML = lmItems.map((it,ri)=>`
+        <div class="lm-row${it.state?' '+it.state:''}" data-r="${ri}">
+          <div class="lm-top"><input value="${esc(it.name)}" data-name="${ri}"><button class="lm-x" data-del="${ri}" type="button">✕</button></div>
+          <div class="lm-days"><small class="lm-status">${esc(L('ימים','Days'))}:</small>${lmChips(it.days,'data-d')}${it.msg?`<small class="lm-status">${esc(it.msg)}</small>`:''}</div>
+        </div>`).join('');
+      // bulk row: lit when every row has that day
+      const all = new Set(); for(let i=0;i<lmDayCount;i++) if(lmItems.length && lmItems.every(it=>it.days.has(i))) all.add(i);
+      document.getElementById('lmBulk').innerHTML = lmChips(all,'data-b');
+      const n = lmItems.reduce((a,it)=>a+it.days.size,0);
+      document.getElementById('lmAdd').textContent = L(`הוספה לטיול (${n} עצירות)`,`Add to trip (${n} stops)`);
+      document.getElementById('lmAdd').disabled = !n;
+    }
+    function lmAddDay(){ lmDayCount++ ; return lmDayCount-1 }
+    document.getElementById('lmRows').addEventListener('click', e=>{
+      const d = e.target.closest('[data-d]'), x = e.target.closest('[data-del]');
+      if(x){ lmItems.splice(+x.dataset.del,1); lmRender(); return }
+      if(!d) return;
+      const it = lmItems[+d.closest('[data-r]').dataset.r];
+      let day = d.dataset.d==='+' ? lmAddDay() : +d.dataset.d;
+      it.days.has(day) ? it.days.delete(day) : it.days.add(day);
+      lmRender();
+    });
+    document.getElementById('lmRows').addEventListener('input', e=>{
+      if(e.target.dataset.name!=null) lmItems[+e.target.dataset.name].name = e.target.value;
+    });
+    document.getElementById('lmBulk').addEventListener('click', e=>{
+      const b = e.target.closest('[data-b]'); if(!b) return;
+      const day = b.dataset.b==='+' ? lmAddDay() : +b.dataset.b;
+      const every = lmItems.every(it=>it.days.has(day));
+      lmItems.forEach(it=> every ? it.days.delete(day) : it.days.add(day));
+      lmRender();
+    });
+
+    function openListImport(){
+      const trip = currentTrip();
+      document.getElementById('lmTitle').textContent = L('ייבוא רשימת מקומות','Import a list of places');
+      document.getElementById('lmSub').textContent = trip
+        ? L('הדביקו מקום בכל שורה. אפשר גם כותרות כמו "יום 1" ו"יום 2" כדי לשבץ אוטומטית. בשלב הבא בוחרים לכל מקום באילו ימים הוא מופיע (אפשר כמה).',
+            'Paste one place per line. "Day 1" / "Day 2" headers pre-assign days. Next you choose which days each place goes to (several allowed).')
+        : L('פתחו קודם טיול כדי לייבא אליו מקומות — או טענו קובץ גיבוי.','Open a trip first to import places into it — or load a backup file.');
+      document.getElementById('listText').placeholder = L('מגדל אייפל\nמוזיאון הלובר\nקפה דה פלור','Eiffel Tower\nLouvre Museum\nCafé de Flore');
+      document.getElementById('listText').value = '';
+      document.getElementById('listText').disabled = !trip;
+      document.getElementById('lmParse').disabled = !trip;
+      document.getElementById('lmFileBtn').textContent = L('טעינת קובץ גיבוי (JSON)','Load backup file (JSON)');
+      document.getElementById('lmCancel1').textContent = t('close');
+      document.getElementById('lmParse').textContent = L('המשך ←','Continue →');
+      document.getElementById('lmBack').textContent = L('→ חזרה','← Back');
+      document.getElementById('lmBulkLabel').textContent = L('שיוך כל המקומות ליום:','Apply to all places:');
+      document.getElementById('lmStep1').style.display=''; document.getElementById('lmStep2').style.display='none';
+      document.getElementById('listModal').classList.add('open');
+      setTimeout(()=>document.getElementById('listText').focus(),50);
+    }
+    document.getElementById('lmFileBtn').onclick = pickBackupFile;
+    document.getElementById('lmCancel1').onclick = ()=>document.getElementById('listModal').classList.remove('open');
+    document.getElementById('lmBack').onclick = ()=>{ document.getElementById('lmStep2').style.display='none'; document.getElementById('lmStep1').style.display='' };
+    document.getElementById('lmParse').onclick = ()=>{
+      const { items, maxDay } = lmParseText(document.getElementById('listText').value);
+      if(!items.length){ toast(L('לא נמצאו מקומות ברשימה','No places found')); return }
+      lmItems = items;
+      lmDayCount = Math.max(schedule.length, maxDay, 1);
+      document.getElementById('lmStatus').textContent = '';
+      document.getElementById('lmStep1').style.display='none'; document.getElementById('lmStep2').style.display='';
+      lmRender();
+    };
+    document.getElementById('lmAdd').onclick = async ()=>{
+      const btn = document.getElementById('lmAdd'), status = document.getElementById('lmStatus');
+      const todo = lmItems.filter(it=>it.days.size && !it.state);
+      if(!todo.length) return;
+      btn.disabled = true;
+      while(schedule.length < lmDayCount) schedule.push({date:'',stops:[]});
+      const trip = currentTrip();
+      const focus = focusCityCoords().center || (trip && trip.center);
+      let ok = 0, fail = 0, k = 0;
+      for(const it of todo){
+        status.textContent = L(`מחפש ${++k}/${todo.length}: ${it.name}`,`Searching ${k}/${todo.length}: ${it.name}`);
+        let x = null;
+        try{
+          const g = await googleTextSearch(it.name, focus);
+          if(g.length){ const r=g[0]; x = { gid:r.id||'', name:r.displayName?.text||it.name, nameEn:'', nameHe:'', image:photoUrl(r.photos?.[0]), lat:r.location.latitude, lng:r.location.longitude, category:(r.primaryType||'place').replace(/_/g,' ') } }
+        }catch(e){}
+        if(!x){
+          try{
+            const near = focus ? `&viewbox=${focus[1]-0.35},${focus[0]+0.35},${focus[1]+0.35},${focus[0]-0.35}&bounded=1` : '';
+            const osm = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language='+langCode()+near+'&q='+encodeURIComponent(it.name)).then(r=>r.json());
+            if(osm[0]) x = { name:(osm[0].display_name||'').split(',')[0]||it.name, nameEn:'', nameHe:'', image:'', lat:+osm[0].lat, lng:+osm[0].lon, category:osm[0].type||'place' };
+          }catch(e){}
+        }
+        if(!x){ it.state='fail'; it.msg=L('לא נמצא — תקנו את השם ונסו שוב','Not found — fix the name and retry'); fail++; continue }
+        // same place on several days = one independent stop copy per day
+        [...it.days].sort((a,b)=>a-b).forEach(di=> addPlace({...x}, di, ''));
+        it.state='done'; it.msg='✓'; ok++;
+      }
+      persist();
+      status.textContent = '';
+      if(fail){ lmRender(); btn.disabled=false; toast(L(`נוספו ${ok}, ${fail} לא נמצאו`,`Added ${ok}, ${fail} not found`)); }
+      else { document.getElementById('listModal').classList.remove('open'); toast(L(`נוספו ${ok} מקומות`,`Added ${ok} places`)); }
+    };
+
+    // Export: a readable day-by-day list that can be pasted straight back into the importer.
+    function tripAsText(){
+      const trip = currentTrip(); if(!trip) return '';
+      const out = [trip.name || ''];
+      schedule.forEach((d,i)=>{
+        const date = dayDate(i);
+        out.push('', t('day',{n:i+1}) + (date?' · '+date:''));
+        d.stops.forEach(s=>{
+          const p = places[s[0]]; if(!p) return;
+          out.push(lang==='he' ? (p.nameHe||p.name) : (p.nameEn||p.name));
+        });
+      });
+      return out.join('\n');
+    }
+    document.getElementById('exportBtn').onclick = ()=>{
+      if(!currentTrip()){ downloadJsonBackup(); return }
+      document.getElementById('exTitle').textContent = L('ייצוא הטיול','Export trip');
+      document.getElementById('exSub').textContent = L('רשימה לפי ימים. אפשר להעתיק, לשלוח, ולהדביק חזרה דרך "ייבוא".','A day-by-day list. Copy it, share it, or paste it back through "Import".');
+      document.getElementById('exportText').value = tripAsText();
+      document.getElementById('exCopy').textContent = L('העתקה','Copy');
+      document.getElementById('exTxt').textContent = L('הורדת טקסט','Download .txt');
+      document.getElementById('exJson').textContent = L('גיבוי מלא (JSON)','Full backup (JSON)');
+      document.getElementById('exClose').textContent = t('close');
+      document.getElementById('exportModal').classList.add('open');
+    };
+    document.getElementById('exCopy').onclick = async ()=>{
+      const ta = document.getElementById('exportText');
+      try{ await navigator.clipboard.writeText(ta.value) }catch(e){ ta.select(); document.execCommand('copy') }
+      toast(L('הועתק','Copied'));
+    };
+    document.getElementById('exTxt').onclick = ()=>{
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([document.getElementById('exportText').value],{type:'text/plain;charset=utf-8'}));
+      a.download = ((currentTrip()||{}).name||'trip').replace(/[\\/:*?"<>|]/g,'') + '.txt';
+      a.click(); URL.revokeObjectURL(a.href);
+    };
+    document.getElementById('exJson').onclick = downloadJsonBackup;
+    document.getElementById('exClose').onclick = ()=>document.getElementById('exportModal').classList.remove('open');
+    document.getElementById('importFileBtn').onclick = openListImport;
     document.getElementById('shareBtn').onclick = async ()=>{
       const trip=currentTrip(); if(!trip) return;
       if(!firebaseUser){ document.getElementById('authModal').classList.add('open'); document.getElementById('authStatus').style.display='block'; document.getElementById('authStatus').textContent=t('auth.need'); return; }
